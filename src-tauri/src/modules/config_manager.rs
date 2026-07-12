@@ -371,6 +371,10 @@ pub struct UserConfig {
     pub always_on_top: Option<bool>,
     /// 是否记住窗口位置，默认 false
     pub remember_window_position: Option<bool>,
+    /// 关闭窗口时最小化到系统托盘（而非退出程序），默认 false
+    pub close_to_tray: Option<bool>,
+    /// 启动后自动隐藏到系统托盘（后台运行），默认 false
+    pub start_minimized: Option<bool>,
     /// 自定义 EasyTier 节点列表
     pub custom_easytier_nodes: Option<Vec<EasyTierNode>>,
     /// 语音音量 (0.0-1.0)，默认 1.0
@@ -403,6 +407,8 @@ impl Default for UserConfig {
             private_signaling_server: Some("wss://mctier.pmhs.top/signaling".to_string()),
             always_on_top: Some(true),
             remember_window_position: Some(false),
+            close_to_tray: Some(false),
+            start_minimized: Some(false),
             custom_easytier_nodes: Some(Vec::new()),
             voice_volume: Some(1.0),
             enable_gpu_rendering: Some(true),
@@ -724,6 +730,34 @@ impl ConfigManager {
     pub async fn set_remember_window_position(&mut self, remember: bool) -> Result<(), AppError> {
         self.update_config(|config| {
             config.remember_window_position = Some(remember);
+        }).await
+    }
+
+    /// 设置关闭窗口时是否最小化到系统托盘
+    /// 
+    /// # 参数
+    /// * `close_to_tray` - 是否最小化到托盘
+    /// 
+    /// # 返回
+    /// * `Ok(())` - 设置成功
+    /// * `Err(AppError)` - 设置失败
+    pub async fn set_close_to_tray(&mut self, close_to_tray: bool) -> Result<(), AppError> {
+        self.update_config(|config| {
+            config.close_to_tray = Some(close_to_tray);
+        }).await
+    }
+
+    /// 设置启动后是否自动隐藏到系统托盘
+    /// 
+    /// # 参数
+    /// * `start_minimized` - 是否启动后自动隐藏到托盘
+    /// 
+    /// # 返回
+    /// * `Ok(())` - 设置成功
+    /// * `Err(AppError)` - 设置失败
+    pub async fn set_start_minimized(&mut self, start_minimized: bool) -> Result<(), AppError> {
+        self.update_config(|config| {
+            config.start_minimized = Some(start_minimized);
         }).await
     }
 

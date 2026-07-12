@@ -3997,6 +3997,8 @@ pub async fn save_settings(
     private_signaling_server: Option<String>,
     always_on_top: Option<bool>,
     remember_window_position: Option<bool>,
+    close_to_tray: Option<bool>,
+    start_minimized: Option<bool>,
     custom_easytier_nodes: Option<Vec<serde_json::Value>>,
     voice_volume: Option<f64>,
     enable_gpu_rendering: Option<bool>,
@@ -4070,6 +4072,14 @@ pub async fn save_settings(
                 if !remember {
                     config.window_position = None;
                 }
+            }
+            // 保存「关闭时最小化到托盘」配置
+            if let Some(v) = close_to_tray {
+                config.close_to_tray = Some(v);
+            }
+            // 保存「启动后自动隐藏到托盘」配置
+            if let Some(v) = start_minimized {
+                config.start_minimized = Some(v);
             }
             // 保存自定义 EasyTier 节点
             if let Some(nodes_json) = custom_easytier_nodes.clone() {
@@ -4258,6 +4268,8 @@ pub async fn get_settings(state: State<'_, AppState>) -> Result<serde_json::Valu
         "privateSignalingServer": config.private_signaling_server.clone(),
         "alwaysOnTop": config.always_on_top.unwrap_or(true),
         "rememberWindowPosition": config.remember_window_position.unwrap_or(false),
+        "closeToTray": config.close_to_tray.unwrap_or(false),
+        "startMinimized": config.start_minimized.unwrap_or(false),
         "customEasytierNodes": config.custom_easytier_nodes.clone().unwrap_or_default(),
         "voiceVolume": config.voice_volume.unwrap_or(1.0),
         "enableGpuRendering": config.enable_gpu_rendering.unwrap_or(true),

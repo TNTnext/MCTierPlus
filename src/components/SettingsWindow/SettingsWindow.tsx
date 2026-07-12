@@ -23,6 +23,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const [usePrivateServer, setUsePrivateServer] = useState(false);
   const [alwaysOnTop, setAlwaysOnTop] = useState(true);
   const [rememberWindowPosition, setRememberWindowPosition] = useState(false);
+  const [closeToTray, setCloseToTray] = useState(false);
+  const [startMinimized, setStartMinimized] = useState(false);
   const [enableGpuRendering, setEnableGpuRendering] = useState(true);
   const [showRestartModal, setShowRestartModal] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -56,6 +58,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       const ups = settings.usePrivateServer || false;
       const aot = settings.alwaysOnTop ?? true;
       const rwp = settings.rememberWindowPosition ?? false;
+      const ctt = settings.closeToTray ?? false;
+      const sm = settings.startMinimized ?? false;
       const egr = settings.enableGpuRendering ?? true;
       setAutoStartup(as_);
       setAutoLobbyEnabled(al);
@@ -63,6 +67,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       setUsePrivateServer(ups);
       setAlwaysOnTop(aot);
       setRememberWindowPosition(rwp);
+      setCloseToTray(ctt);
+      setStartMinimized(sm);
       setEnableGpuRendering(egr);
       settingsRef.current = {
         autoStartup: as_,
@@ -77,6 +83,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
         privateSignalingServer: settings.privateSignalingServer ?? 'wss://mctier.pmhs.top/signaling',
         alwaysOnTop: aot,
         rememberWindowPosition: rwp,
+        closeToTray: ctt,
+        startMinimized: sm,
         enableGpuRendering: egr,
         // 出口节点配置
         enableExitNode: settings.enableExitNode || false,
@@ -107,6 +115,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
         privateSignalingServer: 'wss://mctier.pmhs.top/signaling',
         alwaysOnTop: true,
         rememberWindowPosition: false,
+        closeToTray: false,
+        startMinimized: false,
         enableGpuRendering: true,
         enableExitNode: false,
         enableAsExitNode: false,
@@ -121,6 +131,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       setUsePrivateServer(false);
       setAlwaysOnTop(true);
       setRememberWindowPosition(false);
+      setCloseToTray(false);
+      setStartMinimized(false);
       setEnableGpuRendering(true);
       settingsRef.current = defaultSettings;
       form.setFieldsValue(defaultSettings);
@@ -175,6 +187,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
         privateSignalingServer: merged.privateSignalingServer?.trim() || null,
         alwaysOnTop: merged.alwaysOnTop !== undefined ? merged.alwaysOnTop : true,
         rememberWindowPosition: merged.rememberWindowPosition !== undefined ? merged.rememberWindowPosition : false,
+        closeToTray: merged.closeToTray !== undefined ? merged.closeToTray : false,
+        startMinimized: merged.startMinimized !== undefined ? merged.startMinimized : false,
         enableGpuRendering: merged.enableGpuRendering !== undefined ? merged.enableGpuRendering : true,
         // 出口节点配置
         enableExitNode: merged.enableExitNode !== undefined ? merged.enableExitNode : null,
@@ -310,6 +324,28 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
                   setRememberWindowPosition(v);
                   form.setFieldValue('rememberWindowPosition', v);
                   await saveAll({ rememberWindowPosition: v });
+                }} className="settings-switch" />
+              </div>
+              <div className="settings-toggle-row">
+                <div className="settings-toggle-info">
+                  <span className="settings-toggle-label">{tl('关闭时最小化到托盘', 'Minimize to Tray on Close')}</span>
+                  <span className="settings-toggle-desc">{tl('点击关闭按钮时隐藏到系统托盘后台运行，而不是退出程序', 'Hide to the system tray and keep running in the background instead of quitting when you click close')}</span>
+                </div>
+                <Switch checked={closeToTray} onChange={async (v) => {
+                  setCloseToTray(v);
+                  form.setFieldValue('closeToTray', v);
+                  await saveAll({ closeToTray: v });
+                }} className="settings-switch" />
+              </div>
+              <div className="settings-toggle-row">
+                <div className="settings-toggle-info">
+                  <span className="settings-toggle-label">{tl('启动后自动隐藏到托盘', 'Start Minimized to Tray')}</span>
+                  <span className="settings-toggle-desc">{tl('MCTier 启动后自动隐藏到系统托盘，在后台静默运行', 'MCTier automatically hides to the system tray after launch and runs silently in the background')}</span>
+                </div>
+                <Switch checked={startMinimized} onChange={async (v) => {
+                  setStartMinimized(v);
+                  form.setFieldValue('startMinimized', v);
+                  await saveAll({ startMinimized: v });
                 }} className="settings-switch" />
               </div>
               <div className="settings-toggle-row">
@@ -885,6 +921,8 @@ const CustomNodeManager: React.FC = () => {
         privateSignalingServer: cur.privateSignalingServer ?? null,
         alwaysOnTop: cur.alwaysOnTop ?? null,
         rememberWindowPosition: cur.rememberWindowPosition ?? null,
+        closeToTray: cur.closeToTray ?? null,
+        startMinimized: cur.startMinimized ?? null,
         customEasytierNodes: customNodesOnly,
         voiceVolume: cur.voiceVolume ?? null,
         enableGpuRendering: cur.enableGpuRendering ?? null,

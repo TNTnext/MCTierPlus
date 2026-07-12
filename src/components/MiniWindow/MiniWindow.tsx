@@ -1521,6 +1521,28 @@ Password: ${lobby.password || ''}
                 )}
               </>
             )}
+            {/* 展开状态下显示：一键最小化到系统托盘（后台运行），位于第一个位置 */}
+            {!collapsed && (
+              <motion.button
+                className="mini-control-btn"
+                onClick={async () => {
+                  try {
+                    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+                    await getCurrentWindow().hide();
+                    console.log('✅ 已最小化到系统托盘');
+                  } catch (error) {
+                    console.error('最小化到系统托盘失败:', error);
+                  }
+                }}
+                title={tl('最小化到系统托盘', 'Minimize to tray')}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="6" y1="12" x2="18" y2="12" />
+                </svg>
+              </motion.button>
+            )}
             <motion.button
               className="mini-control-btn"
               onClick={handleToggleCollapse}

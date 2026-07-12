@@ -114,8 +114,21 @@ function App() {
     const showWindow = async () => {
       try {
         const appWindow = getCurrentWindow();
-        await appWindow.show();
-        console.log('✅ 窗口已显示');
+        // 读取「启动后自动隐藏到系统托盘」配置：为真则保持隐藏，不再显示窗口
+        let startMinimized = false;
+        try {
+          const settings = await invoke<{ startMinimized?: boolean }>('get_settings');
+          startMinimized = settings?.startMinimized ?? false;
+        } catch (e) {
+          console.error('读取启动隐藏配置失败:', e);
+        }
+        if (startMinimized) {
+          await appWindow.hide();
+          console.log('✅ 已根据配置启动后隐藏到系统托盘');
+        } else {
+          await appWindow.show();
+          console.log('✅ 窗口已显示');
+        }
       } catch (error) {
         console.error('❌ 显示窗口失败:', error);
       }

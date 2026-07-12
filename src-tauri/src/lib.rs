@@ -612,6 +612,16 @@ pub fn run() {
                                 }
                             }
                         }
+
+                        // 启动后自动隐藏到系统托盘（后台运行）
+                        let start_minimized = config.start_minimized.unwrap_or(false);
+                        if start_minimized {
+                            if let Err(e) = win.hide() {
+                                error!("启动时隐藏窗口到托盘失败: {}", e);
+                            } else {
+                                info!("已根据配置在启动后隐藏到系统托盘");
+                            }
+                        }
                     });
                 }
             }
@@ -654,11 +664,30 @@ pub fn run() {
                 if label != "main" {
                     return;
                 }
+                // 始终先阻止默认关闭，之后根据配置决定：隐藏到托盘 或 退出程序
                 api.prevent_close();
                 let ah = window.app_handle().clone();
                 if let Some(state) = ah.try_state::<AppState>() {
                     let core = Arc::clone(&state.core);
                     tauri::async_runtime::spawn(async move {
+                        // 读取「关闭时最小化到托盘」配置
+                        let close_to_tray = {
+                            let cl = core.lock().await;
+                            let cfg_mgr = cl.get_config_manager();
+                            let mgr = cfg_mgr.lock().await;
+                            mgr.get_config().close_to_tray.unwrap_or(false)
+                        };
+
+                        if close_to_tray {
+                            // 后台运行：仅隐藏到系统托盘，不退出程序
+                            if let Some(w) = ah.get_webview_window("main") {
+                                let _ = w.hide();
+                                info!("关闭按钮触发：已根据配置最小化到系统托盘");
+                            }
+                            return;
+                        }
+
+                        // 正常退出流程
                         if let Err(e) = core.lock().await.shutdown().await { error!("关闭错误: {}", e); }
                         if let Some(w) = ah.get_webview_window("main") { let _ = w.close(); }
                         ah.exit(0);
