@@ -123,6 +123,10 @@ export const RoomTools: React.FC<RoomToolsProps> = ({ visible, onClose, onOpenWo
 
   const commitTodos = (items: TodoItem[]) => {
     setTodos(items);
+    // 多人协同：把最新待办列表广播给同大厅成员（后写覆盖），实现全队实时同步
+    void p2pChatService.sendControlMessage('todo', JSON.stringify(items)).catch((e) => {
+      console.warn('待办同步广播失败:', e);
+    });
   };
 
   const addTodo = () => {

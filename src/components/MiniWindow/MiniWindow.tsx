@@ -1,4 +1,4 @@
-﻿﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { invoke } from '@tauri-apps/api/core';
 import { Modal, Spin, Tooltip, App as AntdApp } from 'antd';import { open } from '@tauri-apps/plugin-shell';
@@ -177,7 +177,7 @@ export const MiniWindow: React.FC = () => {
   const isHost = !!currentPlayerId && hostId === currentPlayerId;
   const isSameVoiceGroup = (playerId: string) => (playerVoiceGroups.get(playerId) ?? 0) === myVoiceGroup;
 
-  // 新玩家加入时，房主补发公告、各成员补发自己的语音小队，确保新人状态一致
+  // 新玩家加入时，房主补发公告、各成员补发自己的语音小队、房主补发待办清单，确保新人状态一致
   const prevPlayerCountRef = React.useRef(0);
   useEffect(() => {
     const count = players.length;
@@ -185,6 +185,11 @@ export const MiniWindow: React.FC = () => {
       const t = setTimeout(() => {
         if (isHost && announcement) void p2pChatService.sendControlMessage('announce', announcement);
         if (myVoiceGroup !== 0) void p2pChatService.sendControlMessage('voicegroup', String(myVoiceGroup));
+        // 房主补发当前待办清单，让新加入者立即看到已有的协同待办
+        const currentTodos = useAppStore.getState().todos;
+        if (isHost && currentTodos.length > 0) {
+          void p2pChatService.sendControlMessage('todo', JSON.stringify(currentTodos)).catch(() => {});
+        }
       }, 1600);
       prevPlayerCountRef.current = count;
       return () => clearTimeout(t);

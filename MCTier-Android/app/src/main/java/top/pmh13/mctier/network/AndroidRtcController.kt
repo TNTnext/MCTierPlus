@@ -266,10 +266,11 @@ class AndroidRtcController(private val context: Context) {
 
     fun ensurePeer(remotePlayerId: String): PeerConnection? {
         peerConnections[remotePlayerId]?.let { return it }
+        // 同一 EasyTier 虚拟子网内靠 host 候选即可直连；仅保留可达的国内 STUN 兜底，
+        // 移除被墙的 Google STUN（否则每次 ICE 收集都要等它超时，拖慢语音建立/重连）
         val iceServers = listOf(
             PeerConnection.IceServer.builder("stun:stun.qq.com:3478").createIceServer(),
             PeerConnection.IceServer.builder("stun:stun.miwifi.com:3478").createIceServer(),
-            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
         )
         val connection = factory?.createPeerConnection(
             PeerConnection.RTCConfiguration(iceServers).apply {

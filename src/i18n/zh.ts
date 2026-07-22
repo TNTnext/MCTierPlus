@@ -34,17 +34,18 @@ export const zh = {
     title: '房间小工具',
     dice: '掷骰子',
     timer: '倒计时',
-    todo: '\u4e2a\u4eba\u5f85\u529e',
-    addTodoPlaceholder: '\u6dfb\u52a0\u4e00\u6761\u4e2a\u4eba\u5f85\u529e\uff0c\u56de\u8f66\u786e\u8ba4',
+    todo: '协同待办',
+    addTodoPlaceholder: '添加一条待办，回车确认（全队实时同步）',
     add: '添加',
     emptyTodo: '还没有待办事项，添加一条试试～',
     remaining: '剩余 {{count}} 项待完成',
-    clearDone: '清除已完成',
+    clearDone: '清除已完成',
+
     localRoll: '本地掷骰',
     rollBroadcast: '掷骰并广播',
     startTimer: '开始倒计时',
     stop: '停止',
-  },
+  },
   stats: {
     title: '数据统计',
     totalOnline: '累计联机时长',

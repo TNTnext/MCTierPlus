@@ -34,17 +34,18 @@ export const en = {
     title: 'Room Tools',
     dice: 'Dice',
     timer: 'Timer',
-    todo: 'Personal To-Do',
-    addTodoPlaceholder: 'Add a personal task, press Enter',
+    todo: 'Shared To-Do',
+    addTodoPlaceholder: 'Add a task, press Enter (synced to the whole team)',
     add: 'Add',
     emptyTodo: 'No tasks yet. Add one to get started!',
     remaining: '{{count}} task(s) remaining',
-    clearDone: 'Clear Done',
+    clearDone: 'Clear Done',
+
     localRoll: 'Roll Locally',
     rollBroadcast: 'Roll & Broadcast',
     startTimer: 'Start Timer',
     stop: 'Stop',
-  },
+  },
   stats: {
     title: 'Statistics',
     totalOnline: 'Total Online Time',

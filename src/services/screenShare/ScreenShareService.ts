@@ -314,7 +314,7 @@ class ScreenShareService {
     // 【新增】清除查看者标记
     const share = this.activeShares.get(shareId);
     if (share && share.viewerId === this.currentPlayerId) {
-      console.log('� [ScreenShareService] 清除查看者标记');
+      console.log('🧹 [ScreenShareService] 清除查看者标记');
       share.viewerId = undefined;
       share.viewerName = undefined;
       this.activeShares.set(shareId, share);

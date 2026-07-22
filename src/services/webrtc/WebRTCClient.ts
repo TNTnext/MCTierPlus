@@ -62,6 +62,9 @@ export class WebRTCClient {
   private reconnectTimers: Map<string, number> = new Map();
   private knownPlayers: Set<string> = new Set();
   private pendingPlayerLeaveTimers: Map<string, number> = new Map();
+  // 记录每个玩家的虚拟域名（playerId -> virtualDomain），
+  // 因为信令服务器的 player-left 只携带 playerId，离开时需据此清理 hosts 映射
+  private playerDomains: Map<string, string> = new Map();
   private readonly transientLeaveConfirmMs: number = 3000; // 减少到3秒，加快响应速度
 
   // ICE 服务器配置
@@ -149,6 +152,7 @@ export class WebRTCClient {
       // 【优化】只在首次初始化时清空已知玩家列表
       // 信令服务器重连时不应该清空，避免重复建立连接
       this.knownPlayers.clear();
+      this.playerDomains.clear();
       this.clearAllPendingPlayerLeaves();
 
       // 获取虚拟IP
@@ -277,7 +281,7 @@ export class WebRTCClient {
               useDomain: this.useDomain,
               lobbyName: this.lobbyName,
               lobbyPassword: this.lobbyPassword,
-              clientVersion: '2.3.0',
+              clientVersion: '2.4.0',
             }));
             console.log('📤 已发送注册消息，玩家名称:', this.localPlayerName, '大厅:', this.lobbyName, '虚拟域名:', this.virtualDomain, '使用域名:', this.useDomain);
           }
@@ -512,12 +516,19 @@ export class WebRTCClient {
               console.error('❌ 添加自身域名映射失败（请确认以管理员身份运行）:', error);
             }
           }
+          // 【幽灵玩家清理·准备】players-list 是服务器在持有大厅读锁时构建的权威全量快照（不含自己），
+          // 与所有 player-joined 广播互斥一致；因此"本次列表缺席但此前已知"的玩家一定是真离开了。
+          // 先记录处理前的已知集合与本次列表出现的 ID，循环结束后据此清理残留幽灵。
+          const knownBefore = new Set(this.knownPlayers);
+          const listedIds = new Set<string>();
+
           for (const player of message.players) {
             console.log(`  - ${player.playerName} (${player.playerId})`);
 
             if (player.playerId === this.localPlayerId) {
               continue;
             }
+            listedIds.add(player.playerId);
 
             const wasPendingLeave = this.clearPendingPlayerLeave(player.playerId);
             if (wasPendingLeave) {
@@ -529,6 +540,8 @@ export class WebRTCClient {
             
             // 如果启用了域名访问且有虚拟域名，添加到hosts文件
             if (player.useDomain && player.virtualDomain && player.virtualIp) {
+              // 记录域名，供该玩家离开时清理 hosts（player-left 只带 playerId）
+              this.playerDomains.set(player.playerId, player.virtualDomain);
               try {
                 console.log(`📝 添加玩家域名映射: ${player.virtualDomain} -> ${player.virtualIp}`);
                 await invoke('add_player_domain', {
@@ -594,6 +607,24 @@ export class WebRTCClient {
               console.log(`⏳ 等待 ${player.playerId} 主动发起连接（ID字典序较小）`);
             }
           }
+
+          // 【幽灵玩家清理·执行】断线重连期间若有成员离开，重连拿到的权威列表里不会包含他，
+          // 但本地 knownPlayers/玩家列表仍残留。这里据权威列表移除这些幽灵，避免永久残留。
+          // 防御性：若本地仍与其保持 connected/connecting 连接（极端情况下的活跃玩家），则跳过不删。
+          for (const oldId of knownBefore) {
+            if (oldId === this.localPlayerId || listedIds.has(oldId)) continue;
+            const stalePeer = this.peerConnections.get(oldId);
+            const st = stalePeer?.connection.connectionState;
+            if (st === 'connected' || st === 'connecting') {
+              console.log(`⏭️ [幽灵清理] ${oldId} 不在权威列表但仍有活跃连接(${st})，保留`);
+              continue;
+            }
+            console.log(`🧹 [幽灵清理] ${oldId} 不在权威列表且无活跃连接，判定已离开并移除`);
+            this.clearPendingPlayerLeave(oldId);
+            this.knownPlayers.delete(oldId);
+            this.playerDomains.delete(oldId);
+            this.removePeer(oldId);
+          }
           
           // 【修复】自己加入大厅后，向所有人请求屏幕共享列表和文件共享列表
           console.log('📢 [WebRTCClient] 自己加入大厅，向所有人请求屏幕共享列表和文件共享列表...');
@@ -644,6 +675,8 @@ export class WebRTCClient {
           
           // 如果启用了域名访问且有虚拟域名，添加到hosts文件
           if (message.useDomain && message.virtualDomain && message.virtualIp) {
+            // 记录域名，供该玩家离开时清理 hosts（player-left 只带 playerId）
+            this.playerDomains.set(message.playerId, message.virtualDomain);
             try {
               console.log(`📝 添加玩家域名映射: ${message.virtualDomain} -> ${message.virtualIp}`);
               await invoke('add_player_domain', {
@@ -724,18 +757,22 @@ export class WebRTCClient {
             }
 
             // 如果有虚拟域名，从hosts文件中删除
-            if (message.virtualDomain) {
+            // 【修复】信令服务器的 player-left 只带 playerId，不含 virtualDomain，
+            // 因此改用本地记录的 playerDomains 反查该玩家域名，避免 hosts 映射永久残留
+            const leftDomain = message.virtualDomain || this.playerDomains.get(message.playerId);
+            if (leftDomain) {
               try {
-                console.log(`🗑️ 删除玩家域名映射: ${message.virtualDomain}`);
+                console.log(`🗑️ 删除玩家域名映射: ${leftDomain}`);
                 await invoke('remove_player_domain', {
-                  domain: message.virtualDomain,
+                  domain: leftDomain,
                 });
-                console.log(`✅ 玩家域名映射已删除: ${message.virtualDomain}`);
+                console.log(`✅ 玩家域名映射已删除: ${leftDomain}`);
               } catch (error) {
                 console.error(`❌ 删除玩家域名映射失败:`, error);
                 // 不中断流程，继续处理玩家离开
               }
             }
+            this.playerDomains.delete(message.playerId);
 
             // 清理该玩家的文件共享
             try {
@@ -2747,6 +2784,7 @@ export class WebRTCClient {
       this.reconnectTimers.clear();
       this.reconnectingPeers.clear();
       this.knownPlayers.clear();
+      this.playerDomains.clear();
       
       // 重置重连计数
       this.reconnectAttempts = 0;

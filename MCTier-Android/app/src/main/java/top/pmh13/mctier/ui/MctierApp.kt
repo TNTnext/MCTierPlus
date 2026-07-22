@@ -1816,13 +1816,13 @@ private fun RoomToolsDialog(
                     }
                     else -> when (tab) {
                     2 -> {
-                        // 个人待办
+                        // 协同待办（全队实时同步）
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(L("个人待办", "Personal To-Do"), fontSize = 13.sp, color = TextPrimary.copy(alpha = 0.7f), modifier = Modifier.weight(1f))
+                            Text(L("协同待办", "Shared To-Do"), fontSize = 13.sp, color = TextPrimary.copy(alpha = 0.7f), modifier = Modifier.weight(1f))
                             TextButton(onClick = { repository.clearDoneTodos() }) { Text(L("清除已完成", "Clear Done"), color = GrassGreen, fontSize = 12.sp) }
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(newTodo, { newTodo = it }, modifier = Modifier.weight(1f), placeholder = { Text(L("新增个人待办", "Add a personal task")) }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = fieldColors())
+                            OutlinedTextField(newTodo, { newTodo = it }, modifier = Modifier.weight(1f), placeholder = { Text(L("新增待办（全队同步）", "Add a task (synced)")) }, singleLine = true, shape = RoundedCornerShape(12.dp), colors = fieldColors())
                             Box(
                                 Modifier.size(46.dp).clip(CircleShape).background(if (newTodo.isBlank()) PanelHigh else GrassGreen)
                                     .clickable(enabled = newTodo.isNotBlank()) { repository.addTodo(newTodo); newTodo = "" },

@@ -72,8 +72,19 @@ class MainActivity : ComponentActivity() {
         val data: Uri = intent?.data ?: return
         if (data.scheme != "mctier") return
         runCatching {
-            val name = data.getQueryParameter("name").orEmpty()
-            val pwd = data.getQueryParameter("pwd").orEmpty()
+            // 从原始 query 自行解析并正确还原空格：
+            // - 安卓端 URLEncoder 生成的链接把空格编成裸 '+'（真正的 '+' 会编成 %2B）；
+            // - 桌面端 encodeURIComponent 生成的链接空格是 %20、'+' 是 %2B，绝不产生裸 '+'。
+            // 因此查询串中任何裸 '+' 都代表空格，可对 name/pwd 统一把 '+'→%20 后再做标准 %XX 解码，
+            // 既修复带空格大厅名被读成 "My+Lobby" 进错大厅，又不会破坏含 '+'(%2B) 的密码。
+            val raw = data.encodedQuery.orEmpty()
+            val params = raw.split("&").mapNotNull { part ->
+                val idx = part.indexOf('=')
+                if (idx <= 0) return@mapNotNull null
+                part.substring(0, idx) to part.substring(idx + 1)
+            }.toMap()
+            val name = params["name"]?.let { Uri.decode(it.replace("+", "%20")) }.orEmpty()
+            val pwd = params["pwd"]?.let { Uri.decode(it.replace("+", "%20")) }.orEmpty()
             if (name.isNotBlank()) {
                 MctierRepository.get(applicationContext).applyDeepLink(name, pwd)
             }

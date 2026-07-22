@@ -164,11 +164,12 @@ class P2PChatService {
    */
   private handleMessage(msg: BackendChatMessage): void {
 
-    // 控制消息（公告 / 语音小队 / 剪贴板 / 待办 / 白板）：不计入聊天，分发到状态后返回
+    // 控制消息（公告 / 语音小队 / 待办）：不计入聊天，分发到状态后返回
     const mtype = (msg as { message_type: string }).message_type;
     if (
       mtype === 'announce' ||
-      mtype === 'voicegroup'
+      mtype === 'voicegroup' ||
+      mtype === 'todo'
     ) {
       if (msg.player_id === this.currentPlayerId) return;
       // 按消息 ID 去重：避免对账/SSE 重复投递导致控制消息反复触发（如剪贴板反复弹窗、白板重复笔画）
@@ -244,6 +245,16 @@ class P2PChatService {
       } else if (type === 'voicegroup') {
         const g = parseInt((msg.content ?? '0').trim(), 10);
         store.setPlayerVoiceGroup(msg.player_id, Number.isFinite(g) ? g : 0);
+      } else if (type === 'todo') {
+        // 多人协同待办：内容为待办列表 JSON，收到后覆盖本地（后写覆盖），实现全队同步
+        try {
+          const parsed = JSON.parse(msg.content ?? '[]');
+          if (Array.isArray(parsed)) {
+            store.setTodos(parsed);
+          }
+        } catch (e) {
+          console.warn('⚠️ [P2PChatService] 解析待办同步内容失败:', e);
+        }
       }
     } catch (error) {
       console.warn('⚠️ [P2PChatService] 处理控制消息失败:', error);
@@ -251,10 +262,10 @@ class P2PChatService {
   }
 
   /**
-   * 发送控制消息（公告/语音小队/剪贴板/待办/白板）
+   * 发送控制消息（公告/语音小队/待办）
    */
   async sendControlMessage(
-    type: 'announce' | 'voicegroup',
+    type: 'announce' | 'voicegroup' | 'todo',
     content: string
   ): Promise<void> {
     if (!this.currentPlayerId) return;

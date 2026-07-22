@@ -180,11 +180,11 @@ interface AppStore {
   /** 重算小队听音路由 */
   applyVoiceGroupRouting: () => void;
 
-  // ==================== 协同功能：剪贴板 / 待办 / 白板 ====================
+  // ==================== 协同功能：剪贴板 / 待办 / 白板 ====================
   /** 共享待办列表 */
   todos: TodoItem[];
   /** 覆盖设置待办列表（来自远端同步或本地操作） */
-  setTodos: (todos: TodoItem[]) => void;
+  setTodos: (todos: TodoItem[]) => void;
 
   // ==================== 配置管理 ====================
   /** 用户配置 */
@@ -279,8 +279,8 @@ const initialState = {
   myVoiceGroup: 0,
   playerVoiceGroups: new Map<string, number>(),
 
-  // 协同功能：剪贴板 / 待办 / 白板
-  todos: [] as TodoItem[],
+  // 协同功能：剪贴板 / 待办 / 白板
+  todos: [] as TodoItem[],
 
   // 配置
   config: defaultConfig,
@@ -694,11 +694,12 @@ export const useAppStore = create<AppStore>()(
         });
       },
 
-      // ==================== 协同功能：剪贴板 / 待办 / 白板 ====================
+      // ==================== 协同功能：剪贴板 / 待办 / 白板 ====================
 
       setTodos: (todos: TodoItem[]) => {
         set({ todos }, false, 'setTodos');
-      },
+      },
+
 
       // ==================== 配置操作 ====================
       updateConfig: (config: Partial<UserConfig>) => {

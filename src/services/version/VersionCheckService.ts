@@ -26,7 +26,7 @@ interface VersionInfo {
 
 class VersionCheckService {
   private readonly GITEE_API_URL = 'https://gitee.com/api/v5/repos/peng-minghang/mctier/tags';
-  private readonly CURRENT_VERSION = '2.3.0';
+  private readonly CURRENT_VERSION = '2.4.0';
   private readonly VERSION_CHECK_KEY = 'mctier_version_check_shown';
 
   /**
@@ -98,8 +98,13 @@ class VersionCheckService {
         return null;
       }
 
-      // 直接获取最后一个标签（最新版本）
-      const latestTag = tags[tags.length - 1];
+      // 【修复】Gitee tags 接口不保证按语义版本排序，不能简单取数组末位，
+      // 否则可能把旧 tag 当成"最新版"误报更新。这里遍历全部 tag，按语义版本取最大值。
+      const latestTag = tags.reduce((best, tag) => {
+        const bestV = best.name.replace(/^v/, '');
+        const curV = tag.name.replace(/^v/, '');
+        return this.compareVersions(curV, bestV) > 0 ? tag : best;
+      }, tags[0]);
       const latestVersion = latestTag.name.replace(/^v/, ''); // 移除 'v' 前缀
       
       console.log('📦 [VersionCheckService] 最新版本:', latestVersion);

@@ -556,6 +556,26 @@ async fn download_file(
         .and_then(parse_range);
 
     match range {
+        Some(_) if file_size == 0 => {
+            // 空文件：Range 无意义，直接返回 200 + 空体，避免 file_size - 1 下溢 panic
+            Response::builder()
+                .status(StatusCode::OK)
+                .header(header::CONTENT_TYPE, "application/octet-stream")
+                .header(header::CONTENT_LENGTH, 0u64)
+                .header(
+                    header::CONTENT_DISPOSITION,
+                    format!(
+                        "attachment; filename=\"{}\"",
+                        full_path.file_name().unwrap().to_string_lossy()
+                    ),
+                )
+                .body(Body::empty())
+                .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+        }
+        Some((start, _)) if start >= file_size => {
+            // 起始位置超出文件范围：按 HTTP 语义返回 416
+            Err(StatusCode::RANGE_NOT_SATISFIABLE)
+        }
         Some((start, end)) => {
             // 范围请求
             let end = end.min(file_size - 1);

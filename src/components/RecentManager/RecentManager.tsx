@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Empty, Tabs, Popconfirm, message } from 'antd';
+import { Modal, Button, Empty, Tabs, App } from 'antd';
 import { recentService, type RecentLobby, type RecentPlayer } from '../../services/recent/recentService';
 import { useTranslation } from 'react-i18next';
 import { tl } from '../../i18n';
@@ -30,6 +30,9 @@ function formatTime(ts: number): string {
 
 export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, onSelectLobby }) => {
   useTranslation();
+  // 使用 App.useApp() 的 hook 版 message/modal：确认弹层始终置顶且可点击，
+  // 避免内嵌 Popconfirm 在 Modal 内被遮挡导致「删除/清空」点击无反应。
+  const { message, modal } = App.useApp();
   const [lobbies, setLobbies] = useState<RecentLobby[]>([]);
   const [players, setPlayers] = useState<RecentPlayer[]>([]);
   const [activeTab, setActiveTab] = useState<string>('lobbies');
@@ -47,6 +50,21 @@ export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, 
     onSelectLobby(lobby);
     onClose();
     message.success(tl('已填入大厅信息', 'Lobby info filled'));
+  };
+
+  const handleRemoveLobby = (l: RecentLobby) => {
+    modal.confirm({
+      title: tl('从最近列表移除？', 'Remove from recent list?'),
+      okText: tl('移除', 'Remove'),
+      cancelText: tl('取消', 'Cancel'),
+      okButtonProps: { danger: true },
+      centered: true,
+      onOk: () => {
+        recentService.removeLobby(l.name, l.password);
+        refresh();
+        message.success(tl('已移除', 'Removed'));
+      },
+    });
   };
 
   const lobbiesTab = (
@@ -77,14 +95,7 @@ export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, 
               </div>
               <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <Button type="primary" size="small" onClick={() => handleSelect(l)}>{tl('快速重进', 'Rejoin')}</Button>
-                <Popconfirm
-                  title={tl('从最近列表移除？', 'Remove from recent list?')}
-                  onConfirm={() => { recentService.removeLobby(l.name, l.password); refresh(); }}
-                  okText={tl('移除', 'Remove')}
-                  cancelText={tl('取消', 'Cancel')}
-                >
-                  <Button size="small" danger>{tl('删除', 'Delete')}</Button>
-                </Popconfirm>
+                <Button size="small" danger onClick={() => handleRemoveLobby(l)}>{tl('删除', 'Delete')}</Button>
               </div>
             </div>
           ))}
@@ -122,14 +133,25 @@ export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, 
   );
 
   const handleClear = () => {
-    if (activeTab === 'lobbies') {
-      recentService.clearLobbies();
-      message.success(tl('已清空最近大厅', 'Recent lobbies cleared'));
-    } else {
-      recentService.clearPlayers();
-      message.success(tl('已清空最近玩家', 'Recent players cleared'));
-    }
-    refresh();
+    modal.confirm({
+      title: activeTab === 'lobbies'
+        ? tl('确定清空全部最近大厅？', 'Clear all recent lobbies?')
+        : tl('确定清空全部最近玩家？', 'Clear all recent players?'),
+      okText: tl('清空', 'Clear'),
+      cancelText: tl('取消', 'Cancel'),
+      okButtonProps: { danger: true },
+      centered: true,
+      onOk: () => {
+        if (activeTab === 'lobbies') {
+          recentService.clearLobbies();
+          message.success(tl('已清空最近大厅', 'Recent lobbies cleared'));
+        } else {
+          recentService.clearPlayers();
+          message.success(tl('已清空最近玩家', 'Recent players cleared'));
+        }
+        refresh();
+      },
+    });
   };
 
   return (
@@ -138,16 +160,7 @@ export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, 
       open={visible}
       onCancel={onClose}
       footer={[
-        <Popconfirm
-          key="clear"
-          title={activeTab === 'lobbies' ? tl('确定清空全部最近大厅？', 'Clear all recent lobbies?') : tl('确定清空全部最近玩家？', 'Clear all recent players?')}
-          onConfirm={handleClear}
-          okText={tl('清空', 'Clear')}
-          cancelText={tl('取消', 'Cancel')}
-          okButtonProps={{ danger: true }}
-        >
-          <Button danger style={{ float: 'left' }}>{tl('清空', 'Clear')}</Button>
-        </Popconfirm>,
+        <Button key="clear" danger style={{ float: 'left' }} onClick={handleClear}>{tl('清空', 'Clear')}</Button>,
         <Button key="close" type="primary" onClick={onClose}>{tl('关闭', 'Close')}</Button>,
       ]}
       width={500}

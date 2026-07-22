@@ -92,10 +92,11 @@ class RemoteControlController(
 
     /** 与语音一致的 ICE 配置：带 STUN，便于在 EasyTier host 候选之外也能用反射候选连通 */
     private fun rtcConfig(): PeerConnection.RTCConfiguration {
+        // 同一 EasyTier 虚拟子网内靠 host 候选即可直连；仅保留可达的国内 STUN 兜底，
+        // 移除被墙的 Google STUN（否则每次 ICE 收集都要等它超时，拖慢远控画面建立）
         val iceServers = listOf(
             PeerConnection.IceServer.builder("stun:stun.qq.com:3478").createIceServer(),
             PeerConnection.IceServer.builder("stun:stun.miwifi.com:3478").createIceServer(),
-            PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
         )
         return PeerConnection.RTCConfiguration(iceServers).apply {
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN

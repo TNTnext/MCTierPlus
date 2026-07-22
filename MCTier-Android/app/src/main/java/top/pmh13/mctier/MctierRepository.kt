@@ -25,6 +25,7 @@ import top.pmh13.mctier.data.ChatWireMessage
 import top.pmh13.mctier.data.AppClientVersion
 import top.pmh13.mctier.data.DefaultSignalingServer
 import top.pmh13.mctier.data.MctierJson
+import top.pmh13.mctier.data.MctierWireJson
 import top.pmh13.mctier.data.Lobby
 import top.pmh13.mctier.data.Player
 import top.pmh13.mctier.data.ScreenShareInfo
@@ -618,6 +619,15 @@ class MctierRepository(private val context: Context) {
             applyVoiceGroupRouting()
             return
         }
+        // 多人协同待办控制消息：内容为待办列表 JSON，收到后覆盖本地（后写覆盖），实现全队同步
+        if (wire.messageType == "todo") {
+            runCatching {
+                val list = MctierJson.decodeFromString(ListSerializer(TodoItem.serializer()), wire.content)
+                saveTodos(list)
+                _state.update { it.copy(todos = list) }
+            }
+            return
+        }
         val base64 = wire.imageData?.let { data ->
             val bytes = ByteArray(data.size) { i -> data[i].toByte() }
             "data:image/jpeg;base64," + Base64.encodeToString(bytes, Base64.NO_WRAP)
@@ -1061,11 +1071,21 @@ class MctierRepository(private val context: Context) {
                 val remotes = message.players.orEmpty().map {
                     Player(it.playerId, it.playerName, it.virtualIp, it.virtualDomain, it.useDomain ?: false)
                 }
-                _state.update { it.copy(players = mergePlayers(it.players, remotes)) }
+                val selfId = _state.value.playerId
+                // 【幽灵玩家清理】players-list 是服务器在持有大厅读锁时构建的权威全量列表（不含自己），
+                // 与 player-joined 广播互斥一致。断线重连期间已离开的成员不会出现在其中，
+                // 据此移除本地残留，避免"幽灵玩家"永久停留在列表里。始终保留自己。
+                val allowedIds = remotes.map { it.id }.toSet() + selfId
+                val ghosts = _state.value.players.map { it.id }.filter { it !in allowedIds }
+                ghosts.forEach { rtcController.removePeer(it) }
+                _state.update { st ->
+                    val merged = mergePlayers(st.players, remotes)
+                    st.copy(players = merged.filter { it.id in allowedIds })
+                }
                 recordRecentPlayers(remotes.map { it.name })
                 backfillRemoteShareIps()
                 // 与所有其他玩家建立语音连接（发起规则由 RtcController 内部按 ID 字典序决定）
-                val others = remotes.map { it.id }.filter { it != _state.value.playerId }
+                val others = remotes.map { it.id }.filter { it != selfId }
                 rtcController.connectToPlayers(others)
                 // 更新 P2P 聊天 peer 列表
                 chatClient?.setPeers(_state.value.players.filter { it.id != _state.value.playerId }.mapNotNull { it.virtualIp })
@@ -1099,6 +1119,16 @@ class MctierRepository(private val context: Context) {
                         scope.launch {
                             delay(1800)
                             chatClient?.sendVoiceGroup(_state.value.settings.playerName, _state.value.myVoiceGroup)
+                        }
+                    }
+                    // 房主补发当前待办清单，让新加入者立即看到已有的协同待办（与桌面端一致）
+                    if (isHost && _state.value.todos.isNotEmpty()) {
+                        scope.launch {
+                            delay(2000)
+                            runCatching {
+                                val json = MctierWireJson.encodeToString(ListSerializer(TodoItem.serializer()), _state.value.todos)
+                                chatClient?.sendTodo(_state.value.settings.playerName, json)
+                            }
                         }
                     }
                 }
@@ -1252,7 +1282,8 @@ class MctierRepository(private val context: Context) {
         if (autoJoinTried) return
         autoJoinTried = true
         val s = _state.value.settings
-        if (s.autoLobbyEnabled && s.autoLobbyName.isNotBlank() && s.autoLobbyPassword.length >= 4) {
+        // 与大厅名/密码校验规则保持一致（密码至少 8 位），避免自动建/进弱密码大厅
+        if (s.autoLobbyEnabled && s.autoLobbyName.trim().length >= 4 && s.autoLobbyPassword.length >= 8) {
             createOrJoinLobby(s.autoLobbyName, s.autoLobbyPassword)
         }
     }
@@ -1382,7 +1413,13 @@ class MctierRepository(private val context: Context) {
     private fun commitTodos(list: List<TodoItem>) {
         saveTodos(list)
         _state.update { it.copy(todos = list) }
-
+        // 多人协同：把最新待办列表通过 P2P 聊天通道广播给同大厅成员（含桌面端），实现实时同步。
+        // 用 MctierWireJson(encodeDefaults=true) 保证 done/assignee/ts 等默认值字段也被序列化，桌面端才能完整解析。
+        val client = chatClient ?: return
+        runCatching {
+            val json = MctierWireJson.encodeToString(ListSerializer(TodoItem.serializer()), list)
+            client.sendTodo(_state.value.settings.playerName, json)
+        }
     }
 
     fun addTodo(text: String) {

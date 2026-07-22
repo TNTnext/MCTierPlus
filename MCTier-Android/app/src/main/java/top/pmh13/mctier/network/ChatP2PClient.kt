@@ -56,6 +56,10 @@ class ChatP2PClient(
     fun sendVoiceGroup(playerName: String, group: Int): ChatWireMessage =
         sendInternal(playerName, group.toString(), "voicegroup", null)
 
+    /** 多人协同待办：content 为待办列表 JSON（与桌面端一致，后写覆盖全队同步） */
+    fun sendTodo(playerName: String, todosJson: String): ChatWireMessage =
+        sendInternal(playerName, todosJson, "todo", null)
+
     private fun sendInternal(playerName: String, content: String, type: String, imageData: List<Int>?): ChatWireMessage {
         val id = "msg-$playerId-${System.currentTimeMillis()}"
         val msg = ChatWireMessage(id, playerId, playerName, content, type, System.currentTimeMillis() / 1000, imageData)
