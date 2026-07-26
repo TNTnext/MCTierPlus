@@ -62,6 +62,12 @@ export class WebRTCClient {
   private reconnectTimers: Map<string, number> = new Map();
   /** 正在进行「手动语音重连」的玩家，用于防止重复点击并驱动 UI 的加载态 */
   private manualReconnectingPeers: Set<string> = new Set();
+  /** 麦克风的期望状态（界面/后端要求的状态） */
+  private desiredMicEnabled: boolean = false;
+  /** 麦克风的实际生效状态（音轨层面），用于与期望状态比对收敛 */
+  private micActuallyEnabled: boolean = false;
+  /** 麦克风开关操作的串行队列，避免快速连续切换时交叠执行导致状态错乱 */
+  private micOpChain: Promise<void> = Promise.resolve();
   private knownPlayers: Set<string> = new Set();
   private pendingPlayerLeaveTimers: Map<string, number> = new Map();
   // 记录每个玩家的虚拟域名（playerId -> virtualDomain），
@@ -116,6 +122,10 @@ export class WebRTCClient {
       console.log('玩家名称:', playerName);
       console.log('大厅名称:', lobbyName);
       
+      // 重置麦克风的期望/实际状态，避免上一次大厅的残留状态导致本次关麦被误判为"无需操作"
+      this.desiredMicEnabled = false;
+      this.micActuallyEnabled = false;
+
       // 重置 Store 的语音状态为默认值
       try {
         const { useAppStore } = await import('../../stores');
@@ -283,7 +293,7 @@ export class WebRTCClient {
               useDomain: this.useDomain,
               lobbyName: this.lobbyName,
               lobbyPassword: this.lobbyPassword,
-              clientVersion: '2.4.2',
+              clientVersion: '2.5.0',
             }));
             console.log('📤 已发送注册消息，玩家名称:', this.localPlayerName, '大厅:', this.lobbyName, '虚拟域名:', this.virtualDomain, '使用域名:', this.useDomain);
           }
@@ -2302,10 +2312,46 @@ export class WebRTCClient {
   }
 
   /**
-   * 设置麦克风状态
-   * 第一次开麦时获取麦克风，之后只启用/禁用轨道，不释放资源
+   * 设置麦克风状态（对外入口，串行执行并向最新目标收敛）
+   *
+   * 【竞态修复】开麦/关麦是耗时操作（getUserMedia + 逐 peer 替换音轨 + 重协商，
+   * 内部还有等待协商完成的轮询），而调用方多为「fire-and-forget」。若用户快速连续
+   * 切换（连点按钮、F2 按住说话的按下/松开），两次操作会交叠执行：较慢的「开麦」
+   * 可能在「关麦」之后才完成并把音轨重新加回去，导致界面显示已关麦、实际仍在传声，
+   * 必须再手动开关一次才恢复正常。
+   *
+   * 这里记录「期望状态」并把实际操作串行化：同一时刻只有一个操作在跑，跑完后若期望
+   * 状态又变了就继续收敛，保证最终实际状态与界面/后端一致。
    */
   async setMicEnabled(enabled: boolean): Promise<void> {
+    this.desiredMicEnabled = enabled;
+    const run = this.micOpChain.then(() => this.convergeMicState());
+    // 保存链尾（吞掉异常，避免一次失败后整条链被 reject 而后续操作全部不执行）
+    this.micOpChain = run.catch(() => { /* 错误已在内部记录 */ });
+    return run;
+  }
+
+  /** 反复应用麦克风状态，直到实际状态与最新期望一致 */
+  private async convergeMicState(): Promise<void> {
+    // 最多收敛若干轮，避免极端情况下的无限循环
+    for (let i = 0; i < 5; i++) {
+      const target = this.desiredMicEnabled;
+      if (target === this.micActuallyEnabled) {
+        return; // 已是目标状态，无需重复操作
+      }
+      await this.applyMicState(target);
+      if (this.desiredMicEnabled === this.micActuallyEnabled) {
+        return;
+      }
+    }
+    console.warn('⚠️ 麦克风状态收敛超过重试上限，当前实际状态:', this.micActuallyEnabled);
+  }
+
+  /**
+   * 实际执行麦克风开/关
+   * 第一次开麦时获取麦克风，之后只启用/禁用轨道，不释放资源
+   */
+  private async applyMicState(enabled: boolean): Promise<void> {
     try {
       console.log('🎤 设置麦克风状态:', enabled ? '开启' : '关闭');
 
@@ -2356,46 +2402,52 @@ export class WebRTCClient {
         this.localStream = newStream;
         try { this.onLocalStreamCallback?.(newStream); } catch { /* ignore */ }
       } else {
+        // 先停止本地音轨（若有）
         if (this.localStream) {
           const audioTracks = this.localStream.getAudioTracks();
           console.log('正在停止并释放', audioTracks.length, '个音频轨道...');
-
           audioTracks.forEach((track, index) => {
             track.stop();
             console.log('轨道 ' + (index + 1) + ' 已停止并释放');
           });
-
-          for (const [peerId, pc] of this.peerConnections) {
-            if (pc.isNegotiating) {
-              console.log('⏳ 等待 ' + peerId + ' 的协商完成...');
-              let waitCount = 0;
-              while (pc.isNegotiating && waitCount < 30) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-                waitCount++;
-              }
-            }
-
-            const senders = pc.connection.getSenders();
-            const audioSender = senders.find(sender => sender.track?.kind === 'audio');
-
-            if (audioSender) {
-              await audioSender.replaceTrack(null);
-              console.log('✅ 已移除 peer ' + peerId + ' 的音频轨道');
-              await this.renegotiatePeer(peerId, pc);
-            }
-          }
-
-          this.localStream = null;
-          // 停止原始麦克风流并释放变声器
-          if (this.rawMicStream) {
-            this.rawMicStream.getTracks().forEach((t) => t.stop());
-            this.rawMicStream = null;
-          }
-          voiceChangerService.dispose();
-          try { this.onLocalStreamCallback?.(null); } catch { /* ignore */ }
-          console.log('✅ 麦克风已关闭，资源已释放');
         }
+
+        // 【关键】无论 localStream 是否存在，都必须清空每个 peer 上正在发送的音频轨道。
+        // 旧实现把这段放在 if (this.localStream) 内部，一旦状态出现漂移（localStream 已为空
+        // 但 sender 上仍挂着轨道），关麦就会「看起来成功、实际仍在传声」。
+        for (const [peerId, pc] of this.peerConnections) {
+          if (pc.isNegotiating) {
+            console.log('⏳ 等待 ' + peerId + ' 的协商完成...');
+            let waitCount = 0;
+            while (pc.isNegotiating && waitCount < 30) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              waitCount++;
+            }
+          }
+
+          const senders = pc.connection.getSenders();
+          const audioSender = senders.find(sender => sender.track?.kind === 'audio');
+
+          if (audioSender) {
+            await audioSender.replaceTrack(null);
+            console.log('✅ 已移除 peer ' + peerId + ' 的音频轨道');
+            await this.renegotiatePeer(peerId, pc);
+          }
+        }
+
+        this.localStream = null;
+        // 停止原始麦克风流并释放变声器
+        if (this.rawMicStream) {
+          this.rawMicStream.getTracks().forEach((t) => t.stop());
+          this.rawMicStream = null;
+        }
+        voiceChangerService.dispose();
+        try { this.onLocalStreamCallback?.(null); } catch { /* ignore */ }
+        console.log('✅ 麦克风已关闭，资源已释放');
       }
+
+      // 记录实际生效的状态，供收敛逻辑判断
+      this.micActuallyEnabled = enabled;
 
       await this.broadcastStatusUpdate(enabled);
       console.log('✅ 麦克风状态已更新并广播');
@@ -2856,8 +2908,13 @@ export class WebRTCClient {
       this.reconnectTimers.forEach(timer => clearTimeout(timer));
       this.reconnectTimers.clear();
       this.reconnectingPeers.clear();
+      this.manualReconnectingPeers.clear();
       this.knownPlayers.clear();
       this.playerDomains.clear();
+
+      // 复位麦克风期望/实际状态，避免残留状态影响下次进入大厅
+      this.desiredMicEnabled = false;
+      this.micActuallyEnabled = false;
       
       // 重置重连计数
       this.reconnectAttempts = 0;
