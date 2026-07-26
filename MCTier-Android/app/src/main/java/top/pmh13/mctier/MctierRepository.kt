@@ -535,6 +535,25 @@ class MctierRepository(private val context: Context) {
         _state.update { it.copy(speakerphoneOn = on) }
     }
 
+    /**
+     * 语音重连：只重建与指定玩家的语音链路，不影响大厅与其他人的语音。
+     *
+     * 适用于「联机与信令都正常，但听不到某一个人说话且长时间不恢复」的场景，
+     * 免去整个大厅退出重进。会先通知对端拆掉旧连接（双端同拆同建），
+     * 再由本机强制发起 Offer 完成重建。
+     */
+    fun reconnectPlayerVoice(targetId: String) {
+        val selfId = _state.value.playerId
+        if (targetId.isBlank() || targetId == selfId) return
+        // 通知对端拆除旧连接（旧版本客户端不识别该类型时会忽略，退化为单端重建）
+        signalingClient.send(SignalingEnvelope(type = "voice-reconnect", from = selfId, to = targetId))
+        // 给对端留出拆除时间后，由本机强制发起新的协商
+        scope.launch {
+            delay(300)
+            rtcController.reconnectPeer(targetId)
+        }
+    }
+
     /** 设置某玩家音量（0.0~1.0），并记忆到状态 */
     fun setPlayerVolume(playerId: String, volume: Float) {
         _state.update { it.copy(playerVolumes = it.playerVolumes + (playerId to volume)) }

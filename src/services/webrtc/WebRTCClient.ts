@@ -60,6 +60,8 @@ export class WebRTCClient {
   private isIntentionalDisconnect: boolean = false;
   private reconnectingPeers: Set<string> = new Set();
   private reconnectTimers: Map<string, number> = new Map();
+  /** 正在进行「手动语音重连」的玩家，用于防止重复点击并驱动 UI 的加载态 */
+  private manualReconnectingPeers: Set<string> = new Set();
   private knownPlayers: Set<string> = new Set();
   private pendingPlayerLeaveTimers: Map<string, number> = new Map();
   // 记录每个玩家的虚拟域名（playerId -> virtualDomain），
@@ -281,7 +283,7 @@ export class WebRTCClient {
               useDomain: this.useDomain,
               lobbyName: this.lobbyName,
               lobbyPassword: this.lobbyPassword,
-              clientVersion: '2.4.0',
+              clientVersion: '2.4.2',
             }));
             console.log('📤 已发送注册消息，玩家名称:', this.localPlayerName, '大厅:', this.lobbyName, '虚拟域名:', this.virtualDomain, '使用域名:', this.useDomain);
           }
@@ -806,6 +808,18 @@ export class WebRTCClient {
           // 收到 ICE 候选
           console.log(`🧊 收到 ICE Candidate from ${message.from}`);
           await this.handleWebSocketIceCandidate(message);
+          break;
+
+        case 'voice-reconnect':
+          // 对方点击了「语音重连」：这里只负责拆掉与他的旧连接（不移除玩家本身），
+          // 随后由对方作为发起方送来全新的 Offer 完成重建。
+          // 必须双端同时拆掉旧连接，否则一端沿用旧 PeerConnection 会因指纹/ufrag
+          // 不匹配而出现"连上了但没声音"。
+          if (message.from) {
+            console.log(`🔄 收到来自 ${message.from} 的语音重连请求，拆除旧连接等待重建`);
+            this.clearPeerReconnectState(message.from);
+            this.removePeerConnection(message.from);
+          }
           break;
           
         case 'status-update':
@@ -2699,6 +2713,65 @@ export class WebRTCClient {
   /** 踢出玩家（仅房主有效） */
   kickPlayer(targetId: string): boolean {
     return this.sendWebSocketMessage({ type: 'kick-player', from: this.localPlayerId, target: targetId });
+  }
+
+  /**
+   * 语音重连：只重建与指定玩家的语音链路，无需整个大厅退出重进。
+   *
+   * 适用场景：MC 联机与信令都正常，但与某一个人的语音单独失效（对方声音消失且长时间不恢复）。
+   *
+   * 实现要点：
+   * 1. 先通知对端拆掉他那一侧的旧连接（双端同拆同建），否则一端沿用旧 PeerConnection
+   *    会因指纹/ufrag 不匹配出现"看着已连接却没有声音"；
+   * 2. 清掉自动重连的定时器，避免与自动重连逻辑互相打断；
+   * 3. 以 forceInitiate=true 由点击方发起 Offer，绕过"ID 字典序较大者才发起"的规则，
+   *    确保点击的人一定能把连接建起来，也不会出现双方同时发 Offer 的冲突。
+   *
+   * @param peerId 目标玩家 ID
+   * @returns 是否成功启动重连流程
+   */
+  async reconnectPeerVoice(peerId: string): Promise<boolean> {
+    if (!peerId || peerId === this.localPlayerId) {
+      return false;
+    }
+
+    if (this.manualReconnectingPeers.has(peerId)) {
+      console.log(`⏳ 已在对 ${peerId} 进行语音重连，忽略重复请求`);
+      return false;
+    }
+
+    this.manualReconnectingPeers.add(peerId);
+    try {
+      console.log(`🔄 [语音重连] 开始重建与 ${peerId} 的语音连接`);
+
+      // 通知对方拆除旧连接（对端不识别该消息时会被忽略，此时退化为单端重建）
+      this.sendWebSocketMessage({
+        type: 'voice-reconnect',
+        from: this.localPlayerId,
+        to: peerId,
+      });
+
+      // 取消可能存在的自动重连调度，避免与手动重连冲突
+      this.clearPeerReconnectState(peerId);
+
+      // 给对端一点时间完成拆除，再发起新的 Offer
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      await this.handleReconnect(peerId, true);
+      console.log(`✅ [语音重连] 已向 ${peerId} 发起新的连接协商`);
+      return true;
+    } catch (error) {
+      console.error(`❌ [语音重连] 失败 (${peerId}):`, error);
+      return false;
+    } finally {
+      // 释放并发闸门，留出足够时间避免用户狂点
+      setTimeout(() => this.manualReconnectingPeers.delete(peerId), 3000);
+    }
+  }
+
+  /** 指定玩家当前是否正在进行手动语音重连 */
+  isManualReconnecting(peerId: string): boolean {
+    return this.manualReconnectingPeers.has(peerId);
   }
   /** 禁言/解除禁言玩家（仅房主有效） */
   setPlayerMuted(targetId: string, muted: boolean): boolean {

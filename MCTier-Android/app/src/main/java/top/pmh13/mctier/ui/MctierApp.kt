@@ -2214,6 +2214,12 @@ private fun PlayersTab(state: MctierUiState, repository: MctierRepository) {
                             repository.setPlayerVolume(player.id, if (muted) 1f else 0f)
                         }
                         Spacer(Modifier.width(6.dp))
+                        // 语音重连：只重建与该玩家的语音链路，无需整个大厅退出重进
+                        CircleIconButton(Icons.Rounded.Refresh, L("语音重连", "Reconnect voice")) {
+                            repository.reconnectPlayerVoice(player.id)
+                            android.widget.Toast.makeText(ctx, L("正在重连与 ${player.name} 的语音…", "Reconnecting voice with ${player.name}..."), android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        Spacer(Modifier.width(6.dp))
                         // 远程控制对方设备
                         CircleIconButton(Icons.Rounded.SettingsRemote, L("远程控制对方设备", "Remote control this device")) {
                             if (state.remoteControllingPeer != null || state.remoteControlActiveBy != null) {

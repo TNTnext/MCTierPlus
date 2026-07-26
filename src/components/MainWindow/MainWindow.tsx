@@ -17,7 +17,7 @@ import './MainWindow.css';
 const { Title, Paragraph } = Typography;
 
 // 软件版本号
-const APP_VERSION = '2.4.0';
+const APP_VERSION = '2.4.2';
 
 /**
  * 主窗口组件

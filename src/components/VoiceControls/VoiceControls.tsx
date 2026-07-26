@@ -27,11 +27,11 @@ export const VoiceControls: React.FC = () => {
   const [volume, setVolume] = useState(100); // 音量百分比 (0-100)
   const [volumeLoading, setVolumeLoading] = useState(true);
   
-  // 使用固定的快捷键提示
-  const micHotkey = 'Ctrl+M';
-  const globalMuteHotkey = 'Ctrl+T';
+  // 快捷键提示：读取用户在设置中自定义的键位（读取前先用默认值占位）
+  const [micHotkey, setMicHotkey] = useState('Ctrl+M');
+  const [globalMuteHotkey, setGlobalMuteHotkey] = useState('Ctrl+T');
 
-  // 加载音量设置
+  // 加载音量与快捷键设置
   useEffect(() => {
     const loadVolume = async () => {
       try {
@@ -40,6 +40,9 @@ export const VoiceControls: React.FC = () => {
         setVolume(Math.round(savedVolume * 100));
         // 应用音量到 WebRTC 客户端
         webrtcClient.setVolume(savedVolume);
+        // 同步快捷键提示，保证提示与用户实际配置一致
+        if (settings.micHotkey) setMicHotkey(settings.micHotkey);
+        if (settings.globalMuteHotkey) setGlobalMuteHotkey(settings.globalMuteHotkey);
       } catch (error) {
         console.error('加载音量设置失败:', error);
       } finally {

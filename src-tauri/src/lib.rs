@@ -277,6 +277,209 @@ fn set_tray_menu_texts(
     Ok(())
 }
 
+/// 用户可自定义的全局快捷键绑定
+#[derive(Clone, Debug)]
+pub struct HotkeyBindings {
+    /// 麦克风开关
+    pub mic: String,
+    /// 全局听筒（静音所有人）
+    pub global_mute: String,
+    /// 临时开麦（按住说话）
+    pub push_to_talk: String,
+    /// 唤出主窗口
+    pub summon: String,
+}
+
+impl Default for HotkeyBindings {
+    fn default() -> Self {
+        Self {
+            mic: "Ctrl+M".to_string(),
+            global_mute: "Ctrl+T".to_string(),
+            push_to_talk: "F2".to_string(),
+            summon: "Ctrl+Alt+M".to_string(),
+        }
+    }
+}
+
+/// 将界面录制的键位归一化为 Tauri 全局快捷键可识别的格式。
+///
+/// 前端 HotkeyInput 录制出的是 `Ctrl+Alt+M` / `F2` / `Shift+F1` 这类字符串，
+/// 而 Tauri 的 global_shortcut 需要 `CommandOrControl+Alt+M` 这种写法（跨平台修饰键）。
+/// 这里做统一转换，避免两套格式不一致导致注册失败。
+fn normalize_hotkey(raw: &str) -> String {
+    raw.split('+')
+        .map(|p| p.trim())
+        .filter(|p| !p.is_empty())
+        .map(|part| {
+            let lower = part.to_lowercase();
+            match lower.as_str() {
+                "ctrl" | "control" | "commandorcontrol" | "cmdorctrl" => "CommandOrControl".to_string(),
+                "alt" | "option" => "Alt".to_string(),
+                "shift" => "Shift".to_string(),
+                "meta" | "cmd" | "command" | "super" | "win" => "Super".to_string(),
+                // 其余为主键：单字符统一大写，功能键（F1/F2…）与命名键保持原样
+                _ => {
+                    if part.chars().count() == 1 {
+                        part.to_uppercase()
+                    } else {
+                        part.to_string()
+                    }
+                }
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("+")
+}
+
+/// 注册（或重新注册）全部全局快捷键。
+///
+/// 可重复调用：内部会先注销此前注册的全部快捷键，因此用户在设置中改完键位后
+/// 无需重启应用即可立即生效。任一快捷键注册失败只记录日志，不影响其它快捷键。
+fn register_global_hotkeys(
+    app: &tauri::AppHandle,
+    core: Arc<Mutex<modules::app_core::AppCore>>,
+    bindings: &HotkeyBindings,
+) {
+    // 先清空旧注册，实现"改完即生效"
+    if let Err(e) = app.global_shortcut().unregister_all() {
+        log::warn!("注销旧全局快捷键失败（忽略）: {}", e);
+    }
+
+    let mic_hotkey = normalize_hotkey(&bindings.mic);
+    let global_mute_hotkey = normalize_hotkey(&bindings.global_mute);
+    let push_to_talk_hotkey = normalize_hotkey(&bindings.push_to_talk);
+    let summon_hotkey = normalize_hotkey(&bindings.summon);
+
+    info!(
+        "注册全局快捷键: 麦克风={}, 全局听筒={}, 临时开麦={}, 唤出窗口={}",
+        mic_hotkey, global_mute_hotkey, push_to_talk_hotkey, summon_hotkey
+    );
+
+    // ===== 唤出主窗口 =====
+    if !summon_hotkey.is_empty() {
+        let hs = app.clone();
+        if let Err(e) = app.global_shortcut().on_shortcut(summon_hotkey.as_str(), move |_, _, ev| {
+            if ev.state == tauri_plugin_global_shortcut::ShortcutState::Released { return; }
+            restore_main_window(&hs);
+        }) {
+            error!("唤出窗口快捷键 {} 注册失败: {}", summon_hotkey, e);
+        }
+    }
+
+    let ltm = Arc::new(Mutex::new(std::time::Instant::now() - std::time::Duration::from_millis(500)));
+    let ltt = Arc::new(Mutex::new(std::time::Instant::now() - std::time::Duration::from_millis(500)));
+    let ltf = Arc::new(Mutex::new((false, false))); // (is_pressed, original_mic_state)
+
+    // ===== 麦克风开关 =====
+    if !mic_hotkey.is_empty() {
+        let cm = Arc::clone(&core); let hm = app.clone(); let lm = Arc::clone(&ltm);
+        if let Err(e) = app.global_shortcut().on_shortcut(mic_hotkey.as_str(), move |_, _, ev| {
+            if ev.state == tauri_plugin_global_shortcut::ShortcutState::Released { return; }
+            let mut lt = match lm.try_lock() { Ok(g) => g, Err(_) => return };
+            let now = std::time::Instant::now();
+            if now.duration_since(*lt) < std::time::Duration::from_millis(200) { return; }
+            *lt = now; drop(lt);
+            let c = Arc::clone(&cm); let h = hm.clone();
+            tauri::async_runtime::spawn(async move {
+                match c.lock().await.toggle_mic().await {
+                    Ok(s) => { let _ = h.emit("mic-toggled", s); }
+                    Err(e) => { error!("切换麦克风失败: {}", e); }
+                }
+            });
+        }) {
+            error!("麦克风快捷键 {} 注册失败: {}", mic_hotkey, e);
+        }
+    }
+
+    // ===== 全局听筒 =====
+    if !global_mute_hotkey.is_empty() {
+        let ct = Arc::clone(&core); let ht = app.clone(); let lt2 = Arc::clone(&ltt);
+        if let Err(e) = app.global_shortcut().on_shortcut(global_mute_hotkey.as_str(), move |_, _, ev| {
+            if ev.state == tauri_plugin_global_shortcut::ShortcutState::Released { return; }
+            let mut lt = match lt2.try_lock() { Ok(g) => g, Err(_) => return };
+            let now = std::time::Instant::now();
+            if now.duration_since(*lt) < std::time::Duration::from_millis(200) { return; }
+            *lt = now; drop(lt);
+            let c = Arc::clone(&ct); let h = ht.clone();
+            tauri::async_runtime::spawn(async move {
+                let vs = c.lock().await.get_voice_service();
+                let v = vs.lock().await;
+                let ns = !v.is_global_muted();
+                match v.mute_all(ns).await {
+                    Ok(_) => { let _ = h.emit("global-mute-toggled", ns); }
+                    Err(e) => { error!("切换静音失败: {}", e); }
+                }
+            });
+        }) {
+            error!("全局听筒快捷键 {} 注册失败: {}", global_mute_hotkey, e);
+        }
+    }
+
+    // ===== 临时开麦（按住说话）=====
+    if !push_to_talk_hotkey.is_empty() {
+        let cf = Arc::clone(&core); let hf = app.clone(); let ltf2 = Arc::clone(&ltf);
+        if let Err(e) = app.global_shortcut().on_shortcut(push_to_talk_hotkey.as_str(), move |_, _, ev| {
+            let c = Arc::clone(&cf); let h = hf.clone(); let lf = Arc::clone(&ltf2);
+            tauri::async_runtime::spawn(async move {
+                let mut state = match lf.try_lock() { Ok(g) => g, Err(_) => return };
+
+                if ev.state == tauri_plugin_global_shortcut::ShortcutState::Pressed {
+                    if state.0 { return; } // 已按下，防重复触发
+                    state.0 = true;
+                    let current_mic_state = c.lock().await.get_voice_service().lock().await.is_mic_enabled();
+                    state.1 = current_mic_state;
+                    drop(state);
+                    if !current_mic_state {
+                        info!("临时开麦：开启麦克风");
+                        match c.lock().await.toggle_mic().await {
+                            Ok(s) => { let _ = h.emit("mic-toggled", s); }
+                            Err(e) => { error!("临时开麦开启失败: {}", e); }
+                        }
+                    }
+                } else if ev.state == tauri_plugin_global_shortcut::ShortcutState::Released {
+                    if !state.0 { return; }
+                    let original_state = state.1;
+                    state.0 = false;
+                    drop(state);
+                    if !original_state {
+                        info!("临时开麦：恢复麦克风状态");
+                        match c.lock().await.toggle_mic().await {
+                            Ok(s) => { let _ = h.emit("mic-toggled", s); }
+                            Err(e) => { error!("临时开麦恢复失败: {}", e); }
+                        }
+                    }
+                }
+            });
+        }) {
+            error!("临时开麦快捷键 {} 注册失败: {}", push_to_talk_hotkey, e);
+        }
+    }
+}
+
+/// 应用最新的快捷键设置（供前端在设置中改完键位后调用，立即生效、无需重启）
+#[tauri::command]
+async fn apply_hotkeys(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    let core = Arc::clone(&state.core);
+    let bindings = {
+        let cl = core.lock().await;
+        let cfg_mgr = cl.get_config_manager();
+        let mgr = cfg_mgr.lock().await;
+        let cfg = mgr.get_config();
+        let d = HotkeyBindings::default();
+        HotkeyBindings {
+            mic: cfg.mic_hotkey.clone().unwrap_or(d.mic),
+            global_mute: cfg.global_mute_hotkey.clone().unwrap_or(d.global_mute),
+            push_to_talk: cfg.push_to_talk_hotkey.clone().unwrap_or(d.push_to_talk),
+            summon: cfg.summon_hotkey.clone().unwrap_or(d.summon),
+        }
+    };
+    register_global_hotkeys(&app, core, &bindings);
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // 在应用启动时检查并应用 GPU 设置
@@ -374,6 +577,7 @@ pub fn run() {
             start_mc_lan_broadcast, stop_mc_lan_broadcast,
             set_tray_menu_texts,
             remote_inject_input,
+            apply_hotkeys,
         ])
         .setup(|app| {
             info!("Tauri 应用设置完成");
@@ -438,129 +642,22 @@ pub fn run() {
                 println!("✅ [Setup] 成功获取 AppState");
                 let core_hk = Arc::clone(&state.core);
                 
-                // 使用固定的快捷键（不再从配置文件读取）
-                let mic_hotkey = "CommandOrControl+M";
-                let global_mute_hotkey = "CommandOrControl+T";
-                let push_to_talk_hotkey = "F2";
-                let summon_hotkey = "CommandOrControl+Alt+M";
-                
-                info!("注册固定快捷键: 麦克风=Ctrl+M, 全局静音=Ctrl+T, 临时开麦=F2, 唤出窗口=Ctrl+Alt+M");
-                println!("🔑 [快捷键] 注册固定快捷键: 麦克风=Ctrl+M, 全局静音=Ctrl+T, 临时开麦=F2, 唤出窗口=Ctrl+Alt+M");
-
-                // 注册「唤出窗口」快捷键：作为 Win+D/任务栏最小化后无法唤出的可靠兜底
-                let hs = app_handle.clone();
-                if let Err(e) = app.global_shortcut().on_shortcut(summon_hotkey, move |_, _, ev| {
-                    if ev.state == tauri_plugin_global_shortcut::ShortcutState::Released { return; }
-                    restore_main_window(&hs);
-                }) {
-                    println!("⚠️ [快捷键] 注册唤出窗口快捷键失败: {}", e);
-                }
-                
-                let ltm = Arc::new(Mutex::new(std::time::Instant::now() - std::time::Duration::from_millis(500)));
-                let ltt = Arc::new(Mutex::new(std::time::Instant::now() - std::time::Duration::from_millis(500)));
-                let ltf = Arc::new(Mutex::new((false, false))); // (is_pressed, original_mic_state)
-                
-                // 注册麦克风快捷键
-                let cm = Arc::clone(&core_hk); let hm = app_handle.clone(); let lm = Arc::clone(&ltm);
-                if let Err(e) = app.global_shortcut().on_shortcut(mic_hotkey, move |_,_,ev| {
-                    if ev.state == tauri_plugin_global_shortcut::ShortcutState::Released { return; }
-                    let mut lt = match lm.try_lock() { Ok(g) => g, Err(_) => return };
-                    let now = std::time::Instant::now();
-                    if now.duration_since(*lt) < std::time::Duration::from_millis(200) { return; }
-                    *lt = now; drop(lt);
-                    let c = Arc::clone(&cm); let h = hm.clone();
-                    tauri::async_runtime::spawn(async move {
-                        match c.lock().await.toggle_mic().await {
-                            Ok(s) => { let _ = h.emit("mic-toggled", s); }
-                            Err(e) => { error!("切换麦克风失败: {}", e); }
-                        }
-                    });
-                }) { 
-                    error!("麦克风快捷键 Ctrl+M 注册失败: {}", e);
-                    println!("❌ [快捷键] 麦克风快捷键 Ctrl+M 注册失败: {}", e);
-                } else { 
-                    info!("麦克风快捷键 Ctrl+M 注册成功");
-                    println!("✅ [快捷键] 麦克风快捷键 Ctrl+M 注册成功");
-                }
-                
-                // 注册全局静音快捷键
-                let ct = Arc::clone(&core_hk); let ht = app_handle.clone(); let lt2 = Arc::clone(&ltt);
-                if let Err(e) = app.global_shortcut().on_shortcut(global_mute_hotkey, move |_,_,ev| {
-                    if ev.state == tauri_plugin_global_shortcut::ShortcutState::Released { return; }
-                    let mut lt = match lt2.try_lock() { Ok(g) => g, Err(_) => return };
-                    let now = std::time::Instant::now();
-                    if now.duration_since(*lt) < std::time::Duration::from_millis(200) { return; }
-                    *lt = now; drop(lt);
-                    let c = Arc::clone(&ct); let h = ht.clone();
-                    tauri::async_runtime::spawn(async move {
-                        let vs = c.lock().await.get_voice_service();
-                        let v = vs.lock().await;
-                        let ns = !v.is_global_muted();
-                        match v.mute_all(ns).await {
-                            Ok(_) => { let _ = h.emit("global-mute-toggled", ns); }
-                            Err(e) => { error!("切换静音失败: {}", e); }
-                        }
-                    });
-                }) { 
-                    error!("全局静音快捷键 Ctrl+T 注册失败: {}", e);
-                    println!("❌ [快捷键] 全局静音快捷键 Ctrl+T 注册失败: {}", e);
-                } else { 
-                    info!("全局静音快捷键 Ctrl+T 注册成功");
-                    println!("✅ [快捷键] 全局静音快捷键 Ctrl+T 注册成功");
-                }
-                
-                // 注册 F2 临时开麦快捷键（按下开麦，松开闭麦）
-                let cf = Arc::clone(&core_hk); let hf = app_handle.clone(); let ltf2 = Arc::clone(&ltf);
-                if let Err(e) = app.global_shortcut().on_shortcut(push_to_talk_hotkey, move |_,_,ev| {
-                    let c = Arc::clone(&cf); let h = hf.clone(); let lf = Arc::clone(&ltf2);
-                    tauri::async_runtime::spawn(async move {
-                        let mut state = match lf.try_lock() {
-                            Ok(g) => g,
-                            Err(_) => return,
-                        };
-                        
-                        if ev.state == tauri_plugin_global_shortcut::ShortcutState::Pressed {
-                            // 按下 F2
-                            if state.0 { return; } // 已经按下，防止重复触发
-                            state.0 = true;
-                            
-                            // 获取当前麦克风状态
-                            let current_mic_state = c.lock().await.get_voice_service().lock().await.is_mic_enabled();
-                            state.1 = current_mic_state;
-                            drop(state);
-                            
-                            // 如果麦克风是关闭的，则开启
-                            if !current_mic_state {
-                                info!("F2 临时开麦：开启麦克风");
-                                match c.lock().await.toggle_mic().await {
-                                    Ok(s) => { let _ = h.emit("mic-toggled", s); }
-                                    Err(e) => { error!("F2 开启麦克风失败: {}", e); }
-                                }
-                            }
-                        } else if ev.state == tauri_plugin_global_shortcut::ShortcutState::Released {
-                            // 松开 F2
-                            if !state.0 { return; } // 没有按下过，忽略
-                            let original_state = state.1;
-                            state.0 = false;
-                            drop(state);
-                            
-                            // 如果原来麦克风是关闭的，则恢复关闭状态
-                            if !original_state {
-                                info!("F2 临时开麦：恢复麦克风状态");
-                                match c.lock().await.toggle_mic().await {
-                                    Ok(s) => { let _ = h.emit("mic-toggled", s); }
-                                    Err(e) => { error!("F2 恢复麦克风状态失败: {}", e); }
-                                }
-                            }
-                        }
-                    });
-                }) { 
-                    error!("F2 临时开麦快捷键注册失败: {}", e);
-                    println!("❌ [快捷键] F2 临时开麦快捷键注册失败: {}", e);
-                } else { 
-                    info!("F2 临时开麦快捷键注册成功");
-                    println!("✅ [快捷键] F2 临时开麦快捷键注册成功");
-                }
+                // 从用户配置读取自定义快捷键（缺省回落到默认键位），并完成注册。
+                // 用户在设置中修改后，前端会调用 apply_hotkeys 命令重新注册，无需重启。
+                let bindings = tauri::async_runtime::block_on(async {
+                    let cl = core_hk.lock().await;
+                    let cfg_mgr = cl.get_config_manager();
+                    let mgr = cfg_mgr.lock().await;
+                    let cfg = mgr.get_config();
+                    let d = HotkeyBindings::default();
+                    HotkeyBindings {
+                        mic: cfg.mic_hotkey.clone().unwrap_or(d.mic),
+                        global_mute: cfg.global_mute_hotkey.clone().unwrap_or(d.global_mute),
+                        push_to_talk: cfg.push_to_talk_hotkey.clone().unwrap_or(d.push_to_talk),
+                        summon: cfg.summon_hotkey.clone().unwrap_or(d.summon),
+                    }
+                });
+                register_global_hotkeys(&app_handle, Arc::clone(&core_hk), &bindings);
             } else {
                 println!("❌ [Setup] 无法获取 AppState，快捷键注册失败");
                 error!("无法获取 AppState，快捷键注册失败");

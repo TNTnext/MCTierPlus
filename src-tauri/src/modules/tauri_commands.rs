@@ -4005,6 +4005,7 @@ pub async fn save_settings(
     mic_hotkey: Option<String>,
     global_mute_hotkey: Option<String>,
     push_to_talk_hotkey: Option<String>,
+    summon_hotkey: Option<String>,
     enable_exit_node: Option<bool>,
     enable_as_exit_node: Option<bool>,
     proxy_cidrs: Option<String>,
@@ -4112,6 +4113,9 @@ pub async fn save_settings(
             }
             if let Some(hotkey) = push_to_talk_hotkey {
                 config.push_to_talk_hotkey = Some(hotkey);
+            }
+            if let Some(hotkey) = summon_hotkey {
+                config.summon_hotkey = Some(hotkey);
             }
             // 保存出口节点配置
             if let Some(enable) = enable_exit_node {
@@ -4276,6 +4280,7 @@ pub async fn get_settings(state: State<'_, AppState>) -> Result<serde_json::Valu
         "micHotkey": config.mic_hotkey.clone().unwrap_or_else(|| "Ctrl+M".to_string()),
         "globalMuteHotkey": config.global_mute_hotkey.clone().unwrap_or_else(|| "Ctrl+T".to_string()),
         "pushToTalkHotkey": config.push_to_talk_hotkey.clone().unwrap_or_else(|| "F2".to_string()),
+        "summonHotkey": config.summon_hotkey.clone().unwrap_or_else(|| "Ctrl+Alt+M".to_string()),
         "enableExitNode": exit_node_config.enable_exit_node,
         "enableAsExitNode": exit_node_config.enable_as_exit_node,
         // 将 Vec<String> 转换为换行分隔的字符串

@@ -264,6 +264,43 @@ class AndroidRtcController(private val context: Context) {
         remoteIds.forEach { connectToPlayer(it) }
     }
 
+    /**
+     * 语音重连：只重建与指定玩家的语音链路，不影响大厅与其他人的语音。
+     *
+     * 用于「联机与信令都正常，但听不到某一个人说话且长时间不恢复」的情况。
+     * 与 [connectToPlayer] 的区别：
+     * - 先销毁本地旧 PeerConnection（不等自动重连）；
+     * - 无视「ID 字典序较大者才发起」的规则，由点击方强制发起 Offer，
+     *   保证点击的人一定能把连接重新建起来。
+     *
+     * 注意：调用方需同时向对端发送 voice-reconnect 信令，让对端也拆掉旧连接，
+     * 否则一端沿用旧连接会因指纹/ufrag 不匹配出现「已连接却没有声音」。
+     */
+    fun reconnectPeer(remotePlayerId: String) {
+        if (remotePlayerId == localPlayerId) return
+        Log.i(TAG, "语音重连[$remotePlayerId]：销毁旧连接并强制发起 Offer")
+        removePeer(remotePlayerId)
+        forceOffer(remotePlayerId)
+    }
+
+    /** 强制向指定玩家发起 Offer（不受字典序限制，供语音重连使用） */
+    private fun forceOffer(remotePlayerId: String) {
+        val pc = ensurePeer(remotePlayerId) ?: return
+        pc.createOffer(object : SimpleSdpObserver() {
+            override fun onCreateSuccess(desc: SessionDescription) {
+                pc.setLocalDescription(SimpleSdpObserver(), desc)
+                sendSignal?.invoke(
+                    SignalingEnvelope(
+                        type = "offer",
+                        from = localPlayerId,
+                        to = remotePlayerId,
+                        offer = SdpPayload(desc.type.canonicalForm(), desc.description),
+                    ),
+                )
+            }
+        }, MediaConstraints())
+    }
+
     fun ensurePeer(remotePlayerId: String): PeerConnection? {
         peerConnections[remotePlayerId]?.let { return it }
         // 同一 EasyTier 虚拟子网内靠 host 候选即可直连；仅保留可达的国内 STUN 兜底，
@@ -342,6 +379,13 @@ class AndroidRtcController(private val context: Context) {
             "answer" -> handleAnswer(message)
             "ice-candidate" -> handleIce(message)
             "player-left" -> message.playerId?.let(::removePeer)
+            // 对方点击了「语音重连」：只拆掉与他的旧连接（不移除玩家本身），
+            // 随后由对方作为发起方送来全新的 Offer 完成重建。双端同拆同建，
+            // 避免一端沿用旧连接导致「已连接却没有声音」。
+            "voice-reconnect" -> message.from?.let {
+                Log.i(TAG, "收到来自 $it 的语音重连请求，拆除旧连接等待重建")
+                removePeer(it)
+            }
         }
     }
 

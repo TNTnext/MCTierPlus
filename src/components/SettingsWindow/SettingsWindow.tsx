@@ -12,7 +12,43 @@ import { audioService, type SoundType } from '../../services/audio/AudioService'
 import { DanmakuSettings } from '../Danmaku/DanmakuSettings';
 import { GameHudSettings } from '../GameHud/GameHudSettings';
 import { VoiceChangerPicker } from '../VoiceChanger/VoiceChangerPicker';
+import { HotkeyInput } from '../HotkeyInput/HotkeyInput';
 import './SettingsWindow.css';
+
+/** 可自定义的全局快捷键项 */
+type HotkeyKey = 'micHotkey' | 'globalMuteHotkey' | 'pushToTalkHotkey' | 'summonHotkey';
+
+/** 各快捷键的默认键位（与后端 UserConfig 默认值保持一致） */
+const DEFAULT_HOTKEYS: Record<HotkeyKey, string> = {
+  micHotkey: 'Ctrl+M',
+  globalMuteHotkey: 'Ctrl+T',
+  pushToTalkHotkey: 'F2',
+  summonHotkey: 'Ctrl+Alt+M',
+};
+
+/** 快捷键设置项的展示信息（中英双语） */
+const HOTKEY_ITEMS: Array<{ key: HotkeyKey; zh: string; en: string; zhDesc: string; enDesc: string }> = [
+  {
+    key: 'micHotkey',
+    zh: '麦克风开关', en: 'Toggle Microphone',
+    zhDesc: '一键开启或关闭自己的麦克风', enDesc: 'Turn your microphone on or off',
+  },
+  {
+    key: 'globalMuteHotkey',
+    zh: '全局听筒开关', en: 'Toggle Speaker',
+    zhDesc: '一键静音或恢复所有人的语音', enDesc: 'Mute or unmute everyone at once',
+  },
+  {
+    key: 'pushToTalkHotkey',
+    zh: '临时开麦', en: 'Push to Talk',
+    zhDesc: '按住时开麦，松开后自动恢复原状态', enDesc: 'Mic opens while held, restores when released',
+  },
+  {
+    key: 'summonHotkey',
+    zh: '唤出主窗口', en: 'Summon Main Window',
+    zhDesc: '从系统托盘或最小化状态把窗口唤回最前', enDesc: 'Bring the window back to front from tray or minimized state',
+  },
+];
 
 export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [form] = Form.useForm();
@@ -26,6 +62,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const [closeToTray, setCloseToTray] = useState(false);
   const [startMinimized, setStartMinimized] = useState(false);
   const [enableGpuRendering, setEnableGpuRendering] = useState(true);
+  // 全局快捷键：用户可自定义，改完立即重新注册生效
+  const [hotkeys, setHotkeys] = useState<Record<HotkeyKey, string>>({ ...DEFAULT_HOTKEYS });
   const [showRestartModal, setShowRestartModal] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const { t } = useTranslation();
@@ -70,6 +108,14 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       setCloseToTray(ctt);
       setStartMinimized(sm);
       setEnableGpuRendering(egr);
+      // 读取自定义快捷键（后端缺省会回落到默认键位）
+      const hk: Record<HotkeyKey, string> = {
+        micHotkey: settings.micHotkey ?? DEFAULT_HOTKEYS.micHotkey,
+        globalMuteHotkey: settings.globalMuteHotkey ?? DEFAULT_HOTKEYS.globalMuteHotkey,
+        pushToTalkHotkey: settings.pushToTalkHotkey ?? DEFAULT_HOTKEYS.pushToTalkHotkey,
+        summonHotkey: settings.summonHotkey ?? DEFAULT_HOTKEYS.summonHotkey,
+      };
+      setHotkeys(hk);
       settingsRef.current = {
         autoStartup: as_,
         autoLobbyEnabled: al,
@@ -86,6 +132,7 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
         closeToTray: ctt,
         startMinimized: sm,
         enableGpuRendering: egr,
+        ...hk,
         // 出口节点配置
         enableExitNode: settings.enableExitNode || false,
         enableAsExitNode: settings.enableAsExitNode || false,
@@ -118,6 +165,7 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
         closeToTray: false,
         startMinimized: false,
         enableGpuRendering: true,
+        ...DEFAULT_HOTKEYS,
         enableExitNode: false,
         enableAsExitNode: false,
         proxyCidrs: '',
@@ -134,6 +182,7 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       setCloseToTray(false);
       setStartMinimized(false);
       setEnableGpuRendering(true);
+      setHotkeys({ ...DEFAULT_HOTKEYS });
       settingsRef.current = defaultSettings;
       form.setFieldsValue(defaultSettings);
     } finally {
@@ -190,6 +239,11 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
         closeToTray: merged.closeToTray !== undefined ? merged.closeToTray : false,
         startMinimized: merged.startMinimized !== undefined ? merged.startMinimized : false,
         enableGpuRendering: merged.enableGpuRendering !== undefined ? merged.enableGpuRendering : true,
+        // 自定义快捷键（空字符串表示禁用该快捷键，需原样传递而非转 null）
+        micHotkey: merged.micHotkey ?? null,
+        globalMuteHotkey: merged.globalMuteHotkey ?? null,
+        pushToTalkHotkey: merged.pushToTalkHotkey ?? null,
+        summonHotkey: merged.summonHotkey ?? null,
         // 出口节点配置
         enableExitNode: merged.enableExitNode !== undefined ? merged.enableExitNode : null,
         enableAsExitNode: merged.enableAsExitNode !== undefined ? merged.enableAsExitNode : null,
@@ -204,6 +258,54 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       message.error(tl('保存失败', 'Save failed'));
     }
   }, [form]);
+
+  /**
+   * 修改某个快捷键：先校验与其它快捷键是否冲突，保存后立即让后端重新注册，
+   * 使新键位无需重启即可生效。
+   */
+  const handleHotkeyChange = useCallback(async (key: HotkeyKey, value: string) => {
+    const normalized = value.trim();
+    // 冲突校验：不允许与其它已配置的快捷键重复（留空表示禁用，不参与校验）
+    if (normalized) {
+      const conflict = HOTKEY_ITEMS.find(
+        (it) => it.key !== key && (hotkeys[it.key] || '').toLowerCase() === normalized.toLowerCase()
+      );
+      if (conflict) {
+        message.error(
+          tl(`快捷键 ${normalized} 已被「${conflict.zh}」占用，请换一个`,
+             `Hotkey ${normalized} is already used by "${conflict.en}", please choose another`)
+        );
+        return;
+      }
+    }
+
+    const next = { ...hotkeys, [key]: normalized };
+    setHotkeys(next);
+    form.setFieldValue(key, normalized);
+    await saveAll({ [key]: normalized });
+
+    // 通知后端按最新配置重新注册全局快捷键
+    try {
+      await invoke('apply_hotkeys');
+    } catch (e) {
+      console.error('应用快捷键失败:', e);
+      message.error(tl('快捷键已保存，但注册失败（可能与其它软件冲突）', 'Hotkey saved, but registration failed (it may conflict with another app)'));
+    }
+  }, [hotkeys, form, saveAll]);
+
+  /** 把所有快捷键恢复为默认键位 */
+  const handleResetHotkeys = useCallback(async () => {
+    setHotkeys({ ...DEFAULT_HOTKEYS });
+    Object.entries(DEFAULT_HOTKEYS).forEach(([k, v]) => form.setFieldValue(k, v));
+    await saveAll({ ...DEFAULT_HOTKEYS });
+    try {
+      await invoke('apply_hotkeys');
+      message.success(tl('已恢复默认快捷键', 'Default hotkeys restored'));
+    } catch (e) {
+      console.error('应用快捷键失败:', e);
+      message.error(tl('恢复默认后注册失败', 'Registration failed after restoring defaults'));
+    }
+  }, [form, saveAll]);
 
   const handleAutoStartupChange = async (v: boolean) => {
     setAutoStartup(v);
@@ -557,6 +659,44 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
                 {tl('配置 EasyTier 的高级参数，这些配置将作为默认配置应用于所有大厅', 'Configure EasyTier advanced parameters; these apply as defaults to all lobbies')}
               </div>
               <GlobalAdvancedConfigPanel />
+            </motion.div>
+
+            <motion.div className="settings-card" variants={itemVariants}>
+              <div className="settings-card-header">
+                <div className="settings-card-icon settings-card-icon-yellow">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 5H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zm-1 2H5v-2h2v2zm0-3H5V8h2v2zm9 7H8v-2h8v2zm0-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/>
+                  </svg>
+                </div>
+                <span className="settings-card-title">{tl('全局快捷键', 'Global Hotkeys')}</span>
+              </div>
+              <div className="settings-card-desc">
+                {tl('点击输入框后按下你想要的组合键即可录制，修改后立即生效，无需重启。留空表示禁用该快捷键。', 'Click a field and press your desired key combination to record it. Changes take effect immediately without restarting. Leave empty to disable a hotkey.')}
+              </div>
+              {HOTKEY_ITEMS.map((item) => (
+                <div className="settings-toggle-row" key={item.key}>
+                  <div className="settings-toggle-info">
+                    <span className="settings-toggle-label">{tl(item.zh, item.en)}</span>
+                    <span className="settings-toggle-desc">{tl(item.zhDesc, item.enDesc)}</span>
+                  </div>
+                  <div style={{ width: 150, flexShrink: 0 }}>
+                    <HotkeyInput
+                      value={hotkeys[item.key]}
+                      onChange={(v) => { void handleHotkeyChange(item.key, v); }}
+                      placeholder={tl('点击录制', 'Click to record')}
+                    />
+                  </div>
+                </div>
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16, marginBottom: 6 }}>
+                <button
+                  type="button"
+                  className="settings-action-btn settings-action-btn-reset"
+                  onClick={() => { void handleResetHotkeys(); }}
+                >
+                  {tl('恢复默认快捷键', 'Restore Defaults')}
+                </button>
+              </div>
             </motion.div>
 
             <motion.div className="settings-card" variants={itemVariants}>

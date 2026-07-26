@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from 'antd';
+import { tl } from '../../i18n';
 import './HotkeyInput.css';
 
 interface HotkeyInputProps {
@@ -16,7 +17,7 @@ interface HotkeyInputProps {
 export const HotkeyInput: React.FC<HotkeyInputProps> = ({
   value = '',
   onChange,
-  placeholder = '点击录制快捷键',
+  placeholder = tl('点击录制快捷键', 'Click to record hotkey'),
   disabled = false,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -78,7 +79,7 @@ export const HotkeyInput: React.FC<HotkeyInputProps> = ({
   const handleFocus = () => {
     if (disabled) return;
     setIsRecording(true);
-    setDisplayValue('按下快捷键...');
+    setDisplayValue(tl('按下快捷键...', 'Press keys...'));
   };
 
   // 处理失焦

@@ -345,12 +345,14 @@ pub struct UserConfig {
     pub player_name: Option<String>,
     /// 首选服务器节点
     pub preferred_server: Option<String>,
-    /// 麦克风快捷键
+    /// 麦克风开关快捷键
     pub mic_hotkey: Option<String>,
     /// 全局听筒快捷键
     pub global_mute_hotkey: Option<String>,
-    /// F2临时开麦快捷键
+    /// 临时开麦（按住说话）快捷键
     pub push_to_talk_hotkey: Option<String>,
+    /// 唤出主窗口快捷键（从系统托盘/最小化状态唤回）
+    pub summon_hotkey: Option<String>,
     /// 状态窗口位置
     pub window_position: Option<WindowPosition>,
     /// 音频设备 ID
@@ -397,6 +399,7 @@ impl Default for UserConfig {
             mic_hotkey: Some("Ctrl+M".to_string()),
             global_mute_hotkey: Some("Ctrl+T".to_string()),
             push_to_talk_hotkey: Some("F2".to_string()),
+            summon_hotkey: Some("Ctrl+Alt+M".to_string()),
             window_position: Some(WindowPosition::default()),
             audio_device_id: None,
             opacity: Some(0.95),

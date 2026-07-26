@@ -256,26 +256,19 @@ function App() {
     };
   }, []);
 
-  // 全局快捷键：Shift+F1 打开日志文件
+  // 开发调试用快捷键：Shift+F1 打开日志文件（内部使用，不对外暴露、不提供自定义）
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      // 检测 Shift+F1
-      if (e.shiftKey && e.key === 'F1') {
-        e.preventDefault();
-        console.log('🔑 检测到 Shift+F1 快捷键，打开日志文件...');
-        
-        try {
-          await invoke('open_log_file');
-          console.log('✅ 日志文件已打开');
-        } catch (error) {
-          console.error('❌ 打开日志文件失败:', error);
-        }
+      if (!(e.shiftKey && e.key === 'F1')) return;
+      e.preventDefault();
+      try {
+        await invoke('open_log_file');
+      } catch (error) {
+        console.error('❌ 打开日志文件失败:', error);
       }
     };
 
-    // 在document上监听键盘事件
     document.addEventListener('keydown', handleKeyDown);
-
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { invoke } from '@tauri-apps/api/core';
 import { Modal, Spin, Tooltip, App as AntdApp } from 'antd';import { open } from '@tauri-apps/plugin-shell';
@@ -328,6 +328,11 @@ export const MiniWindow: React.FC = () => {
   const [peerConnTypes, setPeerConnTypes] = useState<Record<string, string>>({}); // 虚拟IP -> p2p/relay // 各玩家虚拟IP->延迟ms
   const [isRejoining, setIsRejoining] = useState(false); // 控制重新加入大厅的加载提示
   const [favPlayers, setFavPlayers] = useState<string[]>(() => recentService.getFavoritePlayers()); // 收藏队友
+  // 语音按钮提示中显示的快捷键：读取用户自定义键位，保证提示与实际配置一致
+  const [micHotkeyLabel, setMicHotkeyLabel] = useState('Ctrl+M');
+  const [muteHotkeyLabel, setMuteHotkeyLabel] = useState('Ctrl+T');
+  // 正在语音重连的玩家（用于按钮加载态与防重复点击）
+  const [reconnectingVoicePeers, setReconnectingVoicePeers] = useState<Set<string>>(new Set());
   const qrCanvasRef = React.useRef<HTMLCanvasElement>(null); // 弹窗内二维码画布
 
   // 弹窗打开时把二维码（含圆角 Logo）渲染到画布
@@ -444,6 +449,50 @@ export const MiniWindow: React.FC = () => {
   }, []); // 只在组件挂载时执行一次
 
   // 进入大厅：按配置开启弹幕覆盖窗；离开大厅：关闭弹幕窗
+  /**
+   * 语音重连：只重建与该玩家的语音链路，不影响大厅与其他人的语音。
+   * 用于「MC 联机正常，但听不到某一个人说话且长时间不恢复」的情况。
+   */
+  const handleReconnectVoice = useCallback(async (playerId: string, playerName: string) => {
+    if (reconnectingVoicePeers.has(playerId)) return;
+
+    setReconnectingVoicePeers(prev => new Set(prev).add(playerId));
+    try {
+      const ok = await webrtcClient.reconnectPeerVoice(playerId);
+      if (ok) {
+        message.success(tl(`正在重连与 ${playerName} 的语音…`, `Reconnecting voice with ${playerName}...`));
+      } else {
+        message.warning(tl('语音重连正在进行中，请稍候', 'A voice reconnect is already in progress'));
+      }
+    } catch (e) {
+      console.error('语音重连失败:', e);
+      message.error(tl('语音重连失败，请稍后再试', 'Voice reconnect failed, please try again later'));
+    } finally {
+      // 与服务层的并发闸门保持一致，给重连留出完成时间
+      setTimeout(() => {
+        setReconnectingVoicePeers(prev => {
+          const next = new Set(prev);
+          next.delete(playerId);
+          return next;
+        });
+      }, 3000);
+    }
+  }, [reconnectingVoicePeers, message]);
+
+  // 读取用户自定义的语音快捷键，用于按钮提示文案
+  useEffect(() => {
+    const loadHotkeyLabels = async () => {
+      try {
+        const settings = await invoke<{ micHotkey?: string; globalMuteHotkey?: string }>('get_settings');
+        if (settings?.micHotkey) setMicHotkeyLabel(settings.micHotkey);
+        if (settings?.globalMuteHotkey) setMuteHotkeyLabel(settings.globalMuteHotkey);
+      } catch (e) {
+        console.warn('读取快捷键提示失败（使用默认值）:', e);
+      }
+    };
+    void loadHotkeyLabels();
+  }, []);
+
   useEffect(() => {
     void danmakuService.syncWindowForLobby(true);
     return () => { void danmakuService.closeWindow(); };
@@ -1492,7 +1541,7 @@ Password: ${lobby.password || ''}
                 <motion.button
                   className={`mini-control-btn voice-btn ${micEnabled ? 'active' : 'muted'}`}
                   onClick={handleToggleMic}
-                  title={micEnabled ? tl('关闭麦克风 (Ctrl+M)', 'Mute microphone (Ctrl+M)') : tl('开启麦克风 (Ctrl+M)', 'Enable microphone (Ctrl+M)')}
+                  title={`${micEnabled ? tl('关闭麦克风', 'Mute microphone') : tl('开启麦克风', 'Enable microphone')}${micHotkeyLabel ? ` (${micHotkeyLabel})` : ''}`}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -1501,7 +1550,7 @@ Password: ${lobby.password || ''}
                 <motion.button
                   className={`mini-control-btn voice-btn ${globalMuted ? 'muted' : 'active'}`}
                   onClick={handleToggleGlobalMute}
-                  title={globalMuted ? tl('开启全局听筒 (Ctrl+T)', 'Enable speaker (Ctrl+T)') : tl('关闭全局听筒 (Ctrl+T)', 'Mute speaker (Ctrl+T)')}
+                  title={`${globalMuted ? tl('开启全局听筒', 'Enable speaker') : tl('关闭全局听筒', 'Mute speaker')}${muteHotkeyLabel ? ` (${muteHotkeyLabel})` : ''}`}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -1914,6 +1963,19 @@ Password: ${lobby.password || ''}
                               <SpeakerIcon muted={isPlayerMuted} size={16} />
                             </motion.button>
                             <motion.button
+                              className={`mini-action-btn ${reconnectingVoicePeers.has(player.id) ? 'reconnecting' : ''}`}
+                              onClick={() => { void handleReconnectVoice(player.id, player.name); }}
+                              disabled={reconnectingVoicePeers.has(player.id)}
+                              title={tl('语音重连（听不到他说话时点这里）', 'Reconnect voice (click if you cannot hear them)')}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 12a9 9 0 1 1-3.5-7.1"></path>
+                                <polyline points="21 3 21 9 15 9"></polyline>
+                              </svg>
+                            </motion.button>
+                            <motion.button
                               className="mini-action-btn"
                               onClick={() => {
                                 try {
@@ -2024,7 +2086,7 @@ Password: ${lobby.password || ''}
                 <motion.button
                   className={`mini-voice-btn ${micEnabled ? 'active' : 'muted'}`}
                   onClick={handleToggleMic}
-                  title={micEnabled ? tl('关闭麦克风 (Ctrl+M)', 'Mute microphone (Ctrl+M)') : tl('开启麦克风 (Ctrl+M)', 'Enable microphone (Ctrl+M)')}
+                  title={`${micEnabled ? tl('关闭麦克风', 'Mute microphone') : tl('开启麦克风', 'Enable microphone')}${micHotkeyLabel ? ` (${micHotkeyLabel})` : ''}`}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -2033,7 +2095,7 @@ Password: ${lobby.password || ''}
                 <motion.button
                   className={`mini-voice-btn ${globalMuted ? 'muted' : ''}`}
                   onClick={handleToggleGlobalMute}
-                  title={globalMuted ? tl('开启全局听筒 (Ctrl+T)', 'Enable speaker (Ctrl+T)') : tl('关闭全局听筒 (Ctrl+T)', 'Mute speaker (Ctrl+T)')}
+                  title={`${globalMuted ? tl('开启全局听筒', 'Enable speaker') : tl('关闭全局听筒', 'Mute speaker')}${muteHotkeyLabel ? ` (${muteHotkeyLabel})` : ''}`}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >

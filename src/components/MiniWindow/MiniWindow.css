@@ -674,6 +674,27 @@
   color: #ef4444;
 }
 
+/* 语音重连进行中：图标持续旋转并禁用点击，给出明确的进行中反馈 */
+.mini-action-btn.reconnecting {
+  background: rgba(126, 211, 33, 0.22);
+  color: #7ed321;
+  cursor: default;
+}
+
+.mini-action-btn.reconnecting svg {
+  animation: mini-action-spin 0.9s linear infinite;
+}
+
+.mini-action-btn:disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+
+@keyframes mini-action-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .mini-action-btn.muted:hover {
   background: rgba(239, 68, 68, 0.4);
 }
