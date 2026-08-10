@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Button, Typography, Divider, Modal } from 'antd';
+import { Button, Typography, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { tl } from '../../i18n';
-import { GitHubIcon, GiteeIcon, GamepadIcon, LightbulbIcon } from '../icons';
+import { GitHubIcon, BilibiliIcon, GamepadIcon, LightbulbIcon } from '../icons';
 import { useEscapeKey } from '../../hooks';
 import { OnboardingWizard } from '../OnboardingWizard/OnboardingWizard';
 import './AboutWindow.css';
@@ -20,18 +20,12 @@ interface AboutWindowProps {
  */
 export const AboutWindow: React.FC<AboutWindowProps> = ({ onClose }) => {
   useTranslation();
-  const [showSponsorModal, setShowSponsorModal] = useState(false);
-  const [enlargedQRCode, setEnlargedQRCode] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // ESC键返回
   useEscapeKey(() => {
     // 如果有弹窗打开，先关闭弹窗
-    if (enlargedQRCode) {
-      setEnlargedQRCode(null);
-    } else if (showSponsorModal) {
-      setShowSponsorModal(false);
-    } else if (showOnboarding) {
+    if (showOnboarding) {
       setShowOnboarding(false);
     } else {
       // 否则关闭关于窗口
@@ -250,42 +244,33 @@ export const AboutWindow: React.FC<AboutWindowProps> = ({ onClose }) => {
 
           <div className="about-section">
             <Title level={4} className="section-title">
-              {tl('开发者：青云制作_彭明航', 'Developer: QingYun Studio_PengMingHang')}
+              {tl('开发者：Tnt-next', 'Developer: Tnt-next')}
             </Title>
             <div className="developer-info">
               <Paragraph className="project-info">
                 {tl(
-                  '这是我开源的第三个项目，做它的初衷是让联机不用再到处找服务器、开内网穿透。',
-                  'This is my third open-source project. It started because I wanted LAN gaming without hunting for servers or messing with port forwarding.'
+                  '本版本基于 MCTier 二次开发，界面重构为微信风格明暗主题。',
+                  'This version is a fork of MCTier with a WeChat-style light/dark UI.'
                 )}
               </Paragraph>
               <div className="repo-links">
                 <a
-                  href="https://mctier.pmhs.top"
+                  href="https://space.bilibili.com/3546659195718047"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="repo-link"
                 >
-                  <img src="/MCTierIcon.png" alt="MCTier" className="mctier-icon" />
-                  <span>{tl('MCTier 官网', 'MCTier Website')}</span>
+                  <BilibiliIcon size={16} />
+                  <span>{tl('B站主页', 'Bilibili')}</span>
                 </a>
                 <a
-                  href="https://github.com/pmh1314520/MCTier"
+                  href="https://github.com/TNTnext/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="repo-link"
                 >
                   <GitHubIcon size={16} />
-                  <span>{tl('GitHub 开源仓库', 'GitHub Repository')}</span>
-                </a>
-                <a
-                  href="https://gitee.com/peng-minghang/mctier"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="repo-link"
-                >
-                  <GiteeIcon size={16} />
-                  <span>{tl('Gitee 开源仓库', 'Gitee Repository')}</span>
+                  <span>{tl('GitHub', 'GitHub')}</span>
                 </a>
               </div>
             </div>
@@ -353,40 +338,12 @@ export const AboutWindow: React.FC<AboutWindowProps> = ({ onClose }) => {
 
           <Divider className="about-divider" />
 
-          <div className="about-section sponsor-section">
-            <Title level={4} className="section-title">
-              {tl('支持开发者', 'Support the Developer')}
-            </Title>
-            <Paragraph className="sponsor-text">
-              {tl(
-                '如果这个软件对您有帮助，欢迎请开发者喝杯咖啡',
-                'If this software helps you, feel free to buy the developer a coffee'
-              )}
-            </Paragraph>
-            <Button
-              type="default"
-              size="middle"
-              block
-              onClick={() => setShowSponsorModal(true)}
-              className="sponsor-button"
-            >
-              {tl('赞助支持', 'Sponsor')}
-            </Button>
-          </div>
-
-          <Divider className="about-divider" />
-
           <div className="about-section blessing-section">
-            <div className="blessing-text">
-              <Text className="blessing-content">
-                {tl(
-                  '祝各位玩家游玩愉快，享受与好友联机的快乐时光！',
-                  'Wishing everyone happy gaming and great times with friends!'
-                )}
-              </Text>
-            </div>
             <Paragraph className="free-text">
-              {tl('本软件完全免费开源', 'Completely free and open source')}
+              {tl(
+                '改自 https://github.com/pmh1314520/ 创作的 MCTier',
+                'Modified from MCTier by https://github.com/pmh1314520/'
+              )}
             </Paragraph>
           </div>
         </motion.div>
@@ -405,57 +362,6 @@ export const AboutWindow: React.FC<AboutWindowProps> = ({ onClose }) => {
 
       {/* 新手引导向导 */}
       <OnboardingWizard visible={showOnboarding} onClose={() => setShowOnboarding(false)} />
-
-      {/* 赞助弹窗 */}
-      <Modal
-        open={showSponsorModal}
-        onCancel={() => setShowSponsorModal(false)}
-        footer={null}
-        centered
-        width={420}
-        className="sponsor-modal"
-      >
-        <div className="sponsor-modal-content">
-          <Title level={3} className="sponsor-modal-title">
-            {tl('感谢您的支持', 'Thank You for Your Support')}
-          </Title>
-          <Paragraph className="sponsor-modal-desc">
-            {tl('您的支持是我持续开发的动力！', 'Your support keeps me developing!')}
-          </Paragraph>
-          <div className="qrcode-container">
-            <div className="qrcode-item" onClick={() => setEnlargedQRCode('/zfb.jpg')}>
-              <img src="/zfb.jpg" alt="Alipay" className="qrcode-image" />
-              <Text className="qrcode-label">{tl('支付宝', 'Alipay')}</Text>
-            </div>
-            <div className="qrcode-item" onClick={() => setEnlargedQRCode('/wx.png')}>
-              <img src="/wx.png" alt="WeChat" className="qrcode-image" />
-              <Text className="qrcode-label">{tl('微信', 'WeChat')}</Text>
-            </div>
-          </div>
-        </div>
-      </Modal>
-
-      {/* 二维码放大弹窗 */}
-      <Modal
-        open={!!enlargedQRCode}
-        onCancel={() => setEnlargedQRCode(null)}
-        footer={null}
-        centered
-        width="auto"
-        className="qrcode-enlarged-modal"
-        styles={{
-          body: { padding: 0 },
-        }}
-      >
-        {enlargedQRCode && (
-          <img
-            src={enlargedQRCode}
-            alt="QR Code"
-            className="qrcode-enlarged-image"
-            onClick={() => setEnlargedQRCode(null)}
-          />
-        )}
-      </Modal>
     </div>
   );
 };

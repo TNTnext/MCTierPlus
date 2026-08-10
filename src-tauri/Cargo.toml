@@ -2,7 +2,7 @@
 name = "mctier"
 version = "2.5.0"
 description = "MCTier - Minecraft 虚拟局域网联机工具"
-authors = ["MCTier Team"]
+authors = ["Tnt-next"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

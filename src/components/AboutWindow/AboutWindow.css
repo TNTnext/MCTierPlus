@@ -323,45 +323,6 @@
   transform: translateX(3px);
 }
 
-.mctier-icon {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-}
-
-/* 赞助区域 */
-.sponsor-section {
-  text-align: center;
-  padding: 12px;
-  border-radius: 8px;
-}
-
-.sponsor-text {
-  font-size: 12px;
-  color: var(--mc-text-2);
-  margin-bottom: 12px !important;
-  line-height: 1.6;
-}
-
-.sponsor-button {
-  height: 40px !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  border-radius: 10px !important;
-  background: rgba(250, 81, 81, 0.08) !important;
-  border: 1px solid rgba(250, 81, 81, 0.3) !important;
-  color: #c0392b !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.sponsor-button:hover {
-  background: rgba(250, 81, 81, 0.13) !important;
-  border-color: rgba(250, 81, 81, 0.46) !important;
-  color: #a93226 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 100, 100, 0.3);
-}
-
 /* 系统设置区域 */
 .settings-section {
   padding: 14px;
@@ -416,160 +377,18 @@
   background: #07c160 !important;
 }
 
-/* 赞助弹窗样式 */
-.sponsor-modal .ant-modal-content {
-  background: var(--mc-bg);
-  border-radius: 16px;
-  padding: 0;
-}
-
-.sponsor-modal .ant-modal-close {
-  color: var(--mc-text-2);
-}
-
-.sponsor-modal .ant-modal-close:hover {
-  color: var(--mc-text);
-}
-
-.sponsor-modal-content {
-  padding: 28px 20px;
-  text-align: center;
-}
-
-.sponsor-modal-title {
-  font-size: 22px !important;
-  font-weight: 700 !important;
-  color: var(--mc-text) !important;
-  margin-bottom: 12px !important;
-}
-
-.sponsor-modal-desc {
-  font-size: 14px;
-  color: var(--mc-text-2);
-  margin-bottom: 20px !important;
-}
-
-.qrcode-container {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 0;
-}
-
-.qrcode-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 6px;
-  border-radius: 12px;
-}
-
-.qrcode-item:hover {
-  transform: none;
-  background: none;
-}
-
-.qrcode-image {
-  width: 150px;
-  height: 150px;
-  object-fit: contain;
-  border-radius: 10px;
-  border: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.qrcode-item:hover .qrcode-image {
-  transform: scale(1.08);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-.qrcode-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--mc-text-2);
-}
-
-/* 二维码放大弹窗 */
-.qrcode-enlarged-modal .ant-modal-content {
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-}
-
-.qrcode-enlarged-modal .ant-modal-close {
-  color: var(--mc-text);
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  top: 10px;
-  right: 10px;
-}
-
-.qrcode-enlarged-modal .ant-modal-close:hover {
-  background: rgba(0, 0, 0, 0.7);
-  color: #ffffff;
-}
-
-.qrcode-enlarged-image {
-  width: 100%;
-  max-width: 500px;
-  height: auto;
-  display: block;
-  border-radius: 16px;
-  cursor: pointer;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.sponsor-modal-close {
-  height: 44px !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  border-radius: 12px !important;
-  background: #07c160 !important;
-  border: none !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.sponsor-modal-close:hover {
-  background: #07c160 !important;
-  transform: translateY(-2px);
-  box-shadow: none;
-}
-
 /* 祝福区域 */
 .blessing-section {
   text-align: center;
-  padding: 16px;
+  padding: 8px 16px 2px;
   border-radius: 12px;
   margin-bottom: 0 !important;
 }
 
-.blessing-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.blessing-icon {
-  font-size: 20px;
-}
-
-.blessing-content {
-  font-size: 14px;
-  color: var(--mc-text);
-  font-weight: 600;
-}
-
 .free-text {
-  font-size: 13px;
+  font-size: 11px;
   color: var(--mc-text-2);
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 0 !important;
 }
 
@@ -708,18 +527,6 @@
 
 [data-weui-theme='dark'] .license-note {
   color: rgba(255, 200, 100, 0.9);
-}
-
-[data-weui-theme='dark'] .sponsor-button {
-  background: rgba(255, 100, 100, 0.15) !important;
-  border: 1px solid rgba(255, 100, 100, 0.4) !important;
-  color: rgba(255, 150, 150, 0.95) !important;
-}
-
-[data-weui-theme='dark'] .sponsor-button:hover {
-  background: rgba(255, 100, 100, 0.25) !important;
-  border-color: rgba(255, 100, 100, 0.6) !important;
-  color: rgba(255, 180, 180, 1) !important;
 }
 
 [data-weui-theme='dark'] .onboarding-entry-button {

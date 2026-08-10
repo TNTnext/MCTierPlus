@@ -892,7 +892,7 @@ class MctierRepository(private val context: Context) {
 
     private fun defaultApkUrl(version: String): String {
         val v = version.removePrefix("v").ifBlank { AppClientVersion }
-        return "https://gitee.com/peng-minghang/mctier/releases/download/v$v/MCTier-Android.apk"
+        return "https://github.com/TNTnext/MCTier/releases/download/v$v/MCTier-Android.apk"
     }
 
     fun downloadRemoteFile(

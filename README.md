@@ -14,7 +14,7 @@
 
   **支持 Windows 10/11 与 Android。电脑端和手机端可加入同一个大厅，快速组成跨网络虚拟局域网。**
 
-  [官网](../MCTier官网/index.html) · [GitHub](https://github.com/pmh1314520/MCTier) · [Gitee](https://gitee.com/peng-minghang/mctier) · [快速开始](#快速开始) · [运行预览](#运行预览) · [赞助支持](#赞助支持)
+  [GitHub](https://github.com/TNTnext/MCTier) · [快速开始](#快速开始) · [运行预览](#运行预览)
 
   [English](./README_EN.md) | 简体中文
 </div>
@@ -23,7 +23,7 @@
 
 ## 项目简介
 
-MCTier 基于 EasyTier 与 WebRTC，用来把不同网络环境下的设备组到同一个虚拟局域网中。它不是 Minecraft 专属工具，也不只服务游戏场景；只要你需要跨网络访问局域网服务、临时协作、语音沟通、文件夹共享或屏幕共享，都可以用 MCTier 搭一个轻量大厅。
+MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同一个虚拟局域网里。它不挑用途：局域网游戏联机、跨网络访问本地服务、临时协作、语音、文件共享、屏幕共享，都可以用它搭一个大厅。
 
 典型用途包括：
 
@@ -34,72 +34,66 @@ MCTier 基于 EasyTier 与 WebRTC，用来把不同网络环境下的设备组�
 
 ## 运行预览
 
-预览图按桌面端与手机端分组，尽量用紧凑布局展示，避免图片过多导致阅读很累。
+界面已重构为微信风格，支持浅色、深色和跟随系统。
 
 ### Windows 端
 
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="public/软件预览-主界面.png" alt="Windows 主界面" width="420"><br>
-      <b>主界面</b>
+      <img src="public/预览-主界面-浅色.png" alt="主界面（浅色）" width="260"><br>
+      <b>主界面（浅色）</b>
     </td>
     <td align="center" width="50%">
-      <img src="public/软件预览-大厅界面.png" alt="Windows 大厅界面" width="420"><br>
-      <b>大厅界面</b>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <img src="public/软件预览-聊天室.png" alt="Windows 聊天室" width="420"><br>
-      <b>聊天室</b>
-    </td>
-    <td align="center" width="50%">
-      <img src="public/软件预览-文件夹共享.png" alt="Windows 文件夹共享" width="420"><br>
-      <b>文件夹共享</b>
+      <img src="public/预览-主界面-深色.png" alt="主界面（深色）" width="260"><br>
+      <b>主界面（深色）</b>
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
-      <img src="public/软件预览-屏幕共享.png" alt="Windows 屏幕共享" width="420"><br>
-      <b>屏幕共享</b>
+      <img src="public/预览-设置-浅色.png" alt="设置（浅色）" width="260"><br>
+      <b>设置（浅色）</b>
     </td>
     <td align="center" width="50%">
-      <img src="public/软件预览-设置.png" alt="Windows 设置" width="420"><br>
-      <b>设置中心</b>
+      <img src="public/预览-设置-深色.png" alt="设置（深色）" width="260"><br>
+      <b>设置（深色）</b>
     </td>
   </tr>
-</table>
-
-<details>
-<summary><b>查看更多 Windows 端预览</b></summary>
-
-<table>
   <tr>
-    <td align="center"><img src="public/软件预览-创建大厅.png" alt="创建大厅" width="320"><br><b>创建大厅</b></td>
-    <td align="center"><img src="public/软件预览-加入大厅.png" alt="加入大厅" width="320"><br><b>加入大厅</b></td>
-    <td align="center"><img src="public/软件预览-常用大厅信息.png" alt="常用大厅信息" width="320"><br><b>常用大厅</b></td>
+    <td align="center" width="50%">
+      <img src="public/预览-设置-主题.png" alt="设置 · 主题" width="260"><br>
+      <b>设置 · 主题</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="public/预览-设置-网络配置.png" alt="设置 · 网络配置" width="260"><br>
+      <b>设置 · 网络配置</b>
+    </td>
   </tr>
   <tr>
-    <td align="center" colspan="3"><img src="public/软件预览-大厅动态设置.png" alt="大厅动态设置" width="420"><br><b>大厅动态设置</b></td>
-  </tr>
-</table>
-</details>
-
-### Android 端
-
-<table>
-  <tr>
-    <td align="center"><img src="public/手机端-主界面.jpg" alt="Android 主界面" width="180"><br><b>主界面</b></td>
-    <td align="center"><img src="public/手机端-大厅界面.jpg" alt="Android 大厅界面" width="180"><br><b>大厅界面</b></td>
-    <td align="center"><img src="public/手机端-大厅二维码.jpg" alt="Android 大厅二维码" width="180"><br><b>大厅二维码</b></td>
-    <td align="center"><img src="public/手机端-设置.jpg" alt="Android 设置" width="180"><br><b>设置</b></td>
+    <td align="center" width="50%">
+      <img src="public/预览-设置-节点.png" alt="设置 · 节点" width="260"><br>
+      <b>设置 · 节点</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="public/预览-设置-快捷键.png" alt="设置 · 快捷键" width="260"><br>
+      <b>设置 · 快捷键</b>
+    </td>
   </tr>
   <tr>
-    <td align="center"><img src="public/手机端-聊天室.jpg" alt="Android 聊天室" width="180"><br><b>聊天室</b></td>
-    <td align="center"><img src="public/手机端-文件夹共享.jpg" alt="Android 文件夹共享" width="180"><br><b>文件夹共享</b></td>
-    <td align="center"><img src="public/手机端-屏幕共享.jpg" alt="Android 屏幕共享" width="180"><br><b>屏幕共享</b></td>
-    <td align="center"><img src="public/手机端-大厅动态设置.jpg" alt="Android 大厅动态设置" width="180"><br><b>大厅设置</b></td>
+    <td align="center" width="50%">
+      <img src="public/预览-高级网络配置-浅色.png" alt="高级网络配置（浅色）" width="260"><br>
+      <b>高级网络配置（浅色）</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="public/预览-高级网络配置-深色.png" alt="高级网络配置（深色）" width="260"><br>
+      <b>高级网络配置（深色）</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="public/预览-关于-浅色.png" alt="关于（浅色）" width="260"><br>
+      <b>关于（浅色）</b>
+    </td>
   </tr>
 </table>
 
@@ -117,8 +111,8 @@ MCTier 基于 EasyTier 与 WebRTC，用来把不同网络环境下的设备组�
 ### 沟通与协作
 
 - **实时语音频道**：大厅内可按频道语音，适合协作沟通。
-- **语音小队**：把成员分到不同小队，只听同队语音，轻松实现分组开黑。
-- **内置变声器**：实时语音变声，内置萝莉音、大叔音等多种音色，开麦聊天更有趣，支持先试听再应用。
+- **语音小队**：把成员分到不同小队，只听同队语音，方便分组开黑。
+- **内置变声器**：实时语音变声，内置少女音、大叔音等多种音色，支持先试听再应用。
 - **大厅聊天室**：支持文字、图片与 Emoji 表情消息。
 - **消息弹幕**：聊天消息以弹幕形式从屏幕顶部飘过，挂后台或玩游戏时也不错过消息；可调字号、速度、透明度、轨道数与颜色（含彩色随机），默认开启。
 - **文件夹共享**：可向同大厅成员共享文件夹，支持下载与传输列表。
@@ -160,10 +154,10 @@ MCTier 基于 EasyTier 与 WebRTC，用来把不同网络环境下的设备组�
 
 ### 下载与安装
 
-前往 [GitHub Releases](https://github.com/pmh1314520/MCTier/releases) 或 [Gitee Releases](https://gitee.com/peng-minghang/mctier/releases) 下载最新版。
+前往 [GitHub Releases](https://github.com/TNTnext/MCTier/releases) 下载最新版。
 
-- Windows 安装包：下载 `MCTier-安装包-vx.y.z.exe` 后双击安装。
-- Windows 便携版：下载 `MCTier-便携版-vx.y.z.exe` 后直接运行。
+- Windows 安装包：下载 `MCTier_x.x.x_x64-setup.exe` 后双击安装。
+- Windows 便携版：下载 `mctier.exe` 后直接运行。
 - Android：下载 `MCTier-Android.apk` 后在手机上安装。
 
 ### 创建或加入大厅
@@ -186,29 +180,14 @@ MCTier 是通用组网工具，Minecraft 只是其中一个典型使用场景。
 
 如果启用了虚拟域名，也可以使用类似 `成员名.mct.net:25565` 的地址连接。
 
-## 私有化部署快速流程
+## 私有化部署
 
-如果你想自建 MCTier 信令服务器，可以下载官网中的 `MCTier信令服务器.zip`，也可以查看仓库根目录中的 `快速部署信令服务器.md`、`私有化部署README.md`。
-
-基本流程：
+如果你想自建 MCTier 信令服务器，流程大致如下：
 
 1. 准备一台 Linux 服务器或局域网内主机。
 2. 安装 Docker 与 Docker Compose。
-3. 上传并解压 `MCTier信令服务器.zip`。
-4. 进入解压目录，给部署脚本执行权限。
-5. 运行部署脚本，按提示填写域名或 IP。
-6. 在 MCTier 客户端设置中填入你的私有信令地址。
-
-常用命令：
-
-```bash
-unzip MCTier信令服务器.zip
-cd MCTier信令服务器
-chmod +x deploy.sh
-sudo ./deploy.sh
-docker compose -f docker-compose-http.yml ps
-docker compose -f docker-compose-http.yml logs -f
-```
+3. 部署一个 WebSocket 信令服务（ws 或 wss 均可，需与客户端设置保持一致）。
+4. 在 MCTier 客户端设置中填入你的私有信令地址。
 
 ## 开发与构建
 
@@ -235,25 +214,6 @@ cd MCTier-Android
 gradlew.bat assembleDebug
 ```
 
-## 赞助支持
-
-MCTier 会持续维护桌面端和手机端体验。如果它帮你完成了组网、联机或协作，欢迎赞助支持开发工作。每一份赞助都会用于继续优化连接稳定性、双端体验和后续功能。
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="50%">
-        <img src="public/zfb.jpg" alt="支付宝收款码" width="240"><br>
-        <b>支付宝赞助</b>
-      </td>
-      <td align="center" width="50%">
-        <img src="public/wx.png" alt="微信收款码" width="240"><br>
-        <b>微信赞助</b>
-      </td>
-    </tr>
-  </table>
-</div>
-
 ## 开源协议
 
 本项目使用自定义开源协议：
@@ -273,13 +233,13 @@ MCTier 会持续维护桌面端和手机端体验。如果它帮你完成了组�
 
 ## 作者
 
-青云制作_彭明航
+Tnt-next
 
-- GitHub: <https://github.com/pmh1314520/MCTier>
-- Gitee: <https://gitee.com/peng-minghang/mctier>
+- B站：<https://space.bilibili.com/3546659195718047>
+- GitHub：<https://github.com/TNTnext/>
 
 ---
 
 <div align="center">
-  <b>MCTier 完全免费开源，祝使用顺利。</b>
+  <sub>改自 <a href="https://github.com/pmh1314520/">https://github.com/pmh1314520/</a> 创作的 MCTier</sub>
 </div>

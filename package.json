@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.5.0",
   "description": "MCTier - Minecraft 虚拟局域网联机工具",
-  "author": "MCTier Team",
+  "author": "Tnt-next",
   "type": "module",
   "scripts": {
     "dev": "vite",

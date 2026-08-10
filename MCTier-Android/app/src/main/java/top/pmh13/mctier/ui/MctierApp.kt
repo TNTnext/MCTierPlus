@@ -3361,7 +3361,7 @@ private fun VoiceChangerSection(settings: UserSettings, onChange: (UserSettings)
         "uncle" to L("大叔", "Uncle"),
         "male" to L("男声", "Male"),
         "female" to L("女声", "Female"),
-        "loli" to L("萝莉", "Loli"),
+        "loli" to L("少女", "Girl"),
         "chipmunk" to L("花栗鼠", "Chipmunk"),
         "robot" to L("机器人", "Robot"),
         "telephone" to L("电话音", "Telephone"),
@@ -3938,7 +3938,7 @@ private fun SettingsScreen(state: MctierUiState, repository: MctierRepository, o
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(L("关于软件", "About"), color = TextPrimary, fontWeight = FontWeight.SemiBold)
-                            Text(L("版本、开发者、开源仓库与赞助支持", "Version, developer, repos and sponsorship"), fontSize = 11.sp, color = TextPrimary.copy(alpha = 0.5f))
+                            Text(L("版本、开发者与开源仓库", "Version, developer and repositories"), fontSize = 11.sp, color = TextPrimary.copy(alpha = 0.5f))
                         }
                         Text(L("查看", "View"), color = GrassGreen, fontSize = 13.sp)
                     }
@@ -4070,8 +4070,6 @@ private fun StatCell(label: String, value: String, modifier: Modifier = Modifier
 @Composable
 private fun AboutScreen(onBack: () -> Unit) {
     val ctx = LocalContext.current
-    var showSponsor by remember { mutableStateOf(false) }
-    var enlargedSponsor by remember { mutableStateOf<Int?>(null) }
     fun open(url: String) { runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } }
     Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 18.dp)) {
         Spacer(Modifier.height(10.dp))
@@ -4104,69 +4102,14 @@ private fun AboutScreen(onBack: () -> Unit) {
             }
             item {
                 SectionCard {
-                    Text(L("开发者：青云制作_彭明航", "Developer: Qingyun_PengMinghang"), fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Text(L("开发者：Tnt-next", "Developer: Tnt-next"), fontWeight = FontWeight.Bold, color = TextPrimary)
                     Spacer(Modifier.height(12.dp))
-                    AboutLinkLogoRow(L("MCTier 官网", "MCTier Website"), "mctier.pmhs.top", R.drawable.mctier_logo) { open("https://mctier.pmhs.top") }
+                    AboutLinkVectorRow(L("B站主页", "Bilibili"), "space.bilibili.com/3546659195718047", R.drawable.ic_bilibili) { open("https://space.bilibili.com/3546659195718047") }
                     Spacer(Modifier.height(8.dp))
-                    AboutLinkVectorRow(L("GitHub 开源仓库", "GitHub Repository"), "github.com/pmh1314520/MCTier", R.drawable.ic_github) { open("https://github.com/pmh1314520/MCTier") }
-                    Spacer(Modifier.height(8.dp))
-                    AboutLinkVectorRow(L("Gitee 开源仓库", "Gitee Repository"), "gitee.com/peng-minghang/mctier", R.drawable.ic_gitee) { open("https://gitee.com/peng-minghang/mctier") }
-                }
-            }
-            item {
-                SectionCard {
-                    Text(L("支持开发者", "Support the developer"), fontWeight = FontWeight.Bold, color = TextPrimary)
-                    Spacer(Modifier.height(8.dp))
-                    Text(L("如果 MCTier 对你有帮助，欢迎赞助支持作者持续开发", "If MCTier helps you, please consider sponsoring continued development"), fontSize = 13.sp, color = TextPrimary.copy(alpha = 0.8f))
-                    Spacer(Modifier.height(12.dp))
-                    PrimaryButton(L("赞助支持", "Sponsor")) { showSponsor = true }
+                    AboutLinkVectorRow(L("GitHub", "GitHub"), "github.com/TNTnext", R.drawable.ic_github) { open("https://github.com/TNTnext/") }
                 }
             }
             item { Spacer(Modifier.height(20.dp)) }
-        }
-    }
-    if (showSponsor) {
-        AlertDialog(
-            onDismissRequest = { showSponsor = false },
-            containerColor = Panel,
-            title = { Text(L("赞助支持开发者", "Sponsor the developer"), color = TextPrimary, fontWeight = FontWeight.Bold) },
-            text = {
-                Column {
-                    Text(L("点击二维码可放大查看", "Tap the QR code to enlarge"), fontSize = 12.sp, color = TextPrimary.copy(alpha = 0.6f))
-                    Spacer(Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        SponsorQr(
-                            res = R.drawable.sponsor_alipay,
-                            label = L("支付宝", "Alipay"),
-                            modifier = Modifier.weight(1f),
-                            onClick = { enlargedSponsor = R.drawable.sponsor_alipay },
-                        )
-                        SponsorQr(
-                            res = R.drawable.sponsor_wechat,
-                            label = L("微信", "WeChat"),
-                            modifier = Modifier.weight(1f),
-                            onClick = { enlargedSponsor = R.drawable.sponsor_wechat },
-                        )
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = { showSponsor = false }) { Text(L("关闭", "Close"), color = GrassGreen) } },
-        )
-    }
-    enlargedSponsor?.let { res ->
-        Dialog(onDismissRequest = { enlargedSponsor = null }) {
-            Box(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
-                    .clickable { enlargedSponsor = null },
-                contentAlignment = Alignment.Center,
-            ) {
-                Image(
-                    painterResource(res),
-                    null,
-                    modifier = Modifier.fillMaxWidth().aspectRatio(1f),
-                    contentScale = ContentScale.Fit,
-                )
-            }
         }
     }
 }
@@ -4187,43 +4130,6 @@ private fun AboutLinkVectorRow(title: String, sub: String, drawableRes: Int, onC
     }
 }
 
-// 官网行：左侧使用 MCTier Logo
-@Composable
-private fun AboutLinkLogoRow(title: String, sub: String, drawableRes: Int, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(PanelHigh).clickable(onClick = onClick).padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(painterResource(drawableRes), null, modifier = Modifier.size(22.dp).clip(RoundedCornerShape(6.dp)))
-        Spacer(Modifier.width(10.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, color = TextPrimary, fontSize = 14.sp)
-            Text(sub, color = TextPrimary.copy(alpha = 0.45f), fontSize = 11.sp)
-        }
-        Text(L("打开", "Open"), color = GrassGreen, fontSize = 13.sp)
-    }
-}
-
-// 赞助二维码：统一为正方形，保证两个模块对称美观，点击可放大
-@Composable
-private fun SponsorQr(res: Int, label: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(10.dp))
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center,
-        ) {
-            Image(
-                painterResource(res),
-                label,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit,
-            )
-        }
-        Spacer(Modifier.height(6.dp))
-        Text(label, fontSize = 12.sp, color = TextPrimary.copy(alpha = 0.7f))
-    }
-}
 @Composable
 private fun HomeActionButton(label: String, icon: ImageVector, modifier: Modifier = Modifier, tint: Color = GrassGreen, onClick: () -> Unit) {
     Column(

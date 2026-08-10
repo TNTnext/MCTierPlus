@@ -15,7 +15,7 @@
 
   **Supports Windows 10/11 and Android. Desktop and mobile can join the same lobby to quickly form a cross-network virtual LAN.**
 
-  [Website](../MCTier官网/index.html) · [GitHub](https://github.com/pmh1314520/MCTier) · [Gitee](https://gitee.com/peng-minghang/mctier) · [Quick Start](#quick-start) · [Screenshots](#screenshots) · [Sponsor](#sponsor)
+  [GitHub](https://github.com/TNTnext/MCTier) · [Quick Start](#quick-start) · [Screenshots](#screenshots)
 
   English | [简体中文](./README.md)
 </div>
@@ -24,7 +24,7 @@
 
 ## Overview
 
-MCTier is built on EasyTier and WebRTC to bring devices on different networks into a single virtual LAN. It is not a Minecraft-only tool, nor limited to gaming; whenever you need cross-network access to LAN services, ad-hoc collaboration, voice chat, folder sharing or screen sharing, you can spin up a lightweight lobby with MCTier.
+MCTier is built on EasyTier and WebRTC to bring devices on different networks into a single virtual LAN. It is not tied to any particular use case: LAN game multiplayer, cross-network access to local services, ad-hoc collaboration, voice, file sharing and screen sharing can all live in one lobby.
 
 Typical use cases include:
 
@@ -35,72 +35,66 @@ Typical use cases include:
 
 ## Screenshots
 
-Screenshots are grouped by desktop and mobile and laid out compactly to avoid an overwhelming wall of images.
+The UI has been rebuilt in a WeChat-inspired style with light, dark and system-following themes.
 
 ### Windows
 
 <table>
   <tr>
     <td align="center" width="50%">
-      <img src="public/软件预览-主界面.png" alt="Windows Home" width="420"><br>
-      <b>Home</b>
+      <img src="public/预览-主界面-浅色.png" alt="Home (light)" width="260"><br>
+      <b>Home (light)</b>
     </td>
     <td align="center" width="50%">
-      <img src="public/软件预览-大厅界面.png" alt="Windows Lobby" width="420"><br>
-      <b>Lobby</b>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <img src="public/软件预览-聊天室.png" alt="Windows Chat Room" width="420"><br>
-      <b>Chat Room</b>
-    </td>
-    <td align="center" width="50%">
-      <img src="public/软件预览-文件夹共享.png" alt="Windows Folder Sharing" width="420"><br>
-      <b>Folder Sharing</b>
+      <img src="public/预览-主界面-深色.png" alt="Home (dark)" width="260"><br>
+      <b>Home (dark)</b>
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
-      <img src="public/软件预览-屏幕共享.png" alt="Windows Screen Sharing" width="420"><br>
-      <b>Screen Sharing</b>
+      <img src="public/预览-设置-浅色.png" alt="Settings (light)" width="260"><br>
+      <b>Settings (light)</b>
     </td>
     <td align="center" width="50%">
-      <img src="public/软件预览-设置.png" alt="Windows Settings" width="420"><br>
-      <b>Settings</b>
+      <img src="public/预览-设置-深色.png" alt="Settings (dark)" width="260"><br>
+      <b>Settings (dark)</b>
     </td>
   </tr>
-</table>
-
-<details>
-<summary><b>View more Windows screenshots</b></summary>
-
-<table>
   <tr>
-    <td align="center"><img src="public/软件预览-创建大厅.png" alt="Create Lobby" width="320"><br><b>Create Lobby</b></td>
-    <td align="center"><img src="public/软件预览-加入大厅.png" alt="Join Lobby" width="320"><br><b>Join Lobby</b></td>
-    <td align="center"><img src="public/软件预览-常用大厅信息.png" alt="Favorite Lobbies" width="320"><br><b>Favorite Lobbies</b></td>
+    <td align="center" width="50%">
+      <img src="public/预览-设置-主题.png" alt="Settings · Theme" width="260"><br>
+      <b>Settings · Theme</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="public/预览-设置-网络配置.png" alt="Settings · Network" width="260"><br>
+      <b>Settings · Network</b>
+    </td>
   </tr>
   <tr>
-    <td align="center" colspan="3"><img src="public/软件预览-大厅动态设置.png" alt="Lobby Settings" width="420"><br><b>Lobby Settings</b></td>
-  </tr>
-</table>
-</details>
-
-### Android
-
-<table>
-  <tr>
-    <td align="center"><img src="public/手机端-主界面.jpg" alt="Android Home" width="180"><br><b>Home</b></td>
-    <td align="center"><img src="public/手机端-大厅界面.jpg" alt="Android Lobby" width="180"><br><b>Lobby</b></td>
-    <td align="center"><img src="public/手机端-大厅二维码.jpg" alt="Android Lobby QR Code" width="180"><br><b>Lobby QR Code</b></td>
-    <td align="center"><img src="public/手机端-设置.jpg" alt="Android Settings" width="180"><br><b>Settings</b></td>
+    <td align="center" width="50%">
+      <img src="public/预览-设置-节点.png" alt="Settings · Nodes" width="260"><br>
+      <b>Settings · Nodes</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="public/预览-设置-快捷键.png" alt="Settings · Hotkeys" width="260"><br>
+      <b>Settings · Hotkeys</b>
+    </td>
   </tr>
   <tr>
-    <td align="center"><img src="public/手机端-聊天室.jpg" alt="Android Chat Room" width="180"><br><b>Chat Room</b></td>
-    <td align="center"><img src="public/手机端-文件夹共享.jpg" alt="Android Folder Sharing" width="180"><br><b>Folder Sharing</b></td>
-    <td align="center"><img src="public/手机端-屏幕共享.jpg" alt="Android Screen Sharing" width="180"><br><b>Screen Sharing</b></td>
-    <td align="center"><img src="public/手机端-大厅动态设置.jpg" alt="Android Lobby Settings" width="180"><br><b>Lobby Settings</b></td>
+    <td align="center" width="50%">
+      <img src="public/预览-高级网络配置-浅色.png" alt="Advanced Network (light)" width="260"><br>
+      <b>Advanced Network (light)</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="public/预览-高级网络配置-深色.png" alt="Advanced Network (dark)" width="260"><br>
+      <b>Advanced Network (dark)</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <img src="public/预览-关于-浅色.png" alt="About (light)" width="260"><br>
+      <b>About (light)</b>
+    </td>
   </tr>
 </table>
 
@@ -119,7 +113,7 @@ Screenshots are grouped by desktop and mobile and laid out compactly to avoid an
 
 - **Real-time voice channels**: Voice by channel within a lobby, ideal for collaboration.
 - **Voice squads**: Split members into squads so you only hear teammates in your squad — easy grouped voice chat.
-- **Built-in voice changer**: Real-time voice changing with presets like loli and uncle voices, making mic chat more fun; preview before applying.
+- **Built-in voice changer**: Real-time voice changing with presets like girl and uncle voices; preview before applying.
 - **Lobby chat room**: Supports text, image and emoji messages.
 - **Message danmaku**: Chat messages float across the top of the screen as bullets, so you never miss them while in the background or gaming; adjustable size, speed, opacity, tracks and color (including random rainbow), enabled by default.
 - **Folder sharing**: Share folders with lobby members, with download and transfer lists.
@@ -161,10 +155,10 @@ Screenshots are grouped by desktop and mobile and laid out compactly to avoid an
 
 ### Download & Install
 
-Download the latest build from [GitHub Releases](https://github.com/pmh1314520/MCTier/releases) or [Gitee Releases](https://gitee.com/peng-minghang/mctier/releases).
+Download the latest build from [GitHub Releases](https://github.com/TNTnext/MCTier/releases).
 
-- Windows Installer: download `MCTier-安装包-vx.y.z.exe` and double-click to install.
-- Windows Portable: download `MCTier-便携版-vx.y.z.exe` and run it directly.
+- Windows Installer: download `MCTier_x.x.x_x64-setup.exe` and double-click to install.
+- Windows Portable: download `mctier.exe` and run it directly.
 - Android: download `MCTier-Android.apk` and install it on your phone.
 
 ### Create or Join a Lobby
@@ -187,29 +181,14 @@ After entering a singleplayer world, the host presses `Esc` and clicks "Open to 
 
 If virtual domains are enabled, you can also connect with an address like `membername.mct.net:25565`.
 
-## Self-hosting Quick Flow
+## Self-hosting
 
-If you want to host your own MCTier signaling server, download `MCTier信令服务器.zip` from the official website, or check `快速部署信令服务器.md` and `私有化部署README.md` in the repository root.
-
-Basic flow:
+If you want to host your own MCTier signaling server, the general flow is:
 
 1. Prepare a Linux server or a host on your LAN.
 2. Install Docker and Docker Compose.
-3. Upload and unzip `MCTier信令服务器.zip`.
-4. Enter the unzipped directory and grant the deploy script execute permission.
-5. Run the deploy script and fill in your domain or IP as prompted.
-6. Set your private signaling address in the MCTier client settings.
-
-Common commands:
-
-```bash
-unzip MCTier信令服务器.zip
-cd MCTier信令服务器
-chmod +x deploy.sh
-sudo ./deploy.sh
-docker compose -f docker-compose-http.yml ps
-docker compose -f docker-compose-http.yml logs -f
-```
+3. Deploy a WebSocket signaling service (ws or wss, matching your client settings).
+4. Set your private signaling address in the MCTier client settings.
 
 ## Development & Build
 
@@ -232,25 +211,6 @@ cd MCTier-Android
 gradlew.bat assembleDebug
 ```
 
-## Sponsor
-
-MCTier will keep improving the desktop and mobile experience. If it helped you with networking, multiplayer or collaboration, your sponsorship is welcome. Every contribution goes toward improving connection stability, the cross-platform experience and future features.
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="50%">
-        <img src="public/zfb.jpg" alt="Alipay QR Code" width="240"><br>
-        <b>Sponsor via Alipay</b>
-      </td>
-      <td align="center" width="50%">
-        <img src="public/wx.png" alt="WeChat QR Code" width="240"><br>
-        <b>Sponsor via WeChat</b>
-      </td>
-    </tr>
-  </table>
-</div>
-
 ## License
 
 This project uses a custom open-source license:
@@ -270,13 +230,13 @@ This project uses a custom open-source license:
 
 ## Author
 
-QingYun Studio_PengMingHang
+Tnt-next
 
-- GitHub: <https://github.com/pmh1314520/MCTier>
-- Gitee: <https://gitee.com/peng-minghang/mctier>
+- Bilibili: <https://space.bilibili.com/3546659195718047>
+- GitHub: <https://github.com/TNTnext/>
 
 ---
 
 <div align="center">
-  <b>MCTier is completely free and open source. Enjoy!</b>
+  <sub>Modified from MCTier by <a href="https://github.com/pmh1314520/">https://github.com/pmh1314520/</a></sub>
 </div>

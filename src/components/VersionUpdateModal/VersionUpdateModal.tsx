@@ -54,29 +54,47 @@ export const VersionUpdateModal: React.FC<VersionUpdateModalProps> = ({
     try {
       setUpdating(true);
       setProgress(0);
-      message.loading({ content: tl('正在获取最新安装包…', 'Fetching the latest installer…'), key: 'mctier-update', duration: 0 });
+      message.loading({
+        content: tl('正在获取最新安装包…', 'Fetching the latest installer…'),
+        key: 'mctier-update',
+        duration: 0,
+      });
 
       const url = await versionCheckService.fetchLatestInstallerUrl();
       if (!url) {
         message.destroy('mctier-update');
-        message.warning(tl('未找到可下载的安装包，将打开下载页面', 'No installer found, opening the download page'));
-        await open('https://gitee.com/peng-minghang/mctier/releases');
+        message.warning(
+          tl(
+            '未找到可下载的安装包，将打开下载页面',
+            'No installer found, opening the download page'
+          )
+        );
+        await open('https://github.com/TNTnext/MCTier/releases');
         setUpdating(false);
         onClose();
         return;
       }
 
-      message.loading({ content: tl('正在下载并更新，请勿关闭软件…', 'Downloading and updating, please keep the app open…'), key: 'mctier-update', duration: 0 });
+      message.loading({
+        content: tl(
+          '正在下载并更新，请勿关闭软件…',
+          'Downloading and updating, please keep the app open…'
+        ),
+        key: 'mctier-update',
+        duration: 0,
+      });
       // 下载完成后后端会自动运行安装包并退出应用
       await invoke('download_and_run_installer', { url });
       message.destroy('mctier-update');
-      message.success(tl('下载完成，即将启动安装程序…', 'Download complete, launching the installer…'));
+      message.success(
+        tl('下载完成，即将启动安装程序…', 'Download complete, launching the installer…')
+      );
     } catch (error) {
       console.error('❌ 客户端内更新失败:', error);
       message.destroy('mctier-update');
       message.error(tl('更新失败，将打开下载页面', 'Update failed, opening the download page'));
       try {
-        await open('https://gitee.com/peng-minghang/mctier/releases');
+        await open('https://github.com/TNTnext/MCTier/releases');
       } catch (_) {
         // ignore
       }
@@ -88,7 +106,14 @@ export const VersionUpdateModal: React.FC<VersionUpdateModalProps> = ({
     <Modal
       title={
         <div className="version-update-modal-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
@@ -110,7 +135,14 @@ export const VersionUpdateModal: React.FC<VersionUpdateModalProps> = ({
             <span className="version-number current">v{currentVersion}</span>
           </div>
           <div className="version-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <line x1="5" y1="12" x2="19" y2="12" />
               <polyline points="12 5 19 12 12 19" />
             </svg>
@@ -123,14 +155,21 @@ export const VersionUpdateModal: React.FC<VersionUpdateModalProps> = ({
         {/* 更新日志 */}
         <div className="update-log-section">
           <div className="update-log-title">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
               <line x1="16" y1="13" x2="8" y2="13" />
               <line x1="16" y1="17" x2="8" y2="17" />
               <polyline points="10 9 9 9 8 9" />
             </svg>
-            <span>{tl('更新内容', 'What\'s New')}</span>
+            <span>{tl('更新内容', "What's New")}</span>
           </div>
           <div className="update-log-list">
             {updateMessage.map((item, index) => (
@@ -166,12 +205,21 @@ export const VersionUpdateModal: React.FC<VersionUpdateModalProps> = ({
             whileHover={{ scale: updating ? 1 : 1.02 }}
             whileTap={{ scale: updating ? 1 : 0.98 }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            <span>{updating ? `${tl('更新中', 'Updating')} ${progress}%` : tl('立即更新', 'Update Now')}</span>
+            <span>
+              {updating ? `${tl('更新中', 'Updating')} ${progress}%` : tl('立即更新', 'Update Now')}
+            </span>
           </motion.button>
         </div>
       </div>

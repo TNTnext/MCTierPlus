@@ -18,6 +18,7 @@ export { OpacityIcon } from './OpacityIcon';
 export { LogoIcon } from './LogoIcon';
 export { GitHubIcon } from './GitHubIcon';
 export { GiteeIcon } from './GiteeIcon';
+export { BilibiliIcon } from './BilibiliIcon';
 export { WarningIcon } from './WarningIcon';
 export { WarningTriangleIcon } from './WarningTriangleIcon';
 export { LightbulbIcon } from './LightbulbIcon';

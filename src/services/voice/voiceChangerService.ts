@@ -13,7 +13,7 @@ export const VOICE_PRESETS: { id: VoicePreset; zh: string; en: string }[] = [
   { id: 'uncle', zh: '大叔', en: 'Uncle' },
   { id: 'male', zh: '男声', en: 'Male' },
   { id: 'female', zh: '女声', en: 'Female' },
-  { id: 'loli', zh: '萝莉', en: 'Loli' },
+  { id: 'loli', zh: '少女', en: 'Girl' },
   { id: 'chipmunk', zh: '花栗鼠', en: 'Chipmunk' },
   { id: 'robot', zh: '机器人', en: 'Robot' },
   { id: 'telephone', zh: '电话音', en: 'Telephone' },
@@ -34,7 +34,9 @@ class VoiceChangerService {
     try {
       const saved = localStorage.getItem(LS_KEY) as VoicePreset | null;
       if (saved) this.preset = saved;
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   getPreset(): VoicePreset {
@@ -44,7 +46,11 @@ class VoiceChangerService {
   /** 设置音色：持久化 + 若正在变声则实时切换 */
   setPreset(preset: VoicePreset): void {
     this.preset = preset;
-    try { localStorage.setItem(LS_KEY, preset); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(LS_KEY, preset);
+    } catch {
+      /* ignore */
+    }
     if (this.active) {
       this.engine.setPreset(preset);
     }
@@ -71,13 +77,19 @@ class VoiceChangerService {
     this.auditionEngine = new VoiceChanger();
     const processed = this.auditionEngine.attach(raw, this.preset);
 
-    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AC =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new AC();
     this.auditionCtx = ctx;
     const src = ctx.createMediaStreamSource(processed);
     // 实时回放（不加延迟，避免输出被麦克风再次采集形成叠加回声）
     src.connect(ctx.destination);
-    try { await ctx.resume(); } catch { /* ignore */ }
+    try {
+      await ctx.resume();
+    } catch {
+      /* ignore */
+    }
     this.auditioning = true;
   }
 
@@ -93,7 +105,11 @@ class VoiceChangerService {
       this.auditionEngine = null;
     }
     if (this.auditionCtx) {
-      try { await this.auditionCtx.close(); } catch { /* ignore */ }
+      try {
+        await this.auditionCtx.close();
+      } catch {
+        /* ignore */
+      }
       this.auditionCtx = null;
     }
   }

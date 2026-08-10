@@ -1,20 +1,12 @@
 /**
  * 版本更新检测服务
- * 从 Gitee API 获取最新版本信息并与当前版本对比
+ * 从 GitHub Releases API 获取最新版本信息并与当前版本对比
  */
 
-interface GiteeTag {
-  name: string;
-  message: string;
-  commit: {
-    sha: string;
-    date: string;
-  };
-  tagger: {
-    name: string;
-    email: string;
-    date: string;
-  };
+interface GitHubRelease {
+  tag_name: string;
+  body: string | null;
+  assets: Array<{ name: string; browser_download_url: string }>;
 }
 
 interface VersionInfo {
@@ -25,7 +17,7 @@ interface VersionInfo {
 }
 
 class VersionCheckService {
-  private readonly GITEE_API_URL = 'https://gitee.com/api/v5/repos/peng-minghang/mctier/tags';
+  private readonly RELEASES_API_URL = 'https://api.github.com/repos/TNTnext/MCTier/releases/latest';
   private readonly CURRENT_VERSION = '2.5.0';
   private readonly VERSION_CHECK_KEY = 'mctier_version_check_shown';
 
@@ -71,55 +63,54 @@ class VersionCheckService {
   }
 
   /**
-   * 从 Gitee API 获取最新版本信息
+   * 从 GitHub Releases API 获取最新版本信息
    */
   async fetchLatestVersion(): Promise<VersionInfo | null> {
     try {
       console.log('🔍 [VersionCheckService] 开始检查版本更新...');
-      console.log('📡 [VersionCheckService] 请求 Gitee API:', this.GITEE_API_URL);
+      console.log('📡 [VersionCheckService] 请求 GitHub Releases API:', this.RELEASES_API_URL);
 
-      const response = await fetch(this.GITEE_API_URL, {
+      const response = await fetch(this.RELEASES_API_URL, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       });
 
       if (!response.ok) {
-        console.error('❌ [VersionCheckService] API 请求失败:', response.status, response.statusText);
+        console.error(
+          '❌ [VersionCheckService] API 请求失败:',
+          response.status,
+          response.statusText
+        );
         return null;
       }
 
-      const tags: GiteeTag[] = await response.json();
-      console.log('✅ [VersionCheckService] 成功获取标签列表，共', tags.length, '个标签');
-
-      if (!tags || tags.length === 0) {
-        console.warn('⚠️ [VersionCheckService] 未找到任何版本标签');
+      const release: GitHubRelease = await response.json();
+      if (!release.tag_name) {
+        console.warn('⚠️ [VersionCheckService] 未找到最新版本信息');
         return null;
       }
 
-      // 【修复】Gitee tags 接口不保证按语义版本排序，不能简单取数组末位，
-      // 否则可能把旧 tag 当成"最新版"误报更新。这里遍历全部 tag，按语义版本取最大值。
-      const latestTag = tags.reduce((best, tag) => {
-        const bestV = best.name.replace(/^v/, '');
-        const curV = tag.name.replace(/^v/, '');
-        return this.compareVersions(curV, bestV) > 0 ? tag : best;
-      }, tags[0]);
-      const latestVersion = latestTag.name.replace(/^v/, ''); // 移除 'v' 前缀
-      
+      const latestVersion = release.tag_name.replace(/^v/, ''); // 移除 'v' 前缀
+
       console.log('📦 [VersionCheckService] 最新版本:', latestVersion);
       console.log('📦 [VersionCheckService] 当前版本:', this.CURRENT_VERSION);
 
       // 比较版本号
       const hasUpdate = this.compareVersions(latestVersion, this.CURRENT_VERSION) > 0;
-      
-      console.log(hasUpdate ? '🎉 [VersionCheckService] 发现新版本！' : '✅ [VersionCheckService] 当前已是最新版本');
+
+      console.log(
+        hasUpdate
+          ? '🎉 [VersionCheckService] 发现新版本！'
+          : '✅ [VersionCheckService] 当前已是最新版本'
+      );
 
       return {
         latestVersion,
         currentVersion: this.CURRENT_VERSION,
         hasUpdate,
-        updateMessage: hasUpdate ? latestTag.message : undefined,
+        updateMessage: hasUpdate ? (release.body ?? undefined) : undefined,
       };
     } catch (error) {
       console.error('❌ [VersionCheckService] 检查版本更新失败:', error);
@@ -130,13 +121,13 @@ class VersionCheckService {
   /**
    * 比较两个版本号
    * @returns 1: v1 > v2, 0: v1 === v2, -1: v1 < v2
-   * 
+   *
    * 版本号格式: x.y.z
    * 比较规则：
    * 1. 先比较第一位数字（主版本号）
    * 2. 如果第一位相同，比较第二位数字（次版本号）
    * 3. 如果第二位相同，比较第三位数字（修订号）
-   * 
+   *
    * 例如：
    * - 1.2.1 > 1.2.0
    * - 1.3.0 > 1.2.9
@@ -149,11 +140,11 @@ class VersionCheckService {
       const cleanV2 = v2.replace(/^v/, '');
 
       // 分割版本号并转换为数字
-      const parts1 = cleanV1.split('.').map(part => {
+      const parts1 = cleanV1.split('.').map((part) => {
         const num = parseInt(part, 10);
         return isNaN(num) ? 0 : num;
       });
-      const parts2 = cleanV2.split('.').map(part => {
+      const parts2 = cleanV2.split('.').map((part) => {
         const num = parseInt(part, 10);
         return isNaN(num) ? 0 : num;
       });
@@ -163,7 +154,9 @@ class VersionCheckService {
       while (parts2.length < 3) parts2.push(0);
 
       console.log(`🔍 [VersionCheckService] 比较版本号: ${cleanV1} vs ${cleanV2}`);
-      console.log(`🔍 [VersionCheckService] 解析后: [${parts1.join(', ')}] vs [${parts2.join(', ')}]`);
+      console.log(
+        `🔍 [VersionCheckService] 解析后: [${parts1.join(', ')}] vs [${parts2.join(', ')}]`
+      );
 
       // 逐位比较
       for (let i = 0; i < 3; i++) {
@@ -200,9 +193,9 @@ class VersionCheckService {
       // 按行分割，过滤空行，并去掉"- "前缀
       return message
         .split(/\r?\n/)
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => {
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => {
           // 如果行以"- "开头，去掉这个前缀
           if (line.startsWith('- ')) {
             return line.substring(2);
@@ -215,12 +208,12 @@ class VersionCheckService {
     }
   }
   /**
-   * 从 Gitee Releases API 获取最新版安装包(.exe) 的直链地址
+   * 从 GitHub Releases API 获取最新版安装包(.exe) 的直链地址
    * 用于客户端内一键更新（下载并运行安装包）
    */
   async fetchLatestInstallerUrl(): Promise<string | null> {
     try {
-      const apiUrl = 'https://gitee.com/api/v5/repos/peng-minghang/mctier/releases/latest';
+      const apiUrl = this.RELEASES_API_URL;
       console.log('📡 [VersionCheckService] 请求最新 Release:', apiUrl);
       const response = await fetch(apiUrl, {
         method: 'GET',
@@ -230,8 +223,8 @@ class VersionCheckService {
         console.error('❌ [VersionCheckService] 获取最新 Release 失败:', response.status);
         return null;
       }
-      const release = await response.json();
-      const assets: Array<{ name: string; browser_download_url: string }> = release?.assets || [];
+      const release: GitHubRelease = await response.json();
+      const assets = release.assets || [];
       if (!assets.length) {
         console.warn('⚠️ [VersionCheckService] 最新 Release 没有任何安装包附件');
         return null;
