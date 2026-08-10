@@ -1,13 +1,13 @@
-/* 全局自定义悬停提示气泡 - MCTier 暗色主题 */
+/* 全局自定义悬停提示气泡 - 微信式深色气泡 */
 .mct-global-tip {
   position: fixed;
   z-index: 99000;
   width: max-content;
   max-width: 240px;
   padding: 6px 10px;
-  background: rgba(28, 30, 42, 0.98);
-  color: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(126, 211, 33, 0.35);
+  background: rgba(0, 0, 0, 0.85);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
   font-size: 12px;
@@ -30,15 +30,19 @@
 
 .mct-global-tip-top .mct-global-tip-arrow {
   top: 100%;
-  border-top-color: rgba(126, 211, 33, 0.35);
+  border-top-color: var(--mc-text);
 }
 
 .mct-global-tip-bottom .mct-global-tip-arrow {
   bottom: 100%;
-  border-bottom-color: rgba(126, 211, 33, 0.35);
+  border-bottom-color: var(--mc-text);
 }
 
 @keyframes mctTipFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

@@ -77,5 +77,6 @@ export const en = {
     configMgr: 'Config Management',
     configMgrDesc: 'Export or import all settings for backup and migration',
     theme: 'Theme & Colors',
+    themeDesc: 'Choose the interface mode: Light, Dark, or follow the system (Dark by default)',
   },
 };

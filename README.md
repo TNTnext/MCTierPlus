@@ -212,6 +212,10 @@ docker compose -f docker-compose-http.yml logs -f
 
 ## 开发与构建
 
+> 构建要求：Node.js ≥ 22（推荐 24.12 及以上或 22 LTS）。
+> 注意：Node 24.11 及更早的 24.x 与 rollup 原生绑定存在兼容问题，
+> 运行 `npm run build` 会在渲染阶段直接崩溃（退出码 0xC0000409），请先升级 Node。
+
 ```bash
 npm install
 npm run tauri dev

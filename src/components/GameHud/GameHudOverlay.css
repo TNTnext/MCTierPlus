@@ -11,7 +11,7 @@
   background: rgba(16, 18, 24, 0.78);
   border: 1px solid rgba(124, 207, 0, 0.25);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-  font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+  font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
   pointer-events: none;
   backdrop-filter: blur(6px);
 }
@@ -19,14 +19,14 @@
 .hud-title {
   font-size: 12px;
   font-weight: 700;
-  color: #7ccf00;
+  color: #07c160;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
 }
 
 .hud-empty {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--mc-text-3);
 }
 
 .hud-row {
@@ -40,12 +40,12 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--mc-bg-alpha);
   flex-shrink: 0;
 }
 
 .hud-dot.speaking {
-  background: #7ccf00;
+  background: #07c160;
   box-shadow: 0 0 6px rgba(124, 207, 0, 0.9);
 }
 
@@ -81,14 +81,14 @@
   padding: 0 4px;
   border: none;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--mc-bg-alpha);
   color: #fff;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .hud-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .hud-btn.on {

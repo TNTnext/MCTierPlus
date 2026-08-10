@@ -1,7 +1,5 @@
 .global-advanced-config-panel {
-  padding: 20px;
-  max-height: 600px;
-  overflow-y: auto;
+  padding: 4px 2px 8px;
 }
 
 .global-advanced-config-loading {
@@ -11,105 +9,148 @@
   min-height: 200px;
 }
 
-.global-advanced-config-header {
-  margin-bottom: 20px;
-}
-
-.global-advanced-config-header h3 {
-  margin: 0 0 8px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.global-advanced-config-header p {
-  margin: 0;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1.5;
-}
-
 .advanced-config-collapse {
   background: transparent;
   border: none;
 }
 
 .advanced-config-collapse .ant-collapse-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  margin-bottom: 12px;
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border);
+  border-radius: var(--mc-radius);
+  margin-bottom: 8px;
   overflow: hidden;
 }
 
 .advanced-config-collapse .ant-collapse-header {
-  padding: 12px 16px;
-  color: rgba(255, 255, 255, 0.9);
+  padding: 9px 12px;
+  color: var(--mc-text);
+  font-size: 13px;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--mc-bg-alpha);
 }
 
 .advanced-config-collapse .ant-collapse-content {
   background: transparent;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--mc-border);
 }
 
 .advanced-config-collapse .ant-collapse-content-box {
-  padding: 16px;
+  padding: 12px;
 }
 
 .advanced-config-collapse .ant-form-item {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .advanced-config-collapse .ant-form-item-label > label {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--mc-text-2);
   font-size: 13px;
 }
 
 .advanced-config-collapse .ant-input,
 .advanced-config-collapse .ant-input-number {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border-strong);
+  color: var(--mc-text);
 }
 
 .advanced-config-collapse .ant-input:hover,
 .advanced-config-collapse .ant-input-number:hover {
-  border-color: rgba(126, 211, 33, 0.5);
+  border-color: rgba(7, 193, 96, 0.5);
 }
 
 .advanced-config-collapse .ant-input:focus,
 .advanced-config-collapse .ant-input-number:focus,
 .advanced-config-collapse .ant-input-number-focused {
-  border-color: rgba(126, 211, 33, 0.8);
-  box-shadow: 0 0 0 2px rgba(126, 211, 33, 0.1);
+  border-color: rgba(7, 193, 96, 0.8);
+  box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.1);
 }
 
 .advanced-config-collapse .ant-input::placeholder,
 .advanced-config-collapse .ant-input-number input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--mc-text-4);
 }
 
 .advanced-config-collapse .ant-switch {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--mc-switch-rail);
 }
 
 .advanced-config-collapse .ant-switch-checked {
-  background: rgba(126, 211, 33, 0.8);
+  background: rgba(7, 193, 96, 0.8);
+}
+
+/* 端口转发：添加 / 删除规则按钮（微信绿 / 语义红，随主题适配） */
+.gac-add-btn,
+.gac-del-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.gac-add-btn {
+  background: rgba(7, 193, 96, 0.08);
+  border: 1px solid rgba(7, 193, 96, 0.3);
+  color: #0a8f47;
+}
+
+.gac-add-btn svg,
+.gac-del-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.gac-add-btn:hover {
+  background: rgba(7, 193, 96, 0.14);
+  border-color: rgba(7, 193, 96, 0.45);
+}
+
+.gac-del-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(250, 81, 81, 0.08);
+  border: 1px solid rgba(250, 81, 81, 0.28);
+  color: #c0392b;
+}
+
+.gac-del-btn:hover {
+  background: rgba(250, 81, 81, 0.14);
+  border-color: rgba(250, 81, 81, 0.45);
+}
+
+[data-weui-theme='dark'] .gac-add-btn {
+  background: rgba(7, 193, 96, 0.16);
+  border-color: rgba(7, 193, 96, 0.4);
+  color: #2fd07a;
+}
+
+[data-weui-theme='dark'] .gac-del-btn {
+  background: rgba(250, 81, 81, 0.16);
+  border-color: rgba(250, 81, 81, 0.4);
+  color: #ff7a7a;
 }
 
 .global-advanced-config-footer {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--mc-border);
   display: flex;
   justify-content: flex-end;
 }
 
 .global-advanced-config-save-btn {
   padding: 8px 24px;
-  background: linear-gradient(135deg, rgba(126, 211, 33, 0.9), rgba(106, 191, 13, 0.9));
+  background: #07c160;
   border: none;
   border-radius: 6px;
   color: white;
@@ -120,9 +161,9 @@
 }
 
 .global-advanced-config-save-btn:hover {
-  background: linear-gradient(135deg, rgba(126, 211, 33, 1), rgba(106, 191, 13, 1));
+  background: #07c160;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(126, 211, 33, 0.3);
+  box-shadow: none;
 }
 
 .global-advanced-config-save-btn:active {
@@ -141,15 +182,15 @@
 }
 
 .global-advanced-config-panel::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--mc-bg-alpha);
   border-radius: 3px;
 }
 
 .global-advanced-config-panel::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--mc-bg-alpha);
   border-radius: 3px;
 }
 
 .global-advanced-config-panel::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.22);
 }

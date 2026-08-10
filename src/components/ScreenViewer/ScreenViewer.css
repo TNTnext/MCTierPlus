@@ -49,7 +49,7 @@
   height: 40px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
   color: white;
   cursor: pointer;
   display: flex;
@@ -60,7 +60,7 @@
 }
 
 .viewer-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--mc-bg-alpha);
 }
 
 .viewer-btn.close-btn:hover {
@@ -88,13 +88,13 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--mc-text-2);
 }
 
 .loading-spinner {
   width: 48px;
   height: 48px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
+  border: 4px solid var(--mc-border);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -107,7 +107,7 @@
 }
 
 .viewer-error svg {
-  color: #ff4d4f;
+  color: #fa5151;
 }
 
 .viewer-loading p,
@@ -121,7 +121,7 @@
   height: 40px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
   color: white;
   cursor: pointer;
   display: flex;
@@ -145,7 +145,7 @@
   padding: 10px 24px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
   color: white;
   font-size: 14px;
   cursor: pointer;
@@ -154,7 +154,7 @@
 }
 
 .retry-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--mc-bg-alpha);
   transform: translateY(-2px);
 }
 

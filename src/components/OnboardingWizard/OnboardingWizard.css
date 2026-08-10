@@ -4,19 +4,39 @@
   padding-top: 8px;
 }
 
+/* 小窗口下限制弹窗高度：正文可滚动，底部按钮始终可见 */
+.onboarding-modal .ant-modal-content {
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+}
+
+.onboarding-modal .ant-modal-body {
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.onboarding-modal .ant-modal-footer {
+  flex-shrink: 0;
+}
+
+.onboarding-modal .ant-steps {
+  flex-shrink: 0;
+}
+
 .onboarding-step {
   padding: 4px 2px;
 }
 
 .onboarding-text {
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--mc-text-2);
   font-size: 13px;
   line-height: 1.7;
   margin-bottom: 10px !important;
 }
 
 .onboarding-list {
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--mc-text-2);
   font-size: 13px;
   line-height: 1.65;
   padding-left: 18px;

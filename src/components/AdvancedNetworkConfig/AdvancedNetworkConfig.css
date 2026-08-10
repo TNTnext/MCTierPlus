@@ -6,10 +6,10 @@
 }
 
 .config-section {
-  background: rgba(30, 30, 45, 0.95);
+  background: var(--mc-bg-raised);
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--mc-border);
 }
 
 .section-header {
@@ -23,17 +23,17 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
 }
 
 .section-header .anticon {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--mc-text-3);
   cursor: help;
   transition: color 0.3s ease;
 }
 
 .section-header .anticon:hover {
-  color: #52c41a;
+  color: #07c160;
 }
 
 .input-group {
@@ -58,7 +58,7 @@
 }
 
 .mapping-input-group .arrow {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--mc-text-3);
   font-size: 16px;
   font-weight: bold;
 }
@@ -74,19 +74,19 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--mc-bg-alpha);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--mc-border);
   transition: all 0.3s ease;
 }
 
 .list-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--mc-bg-alpha);
+  border-color: var(--mc-text-4);
 }
 
 .list-item span {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
   font-size: 14px;
 }
 
@@ -98,28 +98,28 @@
 }
 
 .mapping-item .arrow {
-  color: #52c41a;
+  color: #07c160;
   font-size: 14px;
 }
 
 .domain-preview {
   margin-top: 12px;
   padding: 12px 16px;
-  background: rgba(82, 196, 26, 0.1);
+  background: rgba(7, 193, 96, 0.1);
   border-radius: 8px;
-  border: 1px solid rgba(82, 196, 26, 0.3);
+  border: 1px solid rgba(7, 193, 96, 0.3);
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .preview-label {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
   font-size: 12px;
 }
 
 .preview-value {
-  color: #52c41a;
+  color: #07c160;
   font-size: 14px;
   font-weight: 600;
   font-family: 'Courier New', monospace;

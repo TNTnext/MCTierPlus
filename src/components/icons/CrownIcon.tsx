@@ -24,7 +24,7 @@ export const CrownIcon: React.FC<CrownIconProps> = ({
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill={color}
+      fill="none"
       className={className}
       style={style}
       aria-label={tl('房主', 'Host')}
@@ -33,12 +33,22 @@ export const CrownIcon: React.FC<CrownIconProps> = ({
       {/* 冠体：左峰-谷-中峰-谷-右峰，底部平 */}
       <path
         d="M5 16.5L2.7 6.2l5.6 3.9L12 3.8l3.7 6.3 5.6-3.9L19 16.5z"
+        fill="none"
         strokeLinejoin="round"
-        strokeWidth="0.6"
+        strokeWidth="1.5"
         stroke={color}
       />
       {/* 冠带（底座） */}
-      <rect x="4.6" y="17.8" width="14.8" height="2.6" rx="1.1" />
+      <rect
+        x="4.6"
+        y="17.8"
+        width="14.8"
+        height="2.6"
+        rx="1.1"
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+      />
     </svg>
   );
 };

@@ -1,10 +1,13 @@
-.player-list {
+﻿.player-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   max-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
+  background: var(--mc-bg-raised);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 /* 自定义滚动条 */
@@ -13,17 +16,17 @@
 }
 
 .player-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--mc-bg-alpha);
   border-radius: 3px;
 }
 
 .player-list::-webkit-scrollbar-thumb {
-  background: rgba(17, 153, 142, 0.5);
+  background: rgba(7, 193, 96, 0.5);
   border-radius: 3px;
 }
 
 .player-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(17, 153, 142, 0.7);
+  background: rgba(7, 193, 96, 0.7);
 }
 
 /* 空状态 */
@@ -33,7 +36,7 @@
 }
 
 .player-list-empty .ant-empty-description {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--mc-text-4);
 }
 
 /* 玩家项 */
@@ -43,35 +46,42 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 0;
+  transition: background-color 0.16s ease;
+  border: none;
   cursor: default;
 }
 
+.player-item + .player-item {
+  border-top: 1px solid var(--mc-border);
+}
+
 .player-item:hover {
-  border-color: rgba(17, 153, 142, 0.3);
-  transform: translateX(4px);
+  background: var(--mc-bg-hover);
+}
+
+.player-item:active {
+  background: var(--mc-bg-alpha);
 }
 
 /* 玩家图标 */
 .player-item-icon {
   flex-shrink: 0;
-  color: #11998e;
+  color: #07c160;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgba(17, 153, 142, 0.18);
-  border: 1px solid rgba(17, 153, 142, 0.36);
+  background: rgba(7, 193, 96, 0.18);
+  border: 1px solid rgba(7, 193, 96, 0.36);
 }
 
 .player-initial {
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 800;
+  color: var(--mc-text);
+  font-weight: 700;
   font-size: 14px;
   line-height: 1;
 }
@@ -83,7 +93,7 @@
 }
 
 .player-item-name {
-  color: #fff;
+  color: var(--mc-text);
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -95,24 +105,24 @@
 .player-item-status {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .player-status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   padding: 2px 8px;
   border-radius: 10px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
   transition: all 0.2s;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--mc-border);
 }
 
 .player-status-badge.active {
-  color: #52c41a;
-  border-color: rgba(82, 196, 26, 0.3);
+  color: #07c160;
+  border-color: rgba(7, 193, 96, 0.3);
   animation: statusPulse 2s infinite;
 }
 
@@ -130,24 +140,24 @@
 .player-item-actions {
   flex-shrink: 0;
   display: flex;
-  gap: 4px;
+  gap: 8px;
 }
 
 .player-mute-button {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--mc-text-2) !important;
   transition: all 0.2s !important;
   padding: 4px !important;
   height: auto !important;
 }
 
 .player-mute-button:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--mc-text) !important;
+  background: var(--mc-bg-alpha) !important;
   transform: scale(1.1);
 }
 
 .player-mute-button.muted {
-  color: #ff4d4f !important;
+  color: #fa5151 !important;
 }
 
 .player-mute-button.muted:hover {
@@ -171,7 +181,7 @@
 .speaking-wave {
   width: 100%;
   height: 4px;
-  background: #52c41a;
+  background: #07c160;
   border-radius: 2px;
   animation: speakingWave 0.8s ease-in-out infinite;
 }
@@ -215,7 +225,7 @@
 /* 音量图标和控制按钮 */
 .player-volume-icon,
 .player-volume-toggle {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
   cursor: pointer;
   transition: all 0.2s;
   padding: 4px;
@@ -227,13 +237,13 @@
 
 .player-volume-icon:hover,
 .player-volume-toggle:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--mc-text);
+  background: var(--mc-bg-alpha);
 }
 
 .player-volume-toggle.active {
-  color: rgba(126, 211, 33, 0.95);
-  background: rgba(126, 211, 33, 0.1);
+  color: rgba(7, 193, 96, 0.95);
+  background: rgba(7, 193, 96, 0.1);
 }
 
 /* 音量滑块容器 */
@@ -243,7 +253,7 @@
   overflow: hidden;
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--mc-border);
 }
 
 .player-volume-slider-wrapper {
@@ -256,7 +266,7 @@
 
 /* 音量滑块左侧的听筒图标 */
 .player-volume-icon-inline {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
   cursor: pointer;
   transition: all 0.2s;
   padding: 4px;
@@ -268,13 +278,13 @@
 }
 
 .player-volume-icon-inline:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--mc-text);
+  background: var(--mc-bg-alpha);
 }
 
 .volume-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
   white-space: nowrap;
 }
 
@@ -285,34 +295,34 @@
 
 .volume-value {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--mc-text-2);
   min-width: 35px;
   text-align: right;
 }
 
 /* Ant Design Slider 自定义样式 */
 .player-volume-slider .ant-slider-rail {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
 }
 
 .player-volume-slider .ant-slider-track {
-  background: rgba(126, 211, 33, 0.8);
+  background: rgba(7, 193, 96, 0.8);
 }
 
 .player-volume-slider .ant-slider-handle::after {
-  background: rgba(126, 211, 33, 0.95);
-  box-shadow: 0 0 0 2px rgba(126, 211, 33, 0.2);
+  background: rgba(7, 193, 96, 0.95);
+  box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
 }
 
 .player-volume-slider .ant-slider-handle:hover::after,
 .player-volume-slider .ant-slider-handle:focus::after {
-  box-shadow: 0 0 0 4px rgba(126, 211, 33, 0.3);
+  box-shadow: 0 0 0 4px rgba(7, 193, 96, 0.3);
 }
 
 .player-volume-slider.ant-slider-disabled .ant-slider-track {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: var(--mc-bg-alpha) !important;
 }
 
 .player-volume-slider.ant-slider-disabled .ant-slider-handle::after {
-  background: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(0, 0, 0, 0.22) !important;
 }

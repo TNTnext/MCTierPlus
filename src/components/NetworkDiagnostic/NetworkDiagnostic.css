@@ -1,19 +1,19 @@
 .network-diagnostic-modal .ant-modal-content {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: var(--mc-bg);
   border-radius: 16px;
 }
 
 .network-diagnostic-modal .ant-modal-header {
   background: transparent;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--mc-border);
 }
 
 .network-diagnostic-modal .ant-modal-close {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
 }
 
 .network-diagnostic-modal .ant-modal-close:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
 }
 
 .diagnostic-content {
@@ -21,13 +21,13 @@
 }
 
 .diagnostic-title {
-  color: rgba(255, 255, 255, 0.95) !important;
+  color: var(--mc-text) !important;
   margin-bottom: 12px !important;
   text-align: center;
 }
 
 .diagnostic-desc {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--mc-text-2);
   text-align: center;
   margin-bottom: 24px !important;
 }
@@ -42,13 +42,13 @@
 .diagnostic-item {
   padding: 16px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border);
   transition: all 0.3s;
 }
 
 .diagnostic-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--mc-bg-alpha);
   transform: translateX(4px);
 }
 
@@ -64,19 +64,19 @@
 }
 
 .icon-success {
-  color: #52c41a;
+  color: #07c160;
 }
 
 .icon-error {
-  color: #ff4d4f;
+  color: #fa5151;
 }
 
 .icon-warning {
-  color: #faad14;
+  color: #fa9d3b;
 }
 
 .diagnostic-item-message {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--mc-text-2);
   font-size: 14px;
   margin-left: 32px;
 }
@@ -95,7 +95,7 @@
 }
 
 .diagnostic-success {
-  border-color: rgba(82, 196, 26, 0.3);
+  border-color: rgba(7, 193, 96, 0.3);
 }
 
 .diagnostic-error {

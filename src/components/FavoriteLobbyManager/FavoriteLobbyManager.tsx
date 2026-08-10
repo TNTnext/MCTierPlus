@@ -40,7 +40,12 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
   const [favorites, setFavorites] = useState<FavoriteLobby[]>([]);
   const [editingFavorite, setEditingFavorite] = useState<FavoriteLobby | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [form] = Form.useForm<{ name: string; password: string; playerName?: string; useDomain?: boolean }>();
+  const [form] = Form.useForm<{
+    name: string;
+    password: string;
+    playerName?: string;
+    useDomain?: boolean;
+  }>();
   const [showPassword, setShowPassword] = useState(false);
 
   // 从 localStorage 加载常用大厅列表
@@ -77,17 +82,17 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
   const handleSaveFavorite = async () => {
     try {
       const values = await form.validateFields();
-      
+
       if (editingFavorite) {
         // 编辑现有项
-        const updated = favorites.map(fav =>
+        const updated = favorites.map((fav) =>
           fav.id === editingFavorite.id
-            ? { 
-                ...fav, 
-                name: values.name, 
+            ? {
+                ...fav,
+                name: values.name,
                 password: values.password,
                 playerName: values.playerName,
-                useDomain: values.useDomain ?? false
+                useDomain: values.useDomain ?? false,
               }
             : fav
         );
@@ -106,7 +111,7 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
         saveFavorites([...favorites, newFavorite]);
         message.success(tl('添加成功', 'Added'));
       }
-      
+
       form.resetFields();
       setEditingFavorite(null);
       setShowAddForm(false);
@@ -118,14 +123,14 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
 
   // 删除常用大厅
   const handleDeleteFavorite = (id: string) => {
-    const updated = favorites.filter(fav => fav.id !== id);
+    const updated = favorites.filter((fav) => fav.id !== id);
     saveFavorites(updated);
     message.success(tl('删除成功', 'Deleted'));
   };
 
   // 选择常用大厅（记录使用次数与时间，便于按最近使用排序）
   const handleSelectFavorite = (lobby: FavoriteLobby) => {
-    const updated = favorites.map(fav =>
+    const updated = favorites.map((fav) =>
       fav.id === lobby.id
         ? { ...fav, useCount: (fav.useCount ?? 0) + 1, lastUsedAt: Date.now() }
         : fav
@@ -203,15 +208,25 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
                   name="name"
                   rules={[
                     { required: true, message: tl('请输入大厅名称', 'Enter a lobby name') },
-                    { min: 4, max: 32, message: tl('大厅名称长度为 4-32 个字符', 'Lobby name must be 4-32 characters') },
+                    {
+                      min: 4,
+                      max: 32,
+                      message: tl(
+                        '大厅名称长度为 4-32 个字符',
+                        'Lobby name must be 4-32 characters'
+                      ),
+                    },
                     {
                       pattern: /^[\u4e00-\u9fa5a-zA-Z0-9_\-\s]+$/,
-                      message: tl('大厅名称只能包含中文、字母、数字、下划线、连字符和空格', 'Lobby name may only contain letters, digits, underscore, hyphen and spaces'),
+                      message: tl(
+                        '大厅名称只能包含中文、字母、数字、下划线、连字符和空格',
+                        'Lobby name may only contain letters, digits, underscore, hyphen and spaces'
+                      ),
                     },
                   ]}
                 >
-                  <Input 
-                    placeholder={tl('输入大厅名称', 'Enter lobby name')} 
+                  <Input
+                    placeholder={tl('输入大厅名称', 'Enter lobby name')}
                     onChange={(e) => {
                       const value = e.target.value;
                       const filtered = value.replace(/[^\u4e00-\u9fa5a-zA-Z0-9_\-\s]/g, '');
@@ -226,17 +241,35 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
                   name="password"
                   rules={[
                     { required: true, message: tl('请输入密码', 'Enter a password') },
-                    { min: 8, max: 32, message: tl('密码长度为 8-32 个字符', 'Password must be 8-32 characters') },
+                    {
+                      min: 8,
+                      max: 32,
+                      message: tl('密码长度为 8-32 个字符', 'Password must be 8-32 characters'),
+                    },
                     {
                       validator: (_, value) => {
                         if (!value) return Promise.resolve();
                         const hasLetter = /[a-zA-Z]/.test(value);
                         const hasDigit = /[0-9]/.test(value);
                         if (!hasLetter) {
-                          return Promise.reject(new Error(tl('密码必须包含至少一个字母', 'Password must contain at least one letter')));
+                          return Promise.reject(
+                            new Error(
+                              tl(
+                                '密码必须包含至少一个字母',
+                                'Password must contain at least one letter'
+                              )
+                            )
+                          );
                         }
                         if (!hasDigit) {
-                          return Promise.reject(new Error(tl('密码必须包含至少一个数字', 'Password must contain at least one digit')));
+                          return Promise.reject(
+                            new Error(
+                              tl(
+                                '密码必须包含至少一个数字',
+                                'Password must contain at least one digit'
+                              )
+                            )
+                          );
                         }
                         return Promise.resolve();
                       },
@@ -246,7 +279,10 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
                   <div style={{ position: 'relative' }}>
                     <Input
                       type={showPassword ? 'text' : 'password'}
-                      placeholder={tl('输入密码（至少8个字符，包含字母和数字）', 'Password (min 8 chars, letters and digits)')}
+                      placeholder={tl(
+                        '输入密码（至少8个字符，包含字母和数字）',
+                        'Password (min 8 chars, letters and digits)'
+                      )}
                       style={{ paddingRight: '40px' }}
                       className="custom-password-input"
                     />
@@ -265,20 +301,34 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'rgba(255, 255, 255, 0.6)',
+                        color: 'var(--mc-text-2)',
                         transition: 'color 0.2s',
                         zIndex: 10,
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)'}
-                      onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--mc-text)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--mc-text-2)')}
                     >
                       {showPassword ? (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                           <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                           <line x1="1" y1="1" x2="23" y2="23"></line>
                         </svg>
@@ -291,8 +341,15 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
                   name="playerName"
                   rules={[
                     { required: true, message: tl('请输入玩家名称', 'Enter a player name') },
-                    { whitespace: true, message: tl('玩家名称不能为空白字符', 'Player name cannot be blank') },
-                    { min: 1, max: 8, message: tl('玩家名称长度为 1-8 个字', 'Player name must be 1-8 characters') },
+                    {
+                      whitespace: true,
+                      message: tl('玩家名称不能为空白字符', 'Player name cannot be blank'),
+                    },
+                    {
+                      min: 1,
+                      max: 8,
+                      message: tl('玩家名称长度为 1-8 个字', 'Player name must be 1-8 characters'),
+                    },
                   ]}
                 >
                   <Input placeholder={tl('输入玩家名称', 'Enter player name')} maxLength={8} />
@@ -335,8 +392,11 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
         {favorites.length === 0 && !showAddForm ? (
           <div className="empty-state">
             <p>{tl('暂无常用大厅', 'No favorite lobbies')}</p>
-            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
-              {tl('点击上方按钮添加常用的大厅信息', 'Click the button above to add a favorite lobby')}
+            <p style={{ fontSize: '12px', color: 'var(--mc-text-3)' }}>
+              {tl(
+                '点击上方按钮添加常用的大厅信息',
+                'Click the button above to add a favorite lobby'
+              )}
             </p>
           </div>
         ) : (
@@ -347,69 +407,108 @@ export const FavoriteLobbyManager: React.FC<FavoriteLobbyManagerProps> = ({
                 className="favorite-card"
                 onClick={() => handleSelectFavorite(item)}
               >
-                  <div className="favorite-card-content">
-                    <div className="favorite-card-header">
-                      <div className="favorite-card-icon">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                          <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                        </svg>
-                      </div>
-                      <div className="favorite-card-title">{item.name}</div>
-                    </div>
-                    <div className="favorite-card-password">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                <div className="favorite-card-content">
+                  <div className="favorite-card-header">
+                    <div className="favorite-card-icon">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
                       </svg>
-                      <span>{item.password.replace(/./g, '●')}</span>
                     </div>
-                    <div className="favorite-card-meta" style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 4, display: 'flex', gap: 12 }}>
-                      <span>{tl('使用', 'Used')} {item.useCount ?? 0} {tl('次', 'x')}</span>
-                      <span>{fmtLastUsed(item.lastUsedAt)}</span>
-                    </div>
+                    <div className="favorite-card-title">{item.name}</div>
                   </div>
-                  <div className="favorite-card-actions" onClick={(e) => e.stopPropagation()}>
-                    <motion.button
-                      className="favorite-action-btn edit-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStartEdit(item);
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      title={tl('编辑', 'Edit')}
+                  <div className="favorite-card-password">
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                      </svg>
-                    </motion.button>
-                    <motion.button
-                      className="favorite-action-btn delete-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        modal.confirm({
-                          title: tl('确定删除这个常用大厅吗？', 'Delete this favorite lobby?'),
-                          okText: tl('确定', 'OK'),
-                          cancelText: tl('取消', 'Cancel'),
-                          okButtonProps: { danger: true },
-                          centered: true,
-                          onOk: () => handleDeleteFavorite(item.id),
-                        });
-                      }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      title={tl('删除', 'Delete')}
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                      </svg>
-                    </motion.button>
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>{item.password.replace(/./g, '●')}</span>
+                  </div>
+                  <div
+                    className="favorite-card-meta"
+                    style={{
+                      fontSize: 11,
+                      color: 'var(--mc-text-3)',
+                      marginTop: 4,
+                      display: 'flex',
+                      gap: 12,
+                    }}
+                  >
+                    <span>
+                      {tl('使用', 'Used')} {item.useCount ?? 0} {tl('次', 'x')}
+                    </span>
+                    <span>{fmtLastUsed(item.lastUsedAt)}</span>
                   </div>
                 </div>
-              ))}
+                <div className="favorite-card-actions" onClick={(e) => e.stopPropagation()}>
+                  <motion.button
+                    className="favorite-action-btn edit-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleStartEdit(item);
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    title={tl('编辑', 'Edit')}
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </motion.button>
+                  <motion.button
+                    className="favorite-action-btn delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      modal.confirm({
+                        title: tl('确定删除这个常用大厅吗？', 'Delete this favorite lobby?'),
+                        okText: tl('确定', 'OK'),
+                        cancelText: tl('取消', 'Cancel'),
+                        okButtonProps: { danger: true },
+                        centered: true,
+                        onOk: () => handleDeleteFavorite(item.id),
+                      });
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    title={tl('删除', 'Delete')}
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </motion.button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

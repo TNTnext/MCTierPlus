@@ -19,6 +19,11 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // react-hooks v7 的实验性编译器规则对本项目常见模式误报
+      // （如弹窗打开时在 effect 中同步刷新数据、渲染期读取时间），
+      // 降为 warn 保留提示但不阻塞 lint。
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/purity': 'warn',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
@@ -40,7 +45,9 @@ export default tseslint.config(
       'no-debugger': 'warn',
       'prefer-const': 'warn',
       'no-var': 'error',
-      'eqeqeq': ['error', 'always'],
+      // 允许 `x == null` 这一 null 判断惯用法（可同时覆盖 null/undefined，
+      // 与 `x === null || x === undefined` 等价），其余比较仍强制 ===/!==。
+      'eqeqeq': ['error', 'always', { null: 'ignore' }],
     },
   }
 );

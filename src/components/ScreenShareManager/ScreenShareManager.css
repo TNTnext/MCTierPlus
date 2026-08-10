@@ -9,8 +9,8 @@
 /* 顶部控制栏 */
 .screen-share-controls-bar {
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
+  border-bottom: 1px solid var(--mc-border);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -19,8 +19,8 @@
 /* 底部控制栏 */
 .screen-share-bottom-bar {
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
+  border-top: 1px solid var(--mc-border);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -29,8 +29,8 @@
 
 .screen-share-actions {
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
+  border-bottom: 1px solid var(--mc-border);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -51,23 +51,23 @@
 }
 
 .start-share-btn {
-  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  background: #07c160;
   color: white;
 }
 
 .start-share-btn:hover {
-  background: linear-gradient(135deg, #73d13d 0%, #95de64 100%);
-  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.4);
+  background: #06ad56;
+  box-shadow: none;
 }
 
 .stop-share-btn {
-  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+  background: linear-gradient(135deg, #fa5151 0%, #fa5151 100%);
   color: white;
 }
 
 .stop-share-btn:hover {
-  background: linear-gradient(135deg, #ff7875 0%, #ffa39e 100%);
-  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.4);
+  background: linear-gradient(135deg, #fa5151 0%, #ffa39e 100%);
+  box-shadow: none;
 }
 
 .screen-share-list {
@@ -89,7 +89,7 @@
   background: rgba(24, 144, 255, 0.1);
   border: 1px solid rgba(24, 144, 255, 0.2);
   border-radius: 6px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--mc-text-2);
   font-size: 12px;
   margin-bottom: 4px;
 }
@@ -104,17 +104,17 @@
 }
 
 .screen-share-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--mc-bg-alpha);
   border-radius: 3px;
 }
 
 .screen-share-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--mc-bg-alpha);
   border-radius: 3px;
 }
 
 .screen-share-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.22);
 }
 
 .empty-state {
@@ -123,7 +123,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--mc-text-3);
   text-align: center;
   min-height: 300px;
 }
@@ -143,8 +143,8 @@
 }
 
 .share-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border);
   border-radius: 8px;
   padding: 10px 12px;
   display: flex;
@@ -154,31 +154,31 @@
 }
 
 .share-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--mc-bg-alpha);
+  border-color: var(--mc-text-4);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .share-item.my-share {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--mc-text-4);
+  background: var(--mc-bg-alpha);
 }
 
 .share-item.viewing {
-  border-color: rgba(82, 196, 26, 0.4);
-  background: rgba(82, 196, 26, 0.08);
+  border-color: rgba(7, 193, 96, 0.4);
+  background: rgba(7, 193, 96, 0.08);
 }
 
 /* 有密码的分享条目 - 使用绿色边框(可被查看) */
 .share-item.has-password {
-  border-color: rgba(82, 196, 26, 0.3);
-  background: rgba(82, 196, 26, 0.03);
+  border-color: rgba(7, 193, 96, 0.3);
+  background: rgba(7, 193, 96, 0.03);
 }
 
 .share-item.has-password:hover {
-  border-color: rgba(82, 196, 26, 0.5);
-  background: rgba(82, 196, 26, 0.08);
+  border-color: rgba(7, 193, 96, 0.5);
+  background: rgba(7, 193, 96, 0.08);
 }
 
 /* 正在被查看的分享条目 - 使用红色边框和背景(已被占用) */
@@ -213,7 +213,7 @@
 .share-player-name {
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -221,7 +221,7 @@
 
 .share-start-time {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--mc-text-3);
 }
 
 .viewer-info {
@@ -244,8 +244,8 @@
   width: 24px;
   height: 24px;
   border-radius: 4px;
-  background: rgba(82, 196, 26, 0.15);
-  color: rgba(82, 196, 26, 0.9);
+  background: rgba(7, 193, 96, 0.15);
+  color: rgba(7, 193, 96, 0.9);
   flex-shrink: 0;
 }
 
@@ -263,7 +263,8 @@
 }
 
 @keyframes pulse-viewing {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -277,12 +278,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   padding: 6px 12px;
   border-radius: 6px;
   border: none;
-  background: linear-gradient(135deg, rgba(82, 196, 26, 0.2) 0%, rgba(82, 196, 26, 0.1) 100%);
-  color: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(135deg, rgba(7, 193, 96, 0.2) 0%, rgba(7, 193, 96, 0.1) 100%);
+  color: var(--mc-text);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -291,14 +292,14 @@
 }
 
 .view-screen-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(82, 196, 26, 0.3) 0%, rgba(82, 196, 26, 0.2) 100%);
-  box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
+  background: linear-gradient(135deg, rgba(7, 193, 96, 0.3) 0%, rgba(7, 193, 96, 0.2) 100%);
+  box-shadow: 0 2px 8px rgba(7, 193, 96, 0.3);
 }
 
 .view-screen-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: linear-gradient(135deg, rgba(82, 196, 26, 0.25) 0%, rgba(82, 196, 26, 0.15) 100%);
+  background: linear-gradient(135deg, rgba(7, 193, 96, 0.25) 0%, rgba(7, 193, 96, 0.15) 100%);
 }
 
 .view-screen-btn svg {
@@ -318,7 +319,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--mc-bg-alpha);
   border-radius: 8px;
 }
 
@@ -333,7 +334,7 @@
   padding: 12px;
   background: rgba(24, 144, 255, 0.1);
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--mc-text-2);
   font-size: 13px;
   border: 1px solid rgba(24, 144, 255, 0.2);
 }
@@ -347,10 +348,9 @@
 
 .password-modal-content p {
   margin: 0;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--mc-text-2);
   font-size: 14px;
 }
-
 
 /* 屏幕查看覆盖层 */
 .screen-viewer-overlay {
@@ -384,7 +384,7 @@
   height: 36px;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
   color: white;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -459,7 +459,7 @@
 .stop-viewing-btn:hover {
   background: rgba(239, 68, 68, 1);
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+  box-shadow: none;
 }
 
 .stop-viewing-btn:active {

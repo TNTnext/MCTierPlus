@@ -5,8 +5,8 @@
   margin-top: 10px;
   padding: 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border);
 }
 
 .vc-picker {
@@ -19,9 +19,9 @@
 .vc-chip {
   padding: 6px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--mc-border);
+  background: var(--mc-bg-alpha);
+  color: var(--mc-text-2);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -29,14 +29,14 @@
 }
 
 .vc-chip:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: var(--mc-bg-alpha);
+  color: var(--mc-text);
 }
 
 .vc-chip.active {
-  background: rgba(82, 196, 26, 0.22);
-  border-color: rgba(82, 196, 26, 0.6);
-  color: #7ee03c;
+  background: rgba(7, 193, 96, 0.22);
+  border-color: rgba(7, 193, 96, 0.6);
+  color: #06ad56;
   font-weight: 600;
 }
 
@@ -67,6 +67,11 @@
 }
 
 @keyframes vc-audition-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(150, 95, 50, 0.5); }
-  50% { box-shadow: 0 0 0 6px rgba(150, 95, 50, 0); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(150, 95, 50, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(150, 95, 50, 0);
+  }
 }

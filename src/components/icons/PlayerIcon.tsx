@@ -31,25 +31,21 @@ export const PlayerIcon: React.FC<PlayerIconProps> = ({
         cx="12"
         cy="8"
         r="4"
-        fill="currentColor"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
         opacity={online ? 1 : 0.4}
       />
       <path
         d="M12 14C8.13 14 5 16.13 5 18.75V20H19V18.75C19 16.13 15.87 14 12 14Z"
-        fill="currentColor"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
         opacity={online ? 1 : 0.4}
       />
       {/* 在线状态指示器 */}
-      {online && (
-        <circle
-          cx="18"
-          cy="18"
-          r="3"
-          fill="#52c41a"
-          stroke="#fff"
-          strokeWidth="1.5"
-        />
-      )}
+      {online && <circle cx="18" cy="18" r="3" fill="#07c160" />}
     </svg>
   );
 };

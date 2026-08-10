@@ -40,7 +40,9 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
       message.success(msg || tl('已添加防火墙放行规则', 'Firewall allow rules added'));
       await runDiagnostic();
     } catch (error) {
-      message.error(`${tl('添加防火墙规则失败', 'Failed to add firewall rules')}：${error}。${tl('请尝试以管理员身份重启后重试', 'Please restart as administrator and retry')}`);
+      message.error(
+        `${tl('添加防火墙规则失败', 'Failed to add firewall rules')}：${error}。${tl('请尝试以管理员身份重启后重试', 'Please restart as administrator and retry')}`
+      );
     } finally {
       setFixing(false);
     }
@@ -51,7 +53,9 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
     try {
       await invoke('restart_as_admin');
     } catch (error) {
-      message.error(`${tl('以管理员身份重启失败', 'Failed to restart as administrator')}：${error}`);
+      message.error(
+        `${tl('以管理员身份重启失败', 'Failed to restart as administrator')}：${error}`
+      );
     }
   };
 
@@ -83,17 +87,25 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
       checks[0] = {
         name: tl('虚拟网卡检查', 'Virtual Adapter Check'),
         status: hasVirtualAdapter ? 'success' : 'error',
-        message: hasVirtualAdapter ? tl('✓ 虚拟网卡已创建', '✓ Virtual adapter created') : tl('✗ 虚拟网卡未找到', '✗ Virtual adapter not found'),
+        message: hasVirtualAdapter
+          ? tl('虚拟网卡已创建', 'Virtual adapter created')
+          : tl('✗ 虚拟网卡未找到', '✗ Virtual adapter not found'),
         solution: hasVirtualAdapter
           ? undefined
-          : tl('请检查 WinTun 驱动是否正常安装,或尝试重启软件', 'Please check whether the WinTun driver is installed correctly, or try restarting the app'),
+          : tl(
+              '请检查 WinTun 驱动是否正常安装,或尝试重启软件',
+              'Please check whether the WinTun driver is installed correctly, or try restarting the app'
+            ),
       };
     } catch {
       checks[0] = {
         name: tl('虚拟网卡检查', 'Virtual Adapter Check'),
         status: 'error',
         message: tl('✗ 检查失败', '✗ Check failed'),
-        solution: tl('无法检查虚拟网卡状态，请重启软件后重试', 'Unable to check the virtual adapter, please restart the app and retry'),
+        solution: tl(
+          '无法检查虚拟网卡状态，请重启软件后重试',
+          'Unable to check the virtual adapter, please restart the app and retry'
+        ),
       };
     }
     setResults([...checks]);
@@ -111,17 +123,25 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
       checks[1] = {
         name: tl('防火墙规则检查', 'Firewall Rule Check'),
         status: firewallOk ? 'success' : 'warning',
-        message: firewallOk ? tl('✓ 防火墙规则正常', '✓ Firewall rules OK') : tl('⚠ 防火墙可能阻止连接', '⚠ Firewall may be blocking connections'),
+        message: firewallOk
+          ? tl('防火墙规则正常', 'Firewall rules OK')
+          : tl('防火墙可能阻止连接', 'Firewall may be blocking connections'),
         solution: firewallOk
           ? undefined
-          : tl('建议在 Windows 防火墙中允许 Minecraft 和 MCTier 的网络访问', 'Allow network access for Minecraft and MCTier in the Windows Firewall'),
+          : tl(
+              '建议在 Windows 防火墙中允许 Minecraft 和 MCTier 的网络访问',
+              'Allow network access for Minecraft and MCTier in the Windows Firewall'
+            ),
       };
     } catch {
       checks[1] = {
         name: tl('防火墙规则检查', 'Firewall Rule Check'),
         status: 'warning',
-        message: tl('⚠ 无法检查防火墙', '⚠ Unable to check the firewall'),
-        solution: tl('请手动检查 Windows 防火墙设置', 'Please check the Windows Firewall settings manually'),
+        message: tl('无法检查防火墙', 'Unable to check the firewall'),
+        solution: tl(
+          '请手动检查 Windows 防火墙设置',
+          'Please check the Windows Firewall settings manually'
+        ),
       };
     }
     setResults([...checks]);
@@ -140,8 +160,15 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
         checks[2] = {
           name: tl('网络连通性检查', 'Connectivity Check'),
           status: canPing ? 'success' : 'error',
-          message: canPing ? tl('✓ 虚拟网络连通正常', '✓ Virtual network connectivity OK') : tl('✗ 无法 ping 通虚拟 IP', '✗ Cannot ping the virtual IP'),
-          solution: canPing ? undefined : tl('虚拟网络可能未正确建立，请尝试重新创建大厅', 'The virtual network may not be established correctly, try recreating the lobby'),
+          message: canPing
+            ? tl('虚拟网络连通正常', 'Virtual network connectivity OK')
+            : tl('✗ 无法 ping 通虚拟 IP', '✗ Cannot ping the virtual IP'),
+          solution: canPing
+            ? undefined
+            : tl(
+                '虚拟网络可能未正确建立，请尝试重新创建大厅',
+                'The virtual network may not be established correctly, try recreating the lobby'
+              ),
         };
       } catch {
         checks[2] = {
@@ -168,15 +195,22 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
       checks[checkIndex] = {
         name: tl('UDP 端口检查', 'UDP Port Check'),
         status: udpOk ? 'success' : 'warning',
-        message: udpOk ? tl('✓ UDP 端口 11010 可用', '✓ UDP port 11010 available') : tl('⚠ UDP 端口可能被占用', '⚠ UDP port may be in use'),
-        solution: udpOk ? undefined : tl('请关闭其他可能占用 UDP 11010 端口的程序', 'Please close other programs that may be using UDP port 11010'),
+        message: udpOk
+          ? tl('UDP 端口 11010 可用', 'UDP port 11010 available')
+          : tl('UDP 端口可能被占用', 'UDP port may be in use'),
+        solution: udpOk
+          ? undefined
+          : tl(
+              '请关闭其他可能占用 UDP 11010 端口的程序',
+              'Please close other programs that may be using UDP port 11010'
+            ),
       };
     } catch {
       const checkIndex = virtualIp ? 3 : 2;
       checks[checkIndex] = {
         name: tl('UDP 端口检查', 'UDP Port Check'),
         status: 'warning',
-        message: tl('⚠ 无法检查端口状态', '⚠ Unable to check the port status'),
+        message: tl('无法检查端口状态', 'Unable to check the port status'),
       };
     }
     setResults([...checks]);
@@ -196,22 +230,31 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
         checks[avIndex] = {
           name: tl('安全软件检测', 'Security Software Detection'),
           status: 'warning',
-          message: `${tl('⚠ 检测到安全软件：', '⚠ Security software detected: ')}${avList.join(tl('、', ', '))}`,
-          solution: tl(`安全软件可能拦截虚拟网卡或联机流量。建议将 MCTier 加入${avList.join('、')}的信任/白名单，并以管理员身份运行。`, `Security software may block the virtual adapter or networking traffic. Add MCTier to the trust/whitelist of ${avList.join(', ')} and run as administrator.`),
+          message: `${tl('检测到安全软件：', 'Security software detected: ')}${avList.join(tl('、', ', '))}`,
+          solution: tl(
+            `安全软件可能拦截虚拟网卡或联机流量。建议将 MCTier 加入${avList.join('、')}的信任/白名单，并以管理员身份运行。`,
+            `Security software may block the virtual adapter or networking traffic. Add MCTier to the trust/whitelist of ${avList.join(', ')} and run as administrator.`
+          ),
         };
       } else {
         checks[avIndex] = {
           name: tl('安全软件检测', 'Security Software Detection'),
           status: 'success',
-          message: tl('✓ 未检测到常见安全软件拦截', '✓ No common security software interference detected'),
+          message: tl(
+            '未检测到常见安全软件拦截',
+            'No common security software interference detected'
+          ),
         };
       }
     } catch {
       checks[avIndex] = {
         name: tl('安全软件检测', 'Security Software Detection'),
         status: 'warning',
-        message: tl('⚠ 无法检测安全软件', '⚠ Unable to detect security software'),
-        solution: tl('若组网失败，请尝试将 MCTier 加入杀毒软件白名单', 'If networking fails, try adding MCTier to your antivirus whitelist'),
+        message: tl('无法检测安全软件', 'Unable to detect security software'),
+        solution: tl(
+          '若组网失败，请尝试将 MCTier 加入杀毒软件白名单',
+          'If networking fails, try adding MCTier to your antivirus whitelist'
+        ),
       };
     }
     setResults([...checks]);
@@ -231,7 +274,12 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
       open={visible}
       onCancel={onClose}
       footer={[
-        <Button key="firewall" onClick={() => void handleAddFirewall()} loading={fixing} disabled={isChecking}>
+        <Button
+          key="firewall"
+          onClick={() => void handleAddFirewall()}
+          loading={fixing}
+          disabled={isChecking}
+        >
           {tl('一键放行防火墙', 'Allow Firewall')}
         </Button>,
         ...(!isAdmin
@@ -257,7 +305,10 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
         </Title>
 
         <Paragraph className="diagnostic-desc">
-          {tl('正在检查网络配置，帮助您解决 Minecraft 联机问题...', 'Checking network configuration to help resolve multiplayer issues...')}
+          {tl(
+            '正在检查网络配置，帮助您解决 Minecraft 联机问题...',
+            'Checking network configuration to help resolve multiplayer issues...'
+          )}
         </Paragraph>
 
         <div className="diagnostic-results">
@@ -287,7 +338,10 @@ export const NetworkDiagnostic: React.FC<NetworkDiagnosticProps> = ({
         {!isChecking && results.length > 0 && (
           <Alert
             message={tl('诊断完成', 'Diagnostics Complete')}
-            description={tl('如果问题仍未解决，请查看用户手册或联系技术支持', 'If the issue persists, please check the user manual or contact support')}
+            description={tl(
+              '如果问题仍未解决，请查看用户手册或联系技术支持',
+              'If the issue persists, please check the user manual or contact support'
+            )}
             type="info"
             showIcon
             className="diagnostic-summary"

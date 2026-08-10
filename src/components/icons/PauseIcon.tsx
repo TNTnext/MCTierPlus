@@ -6,10 +6,10 @@ interface PauseIconProps {
   className?: string;
 }
 
-export const PauseIcon: React.FC<PauseIconProps> = ({ 
-  size = 24, 
+export const PauseIcon: React.FC<PauseIconProps> = ({
+  size = 24,
   color = 'currentColor',
-  className 
+  className,
 }) => {
   return (
     <svg
@@ -20,8 +20,17 @@ export const PauseIcon: React.FC<PauseIconProps> = ({
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      <rect x="6" y="4" width="4" height="16" rx="1" fill={color} />
-      <rect x="14" y="4" width="4" height="16" rx="1" fill={color} />
+      <rect x="6" y="4" width="4" height="16" rx="1" fill="none" stroke={color} strokeWidth="1.8" />
+      <rect
+        x="14"
+        y="4"
+        width="4"
+        height="16"
+        rx="1"
+        fill="none"
+        stroke={color}
+        strokeWidth="1.8"
+      />
     </svg>
   );
 };

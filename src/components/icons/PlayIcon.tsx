@@ -6,10 +6,10 @@ interface PlayIconProps {
   className?: string;
 }
 
-export const PlayIcon: React.FC<PlayIconProps> = ({ 
-  size = 24, 
+export const PlayIcon: React.FC<PlayIconProps> = ({
+  size = 24,
   color = 'currentColor',
-  className 
+  className,
 }) => {
   return (
     <svg
@@ -22,7 +22,10 @@ export const PlayIcon: React.FC<PlayIconProps> = ({
     >
       <path
         d="M8 5.14v13.72L19 12L8 5.14z"
-        fill={color}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.8"
+        strokeLinejoin="round"
       />
     </svg>
   );

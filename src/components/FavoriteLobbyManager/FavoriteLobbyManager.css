@@ -1,24 +1,24 @@
 .favorite-lobby-modal .ant-modal-content {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: var(--mc-bg);
   border-radius: 12px;
 }
 
 .favorite-lobby-modal .ant-modal-header {
   background: transparent;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--mc-border);
 }
 
 .favorite-lobby-modal .ant-modal-title {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
   font-weight: 700;
 }
 
 .favorite-lobby-modal .ant-modal-close {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
 }
 
 .favorite-lobby-modal .ant-modal-close:hover {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
 }
 
 .favorite-lobby-container {
@@ -29,80 +29,71 @@
 
 .favorite-form-container {
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--mc-bg-alpha);
   border-radius: 8px;
   margin-bottom: 16px;
   overflow: hidden;
 }
 
 .favorite-form-container .ant-form-item-label > label {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
   font-weight: 600;
 }
 
 .favorite-form-container .ant-input,
 .favorite-form-container .ant-input-password {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border-strong);
+  color: var(--mc-text);
 }
 
 .favorite-form-container .ant-input::placeholder,
 .favorite-form-container .ant-input-password input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--mc-text-4);
 }
 
 .favorite-form-container .ant-input:focus,
 .favorite-form-container .ant-input-password:focus-within {
-  border-color: rgba(90, 148, 40, 0.6);
-  box-shadow: 0 0 0 2px rgba(90, 148, 40, 0.15);
+  border-color: rgba(7, 193, 96, 0.6);
+  box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.15);
 }
 
 /* 常用大厅列表 */
 .favorites-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
   overflow-x: hidden;
+  background: var(--mc-bg-raised);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-/* 常用大厅卡片 */
+/* 常用大厅 Cell（微信式白底分组列表） */
 .favorite-card {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
-  background: linear-gradient(135deg, rgba(90, 148, 40, 0.08) 0%, rgba(90, 148, 40, 0.03) 100%);
-  border: 1px solid rgba(90, 148, 40, 0.2);
-  border-radius: 6px;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.16s ease;
   overflow: hidden;
   min-width: 0;
-  transform: scale(1);
 }
 
-.favorite-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 2px;
-  height: 100%;
-  background: linear-gradient(180deg, rgba(90, 148, 40, 0.8) 0%, rgba(90, 148, 40, 0.4) 100%);
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.favorite-card + .favorite-card {
+  border-top: 1px solid var(--mc-border);
 }
 
 .favorite-card:hover {
-  background: linear-gradient(135deg, rgba(90, 148, 40, 0.15) 0%, rgba(90, 148, 40, 0.08) 100%);
-  border-color: rgba(90, 148, 40, 0.4);
-  box-shadow: 0 2px 6px rgba(90, 148, 40, 0.2);
-  transform: scale(1);
+  background: var(--mc-bg-hover);
 }
 
-.favorite-card:hover::before {
-  width: 3px;
+.favorite-card:active {
+  background: var(--mc-bg-alpha);
 }
 
 .favorite-card-content {
@@ -117,7 +108,7 @@
 .favorite-card-header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .favorite-card-icon {
@@ -126,16 +117,15 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: rgba(90, 148, 40, 0.15);
+  background: rgba(7, 193, 96, 0.15);
   border-radius: 5px;
-  color: rgba(90, 148, 40, 1);
+  color: rgba(7, 193, 96, 1);
   transition: all 0.3s ease;
   flex-shrink: 0;
 }
 
 .favorite-card:hover .favorite-card-icon {
-  background: rgba(90, 148, 40, 0.25);
-  transform: rotate(5deg) scale(1.05);
+  background: rgba(7, 193, 96, 0.2);
 }
 
 .favorite-card-icon svg {
@@ -146,7 +136,7 @@
 .favorite-card-title {
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--mc-text);
   letter-spacing: 0.2px;
   line-height: 1.2;
   white-space: nowrap;
@@ -157,9 +147,9 @@
 .favorite-card-password {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--mc-text-3);
   padding-left: 30px;
 }
 
@@ -179,15 +169,13 @@
 /* 操作按钮区域 */
 .favorite-card-actions {
   display: flex;
-  gap: 5px;
+  gap: 8px;
   opacity: 0;
-  transform: translateX(8px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.16s ease;
 }
 
 .favorite-card:hover .favorite-card-actions {
   opacity: 1;
-  transform: translateX(0);
 }
 
 .favorite-action-btn {
@@ -196,12 +184,12 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border);
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--mc-text-2);
 }
 
 .favorite-action-btn svg {
@@ -210,14 +198,14 @@
 }
 
 .favorite-action-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--mc-bg-alpha);
+  border-color: var(--mc-text-4);
 }
 
 .edit-btn:hover {
-  color: rgba(90, 148, 40, 1);
-  border-color: rgba(90, 148, 40, 0.4);
-  background: rgba(90, 148, 40, 0.1);
+  color: rgba(7, 193, 96, 1);
+  border-color: rgba(7, 193, 96, 0.4);
+  background: rgba(7, 193, 96, 0.1);
 }
 
 .delete-btn:hover {
@@ -229,7 +217,7 @@
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--mc-text-3);
 }
 
 .empty-state p {
@@ -239,7 +227,7 @@
 .empty-state p:first-child {
   font-size: 16px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--mc-text-2);
 }
 
 /* 滚动条样式 */
@@ -253,12 +241,12 @@
 }
 
 .favorite-lobby-container::-webkit-scrollbar-thumb {
-  background: rgba(90, 148, 40, 0.4);
+  background: rgba(7, 193, 96, 0.4);
   border-radius: 3px;
 }
 
 .favorite-lobby-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(90, 148, 40, 0.6);
+  background: rgba(7, 193, 96, 0.6);
 }
 
 /* 隐藏自定义密码输入框的默认眼睛图标 */
@@ -286,18 +274,18 @@
 }
 
 /* 隐藏 Chrome 的密码显示按钮 */
-input[type="password"]::-webkit-textfield-decoration-container {
+input[type='password']::-webkit-textfield-decoration-container {
   display: none !important;
 }
 
-input[type="password"]::-webkit-credentials-auto-fill-button {
+input[type='password']::-webkit-credentials-auto-fill-button {
   display: none !important;
 }
 
 /* 通用隐藏 */
-.favorite-form-container input[type="password"]::-ms-reveal,
-.favorite-form-container input[type="password"]::-ms-clear,
-.favorite-form-container input[type="text"]::-ms-reveal,
-.favorite-form-container input[type="text"]::-ms-clear {
+.favorite-form-container input[type='password']::-ms-reveal,
+.favorite-form-container input[type='password']::-ms-clear,
+.favorite-form-container input[type='text']::-ms-reveal,
+.favorite-form-container input[type='text']::-ms-clear {
   display: none !important;
 }

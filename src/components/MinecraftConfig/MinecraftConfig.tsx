@@ -45,7 +45,9 @@ export const MinecraftConfig: React.FC<MinecraftConfigProps> = ({ onClose }) => 
 
   const handleDetectLauncher = async () => {
     if (!versionDir) {
-      message.warning(tl('请先输入 Minecraft 版本目录', 'Please enter the Minecraft version directory first'));
+      message.warning(
+        tl('请先输入 Minecraft 版本目录', 'Please enter the Minecraft version directory first')
+      );
       return;
     }
 
@@ -57,7 +59,12 @@ export const MinecraftConfig: React.FC<MinecraftConfigProps> = ({ onClose }) => 
         setLauncherType(detected);
         message.success(`${tl('检测到', 'Detected')} ${detected} ${tl('启动器', 'launcher')}`);
       } else {
-        message.info(tl('未能自动检测启动器类型，请手动选择', 'Could not auto-detect the launcher type, please select manually'));
+        message.info(
+          tl(
+            '未能自动检测启动器类型，请手动选择',
+            'Could not auto-detect the launcher type, please select manually'
+          )
+        );
       }
     } catch (error) {
       console.error('检测启动器类型失败:', error);
@@ -67,7 +74,9 @@ export const MinecraftConfig: React.FC<MinecraftConfigProps> = ({ onClose }) => 
 
   const handleConfigure = async () => {
     if (!versionDir) {
-      message.warning(tl('请先选择 Minecraft 版本目录', 'Please select the Minecraft version directory first'));
+      message.warning(
+        tl('请先选择 Minecraft 版本目录', 'Please select the Minecraft version directory first')
+      );
       return;
     }
 
@@ -82,11 +91,7 @@ export const MinecraftConfig: React.FC<MinecraftConfigProps> = ({ onClose }) => 
       Modal.info({
         title: tl('配置说明', 'Configuration Notes'),
         width: 600,
-        content: (
-          <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8' }}>
-            {result}
-          </div>
-        ),
+        content: <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8' }}>{result}</div>,
         okText: tl('我知道了', 'Got it'),
       });
     } catch (error) {
@@ -107,7 +112,9 @@ export const MinecraftConfig: React.FC<MinecraftConfigProps> = ({ onClose }) => 
   return (
     <div className="minecraft-config">
       <div className="minecraft-config-header" data-tauri-drag-region>
-        <Title level={4} data-tauri-drag-region>{tl('Minecraft 正版验证配置', 'Minecraft License Verification Config')}</Title>
+        <Title level={4} data-tauri-drag-region>
+          {tl('Minecraft 正版验证配置', 'Minecraft License Verification Config')}
+        </Title>
         <button className="close-button" onClick={onClose}>
           <CloseIcon />
         </button>
@@ -133,7 +140,9 @@ export const MinecraftConfig: React.FC<MinecraftConfigProps> = ({ onClose }) => 
               value={launcherType}
               onChange={setLauncherType}
               style={{ width: '100%', marginTop: 8 }}
-              getPopupContainer={(trigger) => (trigger.parentElement as HTMLElement) || document.body}
+              getPopupContainer={(trigger) =>
+                (trigger.parentElement as HTMLElement) || document.body
+              }
             >
               <Option value="PCL">{tl('PCL / PCL2 启动器', 'PCL / PCL2 Launcher')}</Option>
               <Option value="HMCL">{tl('HMCL 启动器', 'HMCL Launcher')}</Option>
@@ -147,10 +156,13 @@ export const MinecraftConfig: React.FC<MinecraftConfigProps> = ({ onClose }) => 
               <Input
                 value={versionDir}
                 onChange={(e) => setVersionDir(e.target.value)}
-                placeholder={tl('输入 Minecraft 版本目录完整路径', 'Enter the full path of the Minecraft version directory')}
+                placeholder={tl(
+                  '输入 Minecraft 版本目录完整路径',
+                  'Enter the full path of the Minecraft version directory'
+                )}
               />
-              <Button 
-                size="small" 
+              <Button
+                size="small"
                 onClick={handleDetectLauncher}
                 disabled={!versionDir}
                 style={{ width: '100%' }}
@@ -159,7 +171,10 @@ export const MinecraftConfig: React.FC<MinecraftConfigProps> = ({ onClose }) => 
               </Button>
             </Space>
             <Text type="secondary" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>
-              {tl('例如：C:\\Users\\用户名\\AppData\\Roaming\\.minecraft\\versions\\1.21.11', 'e.g. C:\\Users\\YourName\\AppData\\Roaming\\.minecraft\\versions\\1.21.11')}
+              {tl(
+                '例如：C:\\Users\\用户名\\AppData\\Roaming\\.minecraft\\versions\\1.21.11',
+                'e.g. C:\\Users\\YourName\\AppData\\Roaming\\.minecraft\\versions\\1.21.11'
+              )}
             </Text>
           </div>
 
@@ -177,21 +192,23 @@ export const MinecraftConfig: React.FC<MinecraftConfigProps> = ({ onClose }) => 
           <div className="manual-config">
             <Text strong>{tl('手动配置', 'Manual Configuration')}</Text>
             <Paragraph type="secondary" style={{ fontSize: 12, marginTop: 8 }}>
-              {tl('如果自动配置失败，请手动在启动器的 JVM 参数中添加以下内容：', 'If auto-configuration fails, manually add the following to the launcher JVM arguments:')}
+              {tl(
+                '如果自动配置失败，请手动在启动器的 JVM 参数中添加以下内容：',
+                'If auto-configuration fails, manually add the following to the launcher JVM arguments:'
+              )}
             </Paragraph>
             <Space.Compact style={{ width: '100%' }}>
-              <Input
-                value={agentArg}
-                readOnly
-                style={{ fontFamily: 'monospace', fontSize: 11 }}
-              />
+              <Input value={agentArg} readOnly style={{ fontFamily: 'monospace', fontSize: 11 }} />
               <Button onClick={handleCopyAgentArg}>{tl('复制', 'Copy')}</Button>
             </Space.Compact>
           </div>
 
           <div className="config-tips">
             <Text type="warning" style={{ fontSize: 12 }}>
-              💡 {tl('提示：配置完成后需要重启 Minecraft 才能生效', 'Tip: Restart Minecraft after configuration for it to take effect')}
+              {tl(
+                '提示：配置完成后需要重启 Minecraft 才能生效',
+                'Tip: Restart Minecraft after configuration for it to take effect'
+              )}
             </Text>
           </div>
         </Space>

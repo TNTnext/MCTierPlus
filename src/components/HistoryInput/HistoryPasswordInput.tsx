@@ -56,9 +56,7 @@ export const HistoryPasswordInput: React.FC<HistoryPasswordInputProps> = ({
     if (!value || value.trim() === '') {
       setFilteredHistory(history);
     } else {
-      const filtered = history.filter(item =>
-        item.toLowerCase().includes(value.toLowerCase())
-      );
+      const filtered = history.filter((item) => item.toLowerCase().includes(value.toLowerCase()));
       setFilteredHistory(filtered);
     }
   }, [value, history]);
@@ -97,14 +95,14 @@ export const HistoryPasswordInput: React.FC<HistoryPasswordInputProps> = ({
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const currentValue = e.target.value?.trim();
-    
+
     // 保存到历史记录
     if (currentValue && currentValue.length > 0) {
-      const newHistory = [
-        currentValue,
-        ...history.filter(item => item !== currentValue)
-      ].slice(0, maxHistory);
-      
+      const newHistory = [currentValue, ...history.filter((item) => item !== currentValue)].slice(
+        0,
+        maxHistory
+      );
+
       setHistory(newHistory);
       localStorage.setItem(`mctier_history_${historyKey}`, JSON.stringify(newHistory));
     }
@@ -151,19 +149,33 @@ export const HistoryPasswordInput: React.FC<HistoryPasswordInputProps> = ({
           tabIndex={-1}
         >
           {showPassword ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
               <line x1="1" y1="1" x2="23" y2="23" />
             </svg>
           ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
           )}
         </button>
       </div>
-      
+
       <AnimatePresence>
         {showHistory && filteredHistory.length > 0 && (
           <motion.div
@@ -175,11 +187,7 @@ export const HistoryPasswordInput: React.FC<HistoryPasswordInputProps> = ({
           >
             <div className="history-header">
               <span className="history-title">{tl('历史记录', 'History')}</span>
-              <button
-                className="history-clear-btn"
-                onClick={handleClearHistory}
-                type="button"
-              >
+              <button className="history-clear-btn" onClick={handleClearHistory} type="button">
                 {tl('清空', 'Clear')}
               </button>
             </div>
@@ -192,7 +200,7 @@ export const HistoryPasswordInput: React.FC<HistoryPasswordInputProps> = ({
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.03 }}
-                  whileHover={{ backgroundColor: 'rgba(90, 148, 40, 0.15)' }}
+                  whileHover={{ backgroundColor: 'rgba(7, 193, 96, 0.15)' }}
                 >
                   {'•'.repeat(Math.min(item.length, 20))}
                 </motion.div>

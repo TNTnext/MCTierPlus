@@ -8,10 +8,7 @@ interface WarningIconProps {
 /**
  * 警告图标组件
  */
-export const WarningIcon: React.FC<WarningIconProps> = ({ 
-  size = 24, 
-  className = '' 
-}) => {
+export const WarningIcon: React.FC<WarningIconProps> = ({ size = 24, className = '' }) => {
   return (
     <svg
       width={size}
@@ -23,28 +20,13 @@ export const WarningIcon: React.FC<WarningIconProps> = ({
     >
       <path
         d="M12 2L2 20h20L12 2z"
-        fill="currentColor"
-        opacity="0.2"
-      />
-      <path
-        d="M12 2L2 20h20L12 2z"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path
-        d="M12 9v4"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <circle
-        cx="12"
-        cy="17"
-        r="1"
-        fill="currentColor"
-      />
+      <path d="M12 9v4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="12" cy="17" r="1.2" fill="none" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 };

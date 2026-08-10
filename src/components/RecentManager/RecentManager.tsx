@@ -6,7 +6,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Empty, Tabs, App } from 'antd';
-import { recentService, type RecentLobby, type RecentPlayer } from '../../services/recent/recentService';
+import {
+  recentService,
+  type RecentLobby,
+  type RecentPlayer,
+} from '../../services/recent/recentService';
 import { useTranslation } from 'react-i18next';
 import { tl } from '../../i18n';
 
@@ -28,7 +32,11 @@ function formatTime(ts: number): string {
   return `${day}${tl(' 天前', ' d ago')}`;
 }
 
-export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, onSelectLobby }) => {
+export const RecentManager: React.FC<RecentManagerProps> = ({
+  visible,
+  onClose,
+  onSelectLobby,
+}) => {
   useTranslation();
   // 使用 App.useApp() 的 hook 版 message/modal：确认弹层始终置顶且可点击，
   // 避免内嵌 Popconfirm 在 Modal 内被遮挡导致「删除/清空」点击无反应。
@@ -78,7 +86,7 @@ export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, 
               key={`${l.name}|${l.password}`}
               onClick={() => handleSelect(l)}
               style={{
-                border: '1px solid rgba(255,255,255,0.12)',
+                border: '1px solid rgba(0,0,0,0.08)',
                 borderRadius: 8,
                 padding: '10px 12px',
                 cursor: 'pointer',
@@ -89,13 +97,21 @@ export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, 
             >
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 600 }}>{l.name}</div>
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
-                  {l.playerName ? tl(`玩家：${l.playerName} · `, `Player: ${l.playerName} · `) : ''}{formatTime(l.lastJoined)}
+                <div style={{ fontSize: 12, color: 'var(--mc-text-3)' }}>
+                  {l.playerName ? tl(`玩家：${l.playerName} · `, `Player: ${l.playerName} · `) : ''}
+                  {formatTime(l.lastJoined)}
                 </div>
               </div>
-              <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <Button type="primary" size="small" onClick={() => handleSelect(l)}>{tl('快速重进', 'Rejoin')}</Button>
-                <Button size="small" danger onClick={() => handleRemoveLobby(l)}>{tl('删除', 'Delete')}</Button>
+              <div
+                onClick={(e) => e.stopPropagation()}
+                style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+              >
+                <Button type="primary" size="small" onClick={() => handleSelect(l)}>
+                  {tl('快速重进', 'Rejoin')}
+                </Button>
+                <Button size="small" danger onClick={() => handleRemoveLobby(l)}>
+                  {tl('删除', 'Delete')}
+                </Button>
               </div>
             </div>
           ))}
@@ -115,14 +131,14 @@ export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, 
               key={p.name}
               title={`${formatTime(p.lastSeen)} · 共 ${p.count} 次`}
               style={{
-                border: '1px solid rgba(255,255,255,0.12)',
+                border: '1px solid rgba(0,0,0,0.08)',
                 borderRadius: 16,
                 padding: '4px 12px',
                 fontSize: 13,
               }}
             >
               {p.name}
-              <span style={{ color: 'rgba(255,255,255,0.45)', marginLeft: 6, fontSize: 11 }}>
+              <span style={{ color: 'var(--mc-text-3)', marginLeft: 6, fontSize: 11 }}>
                 {formatTime(p.lastSeen)}
               </span>
             </div>
@@ -134,9 +150,10 @@ export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, 
 
   const handleClear = () => {
     modal.confirm({
-      title: activeTab === 'lobbies'
-        ? tl('确定清空全部最近大厅？', 'Clear all recent lobbies?')
-        : tl('确定清空全部最近玩家？', 'Clear all recent players?'),
+      title:
+        activeTab === 'lobbies'
+          ? tl('确定清空全部最近大厅？', 'Clear all recent lobbies?')
+          : tl('确定清空全部最近玩家？', 'Clear all recent players?'),
       okText: tl('清空', 'Clear'),
       cancelText: tl('取消', 'Cancel'),
       okButtonProps: { danger: true },
@@ -160,8 +177,12 @@ export const RecentManager: React.FC<RecentManagerProps> = ({ visible, onClose, 
       open={visible}
       onCancel={onClose}
       footer={[
-        <Button key="clear" danger style={{ float: 'left' }} onClick={handleClear}>{tl('清空', 'Clear')}</Button>,
-        <Button key="close" type="primary" onClick={onClose}>{tl('关闭', 'Close')}</Button>,
+        <Button key="clear" danger style={{ float: 'left' }} onClick={handleClear}>
+          {tl('清空', 'Clear')}
+        </Button>,
+        <Button key="close" type="primary" onClick={onClose}>
+          {tl('关闭', 'Close')}
+        </Button>,
       ]}
       width={500}
       centered

@@ -10,8 +10,8 @@
 }
 
 .hotkey-input.recording {
-  border-color: rgba(126, 211, 33, 0.8);
-  box-shadow: 0 0 0 2px rgba(126, 211, 33, 0.2);
+  border-color: rgba(7, 193, 96, 0.8);
+  box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
   animation: pulse 1.5s ease-in-out infinite;
 }
 
@@ -22,14 +22,15 @@
 }
 
 .hotkey-clear:hover {
-  color: #ff4d4f !important;
+  color: #fa5151 !important;
 }
 
 @keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 2px rgba(126, 211, 33, 0.2);
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
   }
   50% {
-    box-shadow: 0 0 0 4px rgba(126, 211, 33, 0.3);
+    box-shadow: 0 0 0 4px rgba(7, 193, 96, 0.3);
   }
 }

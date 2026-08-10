@@ -77,5 +77,6 @@ export const zh = {
     configMgr: '配置管理',
     configMgrDesc: '导出或导入所有配置项，方便备份和迁移',
     theme: '主题与配色',
+    themeDesc: '选择界面明暗模式：明亮、黑暗或跟随系统（默认黑暗）',
   },
 };

@@ -40,7 +40,7 @@ export const ChatRoom: React.FC = () => {
   const [mentionCursor, setMentionCursor] = useState(0);
   const [mentionIndex, setMentionIndex] = useState(0);
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const lastScrollTop = useRef(0);
@@ -50,8 +50,8 @@ export const ChatRoom: React.FC = () => {
   const initializedScrollRef = useRef(false);
 
   // 计算未读消息数量（只计算其他人发送的消息）
-  const unreadMessages = chatMessages.filter((msg, index) => 
-    msg.playerId !== currentPlayerId && index >= lastReadMessageIndex
+  const unreadMessages = chatMessages.filter(
+    (msg, index) => msg.playerId !== currentPlayerId && index >= lastReadMessageIndex
   );
   const hasUnreadMessages = unreadMessages.length > 0;
 
@@ -65,7 +65,7 @@ export const ChatRoom: React.FC = () => {
   useEffect(() => {
     (window as any).__isInChatRoom__ = true;
     console.log('✅ 已设置全局标志：当前在聊天室界面');
-    
+
     return () => {
       (window as any).__isInChatRoom__ = false;
       console.log('✅ 已清除全局标志：离开聊天室界面');
@@ -75,45 +75,45 @@ export const ChatRoom: React.FC = () => {
   // 监听滚动位置
   const handleScroll = () => {
     if (!messagesContainerRef.current) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     const isBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 50;
-    
+
     setIsAtBottom(isBottom);
     isAtBottomRef.current = isBottom;
-    
+
     // 如果滚动到底部，标记所有消息为已读
     if (isBottom) {
       setLastReadMessageIndex(chatMessages.length);
       markMessagesAsRead();
     }
-    
+
     // 检测是否滚动到顶部，加载更多消息
     if (scrollTop < 100 && scrollTop < lastScrollTop.current && !isLoadingMore && hasMoreMessages) {
       loadMoreMessages();
     }
-    
+
     lastScrollTop.current = scrollTop;
   };
 
   // 加载更多历史消息
   const loadMoreMessages = async () => {
     if (isLoadingMore || !hasMoreMessages) return;
-    
+
     setIsLoadingMore(true);
-    
+
     // 模拟加载延迟
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     // 增加显示的消息数量
     const newCount = displayedMessageCount + 30;
     setDisplayedMessageCount(newCount);
-    
+
     // 如果已经显示所有消息，标记没有更多消息
     if (newCount >= chatMessages.length) {
       setHasMoreMessages(false);
     }
-    
+
     setIsLoadingMore(false);
   };
 
@@ -142,7 +142,11 @@ export const ChatRoom: React.FC = () => {
   };
 
   const getMessageInitial = (message: ChatMessage) => {
-    const name = (message.playerName || (message.playerId === currentPlayerId ? config.playerName : '') || '?').trim();
+    const name = (
+      message.playerName ||
+      (message.playerId === currentPlayerId ? config.playerName : '') ||
+      '?'
+    ).trim();
     return (Array.from(name)[0] || '?').toUpperCase();
   };
 
@@ -158,7 +162,6 @@ export const ChatRoom: React.FC = () => {
       el.scrollTop = el.scrollHeight; // 瞬间置底，无动画
     }
     setLastReadMessageIndex(chatMessages.length);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatMessages.length]);
 
   // 新消息到达时：仅当用户当前已处于底部时才跟随他人消息（标准聊天行为）。
@@ -173,9 +176,10 @@ export const ChatRoom: React.FC = () => {
 
   const buildReplyContent = (body: string): string => {
     if (!replyTo) return body;
-    const summary = replyTo.type === 'image'
-      ? tl('[图片]', '[Image]')
-      : (replyTo.content.split('\n')[0] || '').slice(0, 40);
+    const summary =
+      replyTo.type === 'image'
+        ? tl('[图片]', '[Image]')
+        : (replyTo.content.split('\n')[0] || '').slice(0, 40);
     return `> @${replyTo.playerName} ${summary}\n${body}`;
   };
 
@@ -185,23 +189,26 @@ export const ChatRoom: React.FC = () => {
     }, 0);
   }, []);
 
-  const handleQuoteMessage = useCallback((message: ChatMessage) => {
-    setReplyTo(message);
-    focusInputSoon();
-  }, [focusInputSoon]);
+  const handleQuoteMessage = useCallback(
+    (message: ChatMessage) => {
+      setReplyTo(message);
+      focusInputSoon();
+    },
+    [focusInputSoon]
+  );
 
   // 发送文本消息
   const handleSendMessage = async () => {
     if (!inputValue.trim() || !currentPlayerId) return;
-    
+
     const text = inputValue.trim();
     // 引用回复：在正文前加入 "> @名字 摘要" 引用行（与安卓端格式一致，跨端互通）
     const messageContent = buildReplyContent(text);
-    
+
     // 清空输入框
     setInputValue('');
     setReplyTo(null);
-    
+
     try {
       // 乐观更新：立即在本地显示自己发送的消息
       const optimisticMessage: ChatMessage = {
@@ -212,20 +219,25 @@ export const ChatRoom: React.FC = () => {
         timestamp: Date.now(),
         type: 'text',
       };
-      
+
       // 立即添加到本地消息列表
       addChatMessage(optimisticMessage);
       console.log('✅ [ChatRoom] 乐观更新：本地显示消息');
       // 发送消息的一瞬间：瞬时滚动到底部（一次性，不锁定）
       isAtBottomRef.current = true;
       scrollToBottom(false);
-      
+
       // 发送到P2P网络
       const res = await p2pChatService.sendTextMessage(messageContent);
       console.log('✅ [ChatRoom] 文本消息已发送到P2P网络', res);
       // 回执：有其他玩家但一个都没送达时，提示可能未送达
       if (res && res.total > 0 && res.delivered === 0) {
-        antdMessage.warning(tl('消息可能未送达：其他玩家暂时不可达', 'Message may not be delivered: other players are unreachable'));
+        antdMessage.warning(
+          tl(
+            '消息可能未送达：其他玩家暂时不可达',
+            'Message may not be delivered: other players are unreachable'
+          )
+        );
       }
     } catch (error) {
       console.error('发送聊天消息失败:', error);
@@ -237,9 +249,7 @@ export const ChatRoom: React.FC = () => {
 
   // @ 提及候选列表（其他玩家 + 所有人）
   const mentionCandidates: string[] = (() => {
-    const names = players
-      .filter((p) => p.id !== currentPlayerId && p.name)
-      .map((p) => p.name);
+    const names = players.filter((p) => p.id !== currentPlayerId && p.name).map((p) => p.name);
     const base = [tl('所有人', 'all'), ...names];
     const q = mentionQuery.trim().toLowerCase();
     if (!q) return base;
@@ -292,7 +302,9 @@ export const ChatRoom: React.FC = () => {
     setMentionOpen(false);
     // 重置光标到插入内容之后
     requestAnimationFrame(() => {
-      const el = textAreaRef.current?.resizableTextArea?.textArea as HTMLTextAreaElement | undefined;
+      const el = textAreaRef.current?.resizableTextArea?.textArea as
+        | HTMLTextAreaElement
+        | undefined;
       if (el) {
         const pos = (before + inserted).length;
         el.focus();
@@ -325,13 +337,13 @@ export const ChatRoom: React.FC = () => {
 
           // 转换为JPEG格式，质量0.92（高质量压缩）
           const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
-          
+
           console.log('🖼️ 图片优化完成:', {
             原始大小: file.size,
             优化后大小: Math.round(optimizedDataUrl.length * 0.75), // Base64大约是原始的1.33倍
-            压缩率: Math.round((1 - (optimizedDataUrl.length * 0.75) / file.size) * 100) + '%'
+            压缩率: Math.round((1 - (optimizedDataUrl.length * 0.75) / file.size) * 100) + '%',
           });
-          
+
           resolve(optimizedDataUrl);
         };
         img.onerror = () => reject(new Error('图片加载失败'));
@@ -353,7 +365,7 @@ export const ChatRoom: React.FC = () => {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
-      
+
       // 【修复】监听取消事件：当用户关闭文件选择器时重置loading状态
       const resetLoading = () => {
         // 延迟检查，因为onchange可能会在focus之后触发
@@ -368,11 +380,11 @@ export const ChatRoom: React.FC = () => {
 
       // 监听窗口焦点恢复（用户关闭文件选择器后会恢复焦点）
       window.addEventListener('focus', resetLoading, { once: true });
-      
+
       input.onchange = async (e) => {
         // 移除焦点监听器，因为用户已经选择了文件
         window.removeEventListener('focus', resetLoading);
-        
+
         const file = (e.target as HTMLInputElement).files?.[0];
         if (!file) {
           setIsUploading(false);
@@ -392,7 +404,7 @@ export const ChatRoom: React.FC = () => {
           // 优化图片
           const optimizedDataUrl = await optimizeImage(file);
           const messageContent = buildReplyContent(tl('[图片]', '[Image]'));
-          
+
           console.log('📤 发送优化后的图片消息');
 
           // 乐观更新：立即在本地显示自己发送的图片
@@ -405,16 +417,16 @@ export const ChatRoom: React.FC = () => {
             type: 'image',
             imageData: optimizedDataUrl,
           };
-          
+
           // 立即添加到本地消息列表
           addChatMessage(optimisticMessage);
           console.log('✅ [ChatRoom] 乐观更新：本地显示图片');
-          
+
           // 发送图片消息到P2P网络
           await p2pChatService.sendImageMessage(optimizedDataUrl, messageContent);
           setReplyTo(null);
           antdMessage.success(tl('图片发送成功', 'Image sent'));
-          
+
           // 发送图片的一瞬间：瞬时滚动到底部（一次性）
           isAtBottomRef.current = true;
           scrollToBottom(false);
@@ -443,7 +455,7 @@ export const ChatRoom: React.FC = () => {
       const item = items[i];
       if (item.type.indexOf('image') !== -1) {
         e.preventDefault();
-        
+
         const file = item.getAsFile();
         if (!file) continue;
 
@@ -459,7 +471,7 @@ export const ChatRoom: React.FC = () => {
           // 优化图片
           const optimizedDataUrl = await optimizeImage(file);
           const messageContent = buildReplyContent(tl('[图片]', '[Image]'));
-          
+
           console.log('📤 发送粘贴的优化图片');
 
           // 乐观更新：立即在本地显示自己发送的图片
@@ -472,7 +484,7 @@ export const ChatRoom: React.FC = () => {
             type: 'image',
             imageData: optimizedDataUrl,
           };
-          
+
           // 立即添加到本地消息列表
           addChatMessage(optimisticMessage);
           console.log('✅ [ChatRoom] 乐观更新：本地显示粘贴的图片');
@@ -482,18 +494,18 @@ export const ChatRoom: React.FC = () => {
           setReplyTo(null);
 
           antdMessage.success(tl('图片发送成功', 'Image sent'));
-          
+
           // 发送图片的一瞬间：瞬时滚动到底部（一次性）
           isAtBottomRef.current = true;
           scrollToBottom(false);
-          
+
           setIsUploading(false);
         } catch (error) {
           console.error('粘贴图片失败:', error);
           antdMessage.error(tl('粘贴图片失败', 'Failed to paste image'));
           setIsUploading(false);
         }
-        
+
         break;
       }
     }
@@ -508,7 +520,7 @@ export const ChatRoom: React.FC = () => {
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    
+
     // 检查是否为图片
     if (!file.type.startsWith('image/')) {
       antdMessage.error(tl('只能拖拽图片文件', 'Only image files can be dropped'));
@@ -527,7 +539,7 @@ export const ChatRoom: React.FC = () => {
       // 优化图片
       const optimizedDataUrl = await optimizeImage(file);
       const messageContent = buildReplyContent(tl('[图片]', '[Image]'));
-      
+
       console.log('📤 发送拖拽的优化图片');
 
       // 乐观更新：立即在本地显示自己发送的图片
@@ -540,7 +552,7 @@ export const ChatRoom: React.FC = () => {
         type: 'image',
         imageData: optimizedDataUrl,
       };
-      
+
       // 立即添加到本地消息列表
       addChatMessage(optimisticMessage);
       console.log('✅ [ChatRoom] 乐观更新：本地显示拖拽的图片');
@@ -550,11 +562,11 @@ export const ChatRoom: React.FC = () => {
       setReplyTo(null);
 
       antdMessage.success(tl('图片发送成功', 'Image sent'));
-      
+
       // 发送图片的一瞬间：瞬时滚动到底部（一次性）
       isAtBottomRef.current = true;
       scrollToBottom(false);
-      
+
       setIsUploading(false);
     } catch (error) {
       console.error('拖拽图片失败:', error);
@@ -604,9 +616,9 @@ export const ChatRoom: React.FC = () => {
   // 处理Emoji选择
   const handleEmojiSelect = (emoji: string) => {
     // 插入Emoji到输入框
-    setInputValue(prev => prev + emoji);
+    setInputValue((prev) => prev + emoji);
     setShowEmojiPicker(false);
-    
+
     // 聚焦输入框
     if (textAreaRef.current) {
       textAreaRef.current.focus();
@@ -619,7 +631,10 @@ export const ChatRoom: React.FC = () => {
     setIsShooting(true);
     let stream: MediaStream | null = null;
     try {
-      stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 5 } as any, audio: false } as any);
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 5 } as any,
+        audio: false,
+      } as any);
       const video = document.createElement('video');
       video.srcObject = stream;
       video.muted = true;
@@ -662,30 +677,29 @@ export const ChatRoom: React.FC = () => {
     try {
       console.log('🖼️ 开始下载图片...');
       setDownloadingImageId(messageId);
-      
+
       // 从Data URL中提取Base64数据
       const base64Data = imageData.split(',')[1];
-      
+
       // 调用后端保存图片
       const filePath = await invoke<string>('save_chat_image', {
         imageData: base64Data,
       });
-      
+
       console.log('✅ 图片已保存到:', filePath);
-      
+
       // 保存文件路径，用于显示
-      setDownloadedImages(prev => new Map(prev).set(messageId, filePath));
+      setDownloadedImages((prev) => new Map(prev).set(messageId, filePath));
       setDownloadingImageId(null);
-      
+
       // 3秒后清除下载状态
       setTimeout(() => {
-        setDownloadedImages(prev => {
+        setDownloadedImages((prev) => {
           const newMap = new Map(prev);
           newMap.delete(messageId);
           return newMap;
         });
       }, 3000);
-      
     } catch (error) {
       console.error('❌ 下载图片失败:', error);
       antdMessage.error(tl('下载图片失败', 'Failed to download image'));
@@ -705,14 +719,17 @@ export const ChatRoom: React.FC = () => {
   const displayedMessages = chatMessages.slice(-displayedMessageCount);
 
   // 当前玩家名（用于 @ 提醒判断）
-  const ownName = (players.find((p) => p.id === currentPlayerId)?.name || config.playerName || '').trim();
+  const ownName = (
+    players.find((p) => p.id === currentPlayerId)?.name ||
+    config.playerName ||
+    ''
+  ).trim();
 
   // 未读分隔线：定位第一条未读(他人)消息的 id，仅当当前不在底部且确有未读时显示
   const firstUnreadId =
     hasUnreadMessages && !isAtBottom
-      ? chatMessages.find(
-          (m, idx) => idx >= lastReadMessageIndex && m.playerId !== currentPlayerId
-        )?.id
+      ? chatMessages.find((m, idx) => idx >= lastReadMessageIndex && m.playerId !== currentPlayerId)
+          ?.id
       : undefined;
 
   // 将文本消息渲染为富文本：识别链接（可点击外部打开）与 @提醒（高亮）
@@ -734,7 +751,12 @@ export const ChatRoom: React.FC = () => {
                 e.preventDefault();
                 void openExternal(trimmed).catch(() => {});
               }}
-              style={{ color: '#69b1ff', textDecoration: 'underline', wordBreak: 'break-all', cursor: 'pointer' }}
+              style={{
+                color: '#69b1ff',
+                textDecoration: 'underline',
+                wordBreak: 'break-all',
+                cursor: 'pointer',
+              }}
             >
               {trimmed}
             </a>
@@ -748,7 +770,10 @@ export const ChatRoom: React.FC = () => {
       return parts.map((part, j) => {
         if (part.startsWith('@') && part.length > 1) {
           const mentionedName = part.slice(1);
-          const isEveryone = mentionedName === '所有人' || mentionedName === '全体' || mentionedName.toLowerCase() === 'all';
+          const isEveryone =
+            mentionedName === '所有人' ||
+            mentionedName === '全体' ||
+            mentionedName.toLowerCase() === 'all';
           const isMe = !!ownName && mentionedName === ownName;
           const isKnown = players.some((p) => p.name === mentionedName);
           if (isMe || isKnown || isEveryone) {
@@ -768,33 +793,25 @@ export const ChatRoom: React.FC = () => {
   };
 
   return (
-    <div 
-      className="chat-room"
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-    >
-      <div 
-        className="chat-messages" 
-        ref={messagesContainerRef}
-        onScroll={handleScroll}
-      >
+    <div className="chat-room" onDrop={handleDrop} onDragOver={handleDragOver}>
+      <div className="chat-messages" ref={messagesContainerRef} onScroll={handleScroll}>
         {isLoadingMore && (
           <div className="chat-loading">
             <span>{tl('加载中...', 'Loading...')}</span>
           </div>
         )}
-        
+
         {!hasMoreMessages && chatMessages.length > displayedMessageCount && (
           <div className="chat-no-more">
             <span>{tl('没有更多消息了', 'No more messages')}</span>
           </div>
         )}
-        
+
         <AnimatePresence mode="popLayout">
           {displayedMessages.map((message) => {
             const isOwnMessage = message.playerId === currentPlayerId;
             const showUnreadDivider = firstUnreadId && message.id === firstUnreadId;
-            
+
             return (
               <React.Fragment key={message.id}>
                 {showUnreadDivider && (
@@ -805,7 +822,7 @@ export const ChatRoom: React.FC = () => {
                       alignItems: 'center',
                       gap: 8,
                       margin: '8px 0',
-                      color: '#ff7875',
+                      color: '#fa5151',
                       fontSize: 12,
                     }}
                   >
@@ -821,97 +838,131 @@ export const ChatRoom: React.FC = () => {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.2 }}
                 >
-                {/* 头像 */}
-                <div className="message-avatar">
-                  <span>{getMessageInitial(message)}</span>
-                </div>
-                
-                <span className="message-author-outside">
-                  {message.playerName}
-                  {isOwnMessage && ' (我)'}
-                </span>
-                
-                <div className="message-bubble-stack">
-                <div className={`message-content${message.type === 'image' && message.imageData ? ' message-content-image' : ''}`}>
-                  {message.type === 'image' && message.imageData ? (
-                    <div className="chat-image-wrapper">
-                      <img 
-                        src={message.imageData} 
-                        alt={tl('聊天图片', 'Chat image')} 
-                        className="chat-image"
-                        onClick={() => { setPreviewZoom(1); setPreviewImage(message.imageData!); }}
-                        onLoad={() => { if (isAtBottom) { try { scrollToBottom(); } catch { /* ignore */ } } }}
-                      />
-                      <button
-                        className="image-download-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownloadImage(message.imageData!, message.id);
-                        }}
-                        disabled={downloadingImageId === message.id}
-                        title={tl('下载图片', 'Download image')}
-                      >
-                        {downloadingImageId === message.id ? (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="downloading-icon">
-                            <circle cx="12" cy="12" r="10" opacity="0.25"/>
-                            <path d="M12 2 A10 10 0 0 1 22 12" strokeLinecap="round"/>
-                          </svg>
-                        ) : (
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                          </svg>
-                        )}
-                      </button>
-                      {downloadedImages.has(message.id) && (
-                        <div className="download-success-tip">
-                          {tl('已保存至', 'Saved to')} {downloadedImages.get(message.id)?.replace(/\\[^\\]+$/, '')}
+                  {/* 头像 */}
+                  <div className="message-avatar">
+                    <span>{getMessageInitial(message)}</span>
+                  </div>
+
+                  <span className="message-author-outside">
+                    {message.playerName}
+                    {isOwnMessage && ' (我)'}
+                  </span>
+
+                  <div className="message-bubble-stack">
+                    <div
+                      className={`message-content${message.type === 'image' && message.imageData ? ' message-content-image' : ''}`}
+                    >
+                      {message.type === 'image' && message.imageData ? (
+                        <div className="chat-image-wrapper">
+                          <img
+                            src={message.imageData}
+                            alt={tl('聊天图片', 'Chat image')}
+                            className="chat-image"
+                            onClick={() => {
+                              setPreviewZoom(1);
+                              setPreviewImage(message.imageData!);
+                            }}
+                            onLoad={() => {
+                              if (isAtBottom) {
+                                try {
+                                  scrollToBottom();
+                                } catch {
+                                  /* ignore */
+                                }
+                              }
+                            }}
+                          />
+                          <button
+                            className="image-download-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadImage(message.imageData!, message.id);
+                            }}
+                            disabled={downloadingImageId === message.id}
+                            title={tl('下载图片', 'Download image')}
+                          >
+                            {downloadingImageId === message.id ? (
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                className="downloading-icon"
+                              >
+                                <circle cx="12" cy="12" r="10" opacity="0.25" />
+                                <path d="M12 2 A10 10 0 0 1 22 12" strokeLinecap="round" />
+                              </svg>
+                            ) : (
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                              </svg>
+                            )}
+                          </button>
+                          {downloadedImages.has(message.id) && (
+                            <div className="download-success-tip">
+                              {tl('已保存至', 'Saved to')}{' '}
+                              {downloadedImages.get(message.id)?.replace(/\\[^\\]+$/, '')}
+                            </div>
+                          )}
                         </div>
+                      ) : (
+                        (() => {
+                          const c = message.content;
+                          if (c.startsWith('> ')) {
+                            const nl = c.indexOf('\n');
+                            const quoteLine = (nl >= 0 ? c.slice(2, nl) : c.slice(2)).trim();
+                            const body = nl >= 0 ? c.slice(nl + 1) : '';
+                            return (
+                              <>
+                                {quoteLine && <div className="chat-quote">{quoteLine}</div>}
+                                {renderMessageText(body)}
+                              </>
+                            );
+                          }
+                          return renderMessageText(c);
+                        })()
                       )}
                     </div>
-                  ) : (
-                    (() => {
-                      const c = message.content;
-                      if (c.startsWith('> ')) {
-                        const nl = c.indexOf('\n');
-                        const quoteLine = (nl >= 0 ? c.slice(2, nl) : c.slice(2)).trim();
-                        const body = nl >= 0 ? c.slice(nl + 1) : '';
-                        return (
-                          <>
-                            {quoteLine && <div className="chat-quote">{quoteLine}</div>}
-                            {renderMessageText(body)}
-                          </>
-                        );
-                      }
-                      return renderMessageText(c);
-                    })()
-                  )}
-                </div>
-                <button
-                  className="message-reply-btn"
-                  title={tl('引用回复', 'Reply')}
-                  onClick={() => handleQuoteMessage(message)}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="9 17 4 12 9 7"></polyline>
-                    <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
-                  </svg>
-                </button>
-                
-                <span className="message-time-below">
-                  {formatTime(message.timestamp)}
-                </span>
-                </div>
-              </motion.div>
+                    <button
+                      className="message-reply-btn"
+                      title={tl('引用回复', 'Reply')}
+                      onClick={() => handleQuoteMessage(message)}
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <polyline points="9 17 4 12 9 7"></polyline>
+                        <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+                      </svg>
+                    </button>
+
+                    <span className="message-time-below">{formatTime(message.timestamp)}</span>
+                  </div>
+                </motion.div>
               </React.Fragment>
             );
           })}
         </AnimatePresence>
-        
+
         <div ref={messagesEndRef} />
       </div>
-      
+
       {/* 新消息提示 */}
       <AnimatePresence>
         {hasUnreadMessages && !isAtBottom && (
@@ -923,14 +974,21 @@ export const ChatRoom: React.FC = () => {
             onClick={() => scrollToBottom()}
             title={tl('滚动到底部', 'Scroll to bottom')}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M19 12l-7 7-7-7"/>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M12 5v14M19 12l-7 7-7-7" />
             </svg>
             {hasUnreadMessages && <div className="new-message-badge" />}
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* ??????? */}
       <AnimatePresence>
         {previewImage && (
@@ -953,48 +1011,64 @@ export const ChatRoom: React.FC = () => {
                 style={{ transform: `scale(${previewZoom})` }}
               />
               <div className="image-preview-actions">
-                <button type="button" onClick={() => setPreviewZoom((z) => Math.max(0.5, z - 0.25))}>-</button>
-                <button type="button" onClick={() => setPreviewZoom(1)}>{Math.round(previewZoom * 100)}%</button>
-                <button type="button" onClick={() => setPreviewZoom((z) => Math.min(4, z + 0.25))}>+</button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewZoom((z) => Math.max(0.5, z - 0.25))}
+                >
+                  -
+                </button>
+                <button type="button" onClick={() => setPreviewZoom(1)}>
+                  {Math.round(previewZoom * 100)}%
+                </button>
+                <button type="button" onClick={() => setPreviewZoom((z) => Math.min(4, z + 0.25))}>
+                  +
+                </button>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* Emoji选择器 */}
       {showEmojiPicker && (
         <div className="emoji-picker-container">
-          <EmojiPicker 
-            onSelect={handleEmojiSelect}
-            onClose={() => setShowEmojiPicker(false)}
-          />
+          <EmojiPicker onSelect={handleEmojiSelect} onClose={() => setShowEmojiPicker(false)} />
         </div>
       )}
-      
+
       {/* 底栏输入区域 */}
       {replyTo && (
         <div className="reply-preview reply-preview-above-input">
           <div className="reply-preview-bar" />
           <div className="reply-preview-body">
-            <div className="reply-preview-name">{tl('\u56de\u590d ', 'Reply to ')}{replyTo.playerName}</div>
-            <div className="reply-preview-text">{replyTo.type === 'image' ? tl('[\u56fe\u7247]', '[Image]') : replyTo.content}</div>
+            <div className="reply-preview-name">
+              {tl('\u56de\u590d ', 'Reply to ')}
+              {replyTo.playerName}
+            </div>
+            <div className="reply-preview-text">
+              {replyTo.type === 'image' ? tl('[\u56fe\u7247]', '[Image]') : replyTo.content}
+            </div>
           </div>
-          <button className="reply-preview-close" onClick={() => setReplyTo(null)} title={tl('取消引用', 'Cancel reply')} aria-label={tl('取消引用', 'Cancel reply')}>
+          <button
+            className="reply-preview-close"
+            onClick={() => setReplyTo(null)}
+            title={tl('取消引用', 'Cancel reply')}
+            aria-label={tl('取消引用', 'Cancel reply')}
+          >
             <CloseOutlined />
           </button>
         </div>
       )}
 
-      <motion.div 
+      <motion.div
         className="chat-input-area"
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ 
+        transition={{
           type: 'spring',
           stiffness: 300,
           damping: 30,
-          delay: 0.1
+          delay: 0.1,
         }}
       >
         {/* @ 提及候选下拉 */}
@@ -1019,7 +1093,9 @@ export const ChatRoom: React.FC = () => {
                 >
                   <span className="mention-at">@</span>
                   <span className="mention-name">{name}</span>
-                  {name === '所有人' && <span className="mention-tag">{tl('全体提醒', 'Everyone')}</span>}
+                  {name === '所有人' && (
+                    <span className="mention-tag">{tl('全体提醒', 'Everyone')}</span>
+                  )}
                 </div>
               ))}
             </motion.div>
@@ -1029,15 +1105,15 @@ export const ChatRoom: React.FC = () => {
         <div className="chat-input-wrapper">
           <Button
             type="text"
-            icon={<EmojiIcon size={22} />}
+            icon={<EmojiIcon size={24} />}
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             title={tl('选择表情', 'Emoji')}
             className="emoji-button"
           />
-          
+
           <Button
             type="text"
-            icon={<ImageIcon size={22} />}
+            icon={<ImageIcon size={24} />}
             onClick={handleImageUpload}
             loading={isUploading}
             title={tl('发送图片', 'Send image')}
@@ -1048,16 +1124,28 @@ export const ChatRoom: React.FC = () => {
             type="text"
             onClick={handleScreenshot}
             loading={isShooting}
-            title={tl('截图发送（选择要分享的屏幕/窗口）', 'Screenshot to chat (pick a screen/window)')}
+            title={tl(
+              '截图发送（选择要分享的屏幕/窗口）',
+              'Screenshot to chat (pick a screen/window)'
+            )}
             className="image-button"
-            icon={(
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            icon={
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                 <circle cx="12" cy="13" r="4" />
               </svg>
-            )}
+            }
           />
-          
+
           <TextArea
             ref={textAreaRef}
             value={inputValue}
@@ -1069,7 +1157,7 @@ export const ChatRoom: React.FC = () => {
             maxLength={500}
             style={{ flex: 1 }}
           />
-          
+
           <Button
             type="primary"
             icon={<SendOutlined />}

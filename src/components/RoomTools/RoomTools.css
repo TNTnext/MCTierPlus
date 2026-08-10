@@ -2,16 +2,16 @@
 
 /* 当前选中分页：绿色文字 + 绿色下划线 */
 .room-tools-modal .ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: #7ed321 !important;
-  text-shadow: 0 0 1px rgba(126, 211, 33, 0.3);
+  color: #06ad56 !important;
+  text-shadow: 0 0 1px rgba(7, 193, 96, 0.3);
 }
 
 .room-tools-modal .ant-tabs-tab:hover .ant-tabs-tab-btn {
-  color: #a0e85b !important;
+  color: #95ec69 !important;
 }
 
 .room-tools-modal .ant-tabs-ink-bar {
-  background: #7ed321 !important;
+  background: #06ad56 !important;
 }
 
 /* 待办清单 */
@@ -22,7 +22,7 @@
   overflow-x: visible;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .room-tools-select-dropdown.ant-select-dropdown {
@@ -32,7 +32,7 @@
 
 .room-todo-empty {
   text-align: center;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--mc-text-3);
   font-size: 13px;
   padding: 24px 0;
 }
@@ -43,25 +43,25 @@
   justify-content: space-between;
   gap: 8px;
   padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border);
   border-radius: 8px;
   transition: background 0.15s ease;
 }
 
 .room-todo-item:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--mc-bg-alpha);
 }
 
 .room-todo-text {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
   font-size: 13px;
   word-break: break-all;
 }
 
 .room-todo-item.done .room-todo-text {
   text-decoration: line-through;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--mc-text-4);
 }
 
 .room-todo-del {
@@ -76,12 +76,14 @@
   border-radius: 6px;
   color: rgba(255, 120, 117, 0.8);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .room-todo-del:hover {
   background: rgba(255, 77, 79, 0.15);
-  color: #ff4d4f;
+  color: #fa5151;
 }
 
 .room-todo-footer {
@@ -90,5 +92,5 @@
   justify-content: space-between;
   margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--mc-border);
 }

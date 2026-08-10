@@ -20,10 +20,192 @@ import { screenShareService } from './services/screenShare/ScreenShareService';
 import { speakingDetector } from './services/voice/SpeakingDetector';
 import { versionCheckService } from './services/version/VersionCheckService';
 import type { UserConfig } from './types';
+import {
+  getThemeMode,
+  applyThemeMode,
+  subscribeSystemTheme,
+  THEME_MODE_EVENT,
+  type ThemeMode,
+  type ResolvedTheme,
+} from './theme/theme';
 import './App.css';
 
+/**
+ * MCTier 统一设计令牌（antd v5 token）
+ * 微信式方案：浅色（灰底 + 白卡）与深色（WeUI 深色）共用微信绿，支持明暗切换。
+ */
+const buildAntdTheme = (dark: boolean) => ({
+  algorithm: dark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+  token: {
+    colorPrimary: '#07c160',
+    colorInfo: '#07c160',
+    colorSuccess: '#07c160',
+    colorWarning: '#fa9d3b',
+    colorError: '#fa5151',
+    colorBgBase: dark ? '#111111' : '#ededed',
+    colorBgLayout: dark ? '#111111' : '#ededed',
+    colorBgContainer: dark ? '#1c1c1e' : '#ffffff',
+    colorBgElevated: dark ? '#232326' : '#ffffff',
+    colorBorder: dark ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.10)',
+    colorBorderSecondary: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+    colorSplit: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+    colorText: dark ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.88)',
+    colorTextSecondary: dark ? 'rgba(255,255,255,0.60)' : 'rgba(0,0,0,0.55)',
+    colorTextTertiary: dark ? 'rgba(255,255,255,0.38)' : 'rgba(0,0,0,0.38)',
+    colorTextQuaternary: dark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.22)',
+    colorFill: dark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)',
+    colorFillSecondary: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+    colorFillTertiary: dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+    borderRadius: 10,
+    borderRadiusSM: 8,
+    borderRadiusLG: 14,
+    fontSize: 14,
+    controlHeight: 38,
+    controlHeightLG: 44,
+    fontFamily:
+      "-apple-system-font, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif",
+    boxShadow: dark ? '0 4px 16px rgba(0,0,0,0.5)' : '0 4px 16px rgba(0,0,0,0.08)',
+    boxShadowSecondary: dark ? '0 2px 8px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.05)',
+  },
+  components: {
+    Button: {
+      primaryShadow: 'none',
+      fontWeight: 600,
+      borderRadius: 8,
+      controlHeight: 40,
+      defaultBg: dark ? '#1c1c1e' : '#ffffff',
+      defaultBorderColor: dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.15)',
+      defaultShadow: 'none',
+      defaultColor: dark ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.88)',
+    },
+    Modal: {
+      contentBg: dark ? '#1c1c1e' : '#ffffff',
+      headerBg: dark ? '#1c1c1e' : '#ffffff',
+      borderRadiusLG: 12,
+      titleFontSize: 17,
+    },
+    Message: {
+      contentBg: dark ? '#1c1c1e' : '#ffffff',
+    },
+    Tooltip: {
+      colorBgSpotlight: 'rgba(0,0,0,0.85)',
+      borderRadius: 8,
+    },
+    Switch: {
+      colorPrimary: '#07c160',
+    },
+    Slider: {
+      trackBg: '#07c160',
+      trackHoverBg: '#06ad56',
+      handleColor: '#07c160',
+      handleActiveColor: '#06ad56',
+      railBg: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+      railHoverBg: dark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.12)',
+    },
+    Tabs: {
+      inkBarColor: '#07c160',
+      itemSelectedColor: '#07c160',
+      itemHoverColor: '#06ad56',
+      itemColor: dark ? 'rgba(255,255,255,0.60)' : 'rgba(0,0,0,0.55)',
+    },
+    Checkbox: {
+      colorPrimary: '#07c160',
+    },
+    Radio: {
+      colorPrimary: '#07c160',
+    },
+    Segmented: {
+      itemSelectedBg: dark ? '#232326' : '#ffffff',
+      itemSelectedColor: dark ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.88)',
+    },
+    Select: {
+      optionSelectedBg: 'rgba(7,193,96,0.10)',
+    },
+    Input: {
+      colorBgContainer: dark ? 'rgba(255,255,255,0.06)' : '#f7f7f7',
+      activeShadow: '0 0 0 3px rgba(7,193,96,0.12)',
+      borderRadius: 10,
+    },
+    Dropdown: {
+      colorBgElevated: dark ? '#232326' : '#ffffff',
+    },
+  },
+});
+
 function App() {
+  // 根据窗口类型决定渲染内容：弹幕 / 游戏HUD / 屏幕查看 / 主窗口
+  const isDanmakuWindow = window.location.search.includes('danmaku=true');
+  const isGameHudWindow = window.location.search.includes('gamehud=true');
+  const isScreenViewerWindow = window.location.search.includes('screen-viewer=true');
+
+  // 弹幕覆盖窗口：只渲染弹幕层（透明、置顶、穿透）
+  if (isDanmakuWindow) {
+    return <DanmakuOverlay />;
+  }
+
+  // 游戏 HUD 浮层窗口：只渲染 HUD（透明、置顶、穿透）
+  if (isGameHudWindow) {
+    return <GameHudOverlay />;
+  }
+
+  // 屏幕查看窗口：只渲染 ScreenViewer 组件
+  if (isScreenViewerWindow) {
+    return <ScreenViewerWindow />;
+  }
+
+  return <MainApp />;
+}
+
+function ScreenViewerWindow() {
+  // 从URL参数中获取shareId和playerName
+  const urlParams = new URLSearchParams(window.location.search);
+  const shareId = urlParams.get('shareId') || '';
+  const playerName = urlParams.get('playerName') || tl('未知玩家', 'Unknown Player');
+  const themeMode = getThemeMode();
+  const resolved = applyThemeMode(themeMode);
+
+  return (
+    <ErrorBoundary>
+      <ConfigProvider
+        locale={getLanguage() === 'en' ? enUS : zhCN}
+        theme={buildAntdTheme(resolved === 'dark')}
+      >
+        <AntdApp message={{ maxCount: 1, duration: 1.5 }}>
+          <ScreenViewer shareId={shareId} playerName={playerName} />
+        </AntdApp>
+      </ConfigProvider>
+    </ErrorBoundary>
+  );
+}
+
+function MainApp() {
   const { i18n } = useTranslation();
+  // 明暗主题：默认暗色，支持 明亮 / 黑暗 / 跟随系统
+  const [themeMode, setThemeModeState] = useState<ThemeMode>(getThemeMode);
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
+    applyThemeMode(getThemeMode())
+  );
+
+  // 应用主题到根节点，并在"跟随系统"时订阅系统变化
+  useEffect(() => {
+    const apply = () => setResolvedTheme(applyThemeMode(themeMode));
+    apply();
+    if (themeMode !== 'system') return undefined;
+    return subscribeSystemTheme(apply);
+  }, [themeMode]);
+
+  // 监听其它窗口/组件切换主题
+  useEffect(() => {
+    const onThemeMode = (e: Event) => {
+      const next = (e as CustomEvent<ThemeMode>).detail;
+      if (next === 'light' || next === 'dark' || next === 'system') {
+        setThemeModeState(next);
+      }
+    };
+    window.addEventListener(THEME_MODE_EVENT, onThemeMode);
+    return () => window.removeEventListener(THEME_MODE_EVENT, onThemeMode);
+  }, []);
+
   const appState = useAppStore((state) => state.appState);
   const lobby = useAppStore((state) => state.lobby);
   const setMicEnabled = useAppStore((state) => state.setMicEnabled);
@@ -42,57 +224,6 @@ function App() {
     currentVersion: string;
     updateMessage: string[];
   } | null>(null);
-
-  // 检测是否是屏幕查看窗口
-  const isScreenViewerWindow = window.location.search.includes('screen-viewer=true');
-
-  // 弹幕覆盖窗口：只渲染弹幕层（透明、置顶、穿透）
-  const isDanmakuWindow = window.location.search.includes('danmaku=true');
-  if (isDanmakuWindow) {
-    return <DanmakuOverlay />;
-  }
-
-  // 游戏 HUD 浮层窗口：只渲染 HUD（透明、置顶、穿透）
-  const isGameHudWindow = window.location.search.includes('gamehud=true');
-  if (isGameHudWindow) {
-    return <GameHudOverlay />;
-  }
-
-  // 如果是屏幕查看窗口，直接渲染ScreenViewer组件
-  if (isScreenViewerWindow) {
-    // 从URL参数中获取shareId和playerName
-    const urlParams = new URLSearchParams(window.location.search);
-    const shareId = urlParams.get('shareId') || '';
-    const playerName = urlParams.get('playerName') || tl('未知玩家', 'Unknown Player');
-    
-    return (
-      <ErrorBoundary>
-        <ConfigProvider
-          locale={getLanguage() === 'en' ? enUS : zhCN}
-          theme={{
-            algorithm: theme.darkAlgorithm,
-            token: {
-              colorPrimary: '#52c41a',
-              colorSuccess: '#52c41a',
-              colorWarning: '#f59e0b',
-              colorError: '#ef4444',
-              borderRadius: 8,
-              colorBgContainer: 'rgba(30, 30, 45, 0.95)',
-              colorBorder: 'rgba(255, 255, 255, 0.1)',
-              colorText: 'rgba(255, 255, 255, 0.9)',
-              colorTextSecondary: 'rgba(255, 255, 255, 0.6)',
-              fontFamily:
-                '-apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif',
-            },
-          }}
-        >
-        <AntdApp>
-          <ScreenViewer shareId={shareId} playerName={playerName} />
-        </AntdApp>
-        </ConfigProvider>
-      </ErrorBoundary>
-    );
-  }
 
   // 同步系统托盘菜单文本到当前界面语言（启动时 + 语言切换时）
   useEffect(() => {
@@ -153,10 +284,10 @@ function App() {
         }
 
         console.log('🔍 [VersionCheck] 开始检查版本更新...');
-        
+
         // 获取最新版本信息
         const info = await versionCheckService.fetchLatestVersion();
-        
+
         if (!info) {
           console.warn('⚠️ [VersionCheck] 获取版本信息失败');
           return;
@@ -164,10 +295,10 @@ function App() {
 
         if (info.hasUpdate && info.updateMessage) {
           console.log('🎉 [VersionCheck] 发现新版本:', info.latestVersion);
-          
+
           // 格式化更新日志
           const formattedMessage = versionCheckService.formatUpdateMessage(info.updateMessage);
-          
+
           // 设置版本信息并显示弹窗
           setVersionInfo({
             latestVersion: info.latestVersion,
@@ -175,7 +306,7 @@ function App() {
             updateMessage: formattedMessage,
           });
           setShowVersionModal(true);
-          
+
           // 标记已显示更新提示
           versionCheckService.markUpdatePromptShown();
         } else {
@@ -221,7 +352,9 @@ function App() {
       });
     };
     void setup();
-    return () => { if (unlisten) unlisten(); };
+    return () => {
+      if (unlisten) unlisten();
+    };
   }, []);
 
   // 全局禁用右键菜单
@@ -277,7 +410,7 @@ function App() {
   // 初始化应用
   useEffect(() => {
     let isCleaningUp = false; // 防止重复清理的标志
-    
+
     const init = async () => {
       try {
         // 【新增】应用启动时检查并清理残留的虚拟网卡
@@ -289,7 +422,7 @@ function App() {
           console.warn('⚠️ 清理虚拟网卡时出现警告（可能没有残留）:', error);
           // 不影响应用启动，继续执行
         }
-        
+
         // 初始化状态管理（同步）
         initializeStore();
 
@@ -308,10 +441,10 @@ function App() {
             console.log('⚠️ 清理已在进行中，跳过重复执行');
             return;
           }
-          
+
           isCleaningUp = true;
           console.log('🚪 窗口即将关闭，开始清理资源...');
-          
+
           try {
             // 清理WebRTC资源
             await webrtcClient.cleanup();
@@ -319,7 +452,7 @@ function App() {
           } catch (error) {
             console.error('❌ 清理WebRTC资源失败:', error);
           }
-          
+
           try {
             // 清理快捷键
             hotkeyManager.cleanup();
@@ -327,9 +460,9 @@ function App() {
           } catch (error) {
             console.error('❌ 清理快捷键失败:', error);
           }
-          
+
           console.log('✅ 资源清理完成，允许窗口关闭');
-          
+
           // 尝试销毁窗口，如果失败则忽略错误
           try {
             await appWindow.destroy();
@@ -437,8 +570,10 @@ function App() {
 
           // 在初始化之前先设置版本错误回调
           webrtcClient.onVersionError((currentVersion, minimumVersion, downloadUrl) => {
-            console.log(`WebRTC: 版本错误 - 当前版本: ${currentVersion}, 最低要求: ${minimumVersion}`);
-            
+            console.log(
+              `WebRTC: 版本错误 - 当前版本: ${currentVersion}, 最低要求: ${minimumVersion}`
+            );
+
             // 设置版本错误信息到store，MiniWindow会检测并显示弹窗
             const { setVersionError } = useAppStore.getState();
             setVersionError({ currentVersion, minimumVersion, downloadUrl });
@@ -454,7 +589,15 @@ function App() {
           console.log('  - 大厅名称:', lobby.name);
           console.log('  - 信令服务器:', signalingServer);
 
-          await webrtcClient.initialize(playerId, playerName, lobby.name, lobby.password || '', lobby.virtualDomain, lobby.useDomain, signalingServer);
+          await webrtcClient.initialize(
+            playerId,
+            playerName,
+            lobby.name,
+            lobby.password || '',
+            lobby.virtualDomain,
+            lobby.useDomain,
+            signalingServer
+          );
 
           // 初始化屏幕共享服务
           const ws = (webrtcClient as any).websocket; // 获取WebSocket实例
@@ -464,19 +607,23 @@ function App() {
           }
 
           // 设置事件回调
-          webrtcClient.onPlayerJoined((playerId, playerName, virtualIp, virtualDomain, useDomain) => {
-            console.log(`WebRTC: 玩家加入 - ${playerName} (${playerId}), 虚拟IP: ${virtualIp || '未知'}, 虚拟域名: ${virtualDomain || '未设置'}, 使用域名: ${useDomain || false}`);
-            addPlayer({
-              id: playerId,
-              name: playerName,
-              virtualIp: virtualIp,
-              virtualDomain: virtualDomain,
-              useDomain: useDomain,
-              micEnabled: false,
-              isMuted: false,
-              joinedAt: new Date().toISOString(),
-            });
-          });
+          webrtcClient.onPlayerJoined(
+            (playerId, playerName, virtualIp, virtualDomain, useDomain) => {
+              console.log(
+                `WebRTC: 玩家加入 - ${playerName} (${playerId}), 虚拟IP: ${virtualIp || '未知'}, 虚拟域名: ${virtualDomain || '未设置'}, 使用域名: ${useDomain || false}`
+              );
+              addPlayer({
+                id: playerId,
+                name: playerName,
+                virtualIp: virtualIp,
+                virtualDomain: virtualDomain,
+                useDomain: useDomain,
+                micEnabled: false,
+                isMuted: false,
+                joinedAt: new Date().toISOString(),
+              });
+            }
+          );
 
           webrtcClient.onPlayerLeft((playerId) => {
             console.log(`WebRTC: 玩家离开 - ${playerId}`);
@@ -498,7 +645,11 @@ function App() {
           webrtcClient.onRemoteStream((playerId, stream) => {
             console.log(`WebRTC: 接收到远程音频流 - ${playerId}`);
             // 接入远程流做说话检测（只读分析，不影响播放）
-            try { speakingDetector.attach(playerId, stream); } catch (e) { console.warn('说话检测接入失败:', e); }
+            try {
+              speakingDetector.attach(playerId, stream);
+            } catch (e) {
+              console.warn('说话检测接入失败:', e);
+            }
           });
 
           // 本机麦克风流变化：开启时接入检测，关闭时移除并清除自身说话状态
@@ -506,7 +657,11 @@ function App() {
             const selfId = useAppStore.getState().currentPlayerId;
             if (!selfId) return;
             if (stream) {
-              try { speakingDetector.attach(selfId, stream); } catch (e) { console.warn('本机说话检测接入失败:', e); }
+              try {
+                speakingDetector.attach(selfId, stream);
+              } catch (e) {
+                console.warn('本机说话检测接入失败:', e);
+              }
             } else {
               speakingDetector.detach(selfId);
             }
@@ -521,7 +676,7 @@ function App() {
               content,
               timestamp,
             });
-            
+
             // 如果不是自己发的消息，且不在聊天室界面，按 @ 提及规则播放新消息音效
             if (playerId !== currentPlayerId) {
               const isInChatRoom = (window as any).__isInChatRoom__ || false;
@@ -531,12 +686,14 @@ function App() {
               let mm: RegExpExecArray | null;
               while ((mm = mentionRegex.exec(content)) !== null) mentioned.push(mm[1]);
               const hasMention = mentioned.length > 0;
-              const mentionsEveryone = mentioned.some((n) => n === '所有人' || n === '全体' || n.toLowerCase() === 'all');
+              const mentionsEveryone = mentioned.some(
+                (n) => n === '所有人' || n === '全体' || n.toLowerCase() === 'all'
+              );
               const mentionsMe = !!myName && mentioned.some((n) => n === myName);
               const shouldNotify = !hasMention || mentionsEveryone || mentionsMe;
               if (!isInChatRoom && shouldNotify) {
                 console.log('播放新消息音效...');
-                audioService.play('newMessage').catch(err => {
+                audioService.play('newMessage').catch((err) => {
                   console.error('播放新消息音效失败:', err);
                 });
               }
@@ -555,7 +712,11 @@ function App() {
           webrtcClient.onHostChanged((hostId) => {
             useAppStore.getState().setHostId(hostId);
             if (hostId === useAppStore.getState().currentPlayerId) {
-              try { (window as any).__antdMessage?.success?.('你已成为房主'); } catch { /* ignore */ }
+              try {
+                (window as any).__antdMessage?.success?.('你已成为房主');
+              } catch {
+                /* ignore */
+              }
             }
           });
 
@@ -573,7 +734,9 @@ function App() {
             // 被踢出：通知并触发退出大厅
             try {
               window.dispatchEvent(new CustomEvent('mctier-kicked', { detail: { reason } }));
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           });
 
           console.log('✅ WebRTC 初始化完成，玩家ID:', playerId);
@@ -597,19 +760,27 @@ function App() {
     }
     // 注意：不在这里添加cleanup，因为退出大厅时会在MiniWindow中手动调用cleanup
     // 这样可以确保cleanup在正确的时机执行，避免状态不一致
-  }, [appState, lobby, addPlayer, removePlayer, updatePlayerStatus, setCurrentPlayerId, addChatMessage]);
+  }, [
+    appState,
+    lobby,
+    addPlayer,
+    removePlayer,
+    updatePlayerStatus,
+    setCurrentPlayerId,
+    addChatMessage,
+  ]);
 
   // 监听窗口位置变化并保存
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    
+
     const savePosition = async () => {
       try {
         const { getCurrentWindow } = await import('@tauri-apps/api/window');
         const window = getCurrentWindow();
         const position = await window.outerPosition();
         const size = await window.outerSize();
-        
+
         await invoke('save_window_position', {
           x: position.x,
           y: position.y,
@@ -620,7 +791,7 @@ function App() {
         console.error('保存窗口位置失败:', error);
       }
     };
-    
+
     const handleMove = () => {
       // 防抖：窗口移动停止 500ms 后再保存
       if (timeoutId) {
@@ -628,7 +799,7 @@ function App() {
       }
       timeoutId = setTimeout(savePosition, 500);
     };
-    
+
     // 监听窗口移动事件
     let unlisten: (() => void) | null = null;
     const setupListener = async () => {
@@ -640,9 +811,9 @@ function App() {
         console.error('设置窗口移动监听失败:', error);
       }
     };
-    
+
     setupListener();
-    
+
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -657,24 +828,9 @@ function App() {
     <ErrorBoundary>
       <ConfigProvider
         locale={getLanguage() === 'en' ? enUS : zhCN}
-        theme={{
-          algorithm: theme.darkAlgorithm,
-          token: {
-            colorPrimary: '#52c41a',
-            colorSuccess: '#52c41a',
-            colorWarning: '#f59e0b',
-            colorError: '#ef4444',
-            borderRadius: 8,
-            colorBgContainer: 'rgba(30, 30, 45, 0.95)',
-            colorBorder: 'rgba(255, 255, 255, 0.1)',
-            colorText: 'rgba(255, 255, 255, 0.9)',
-            colorTextSecondary: 'rgba(255, 255, 255, 0.6)',
-            fontFamily:
-              '-apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif',
-          },
-        }}
+        theme={buildAntdTheme(resolvedTheme === 'dark')}
       >
-        <AntdApp>
+        <AntdApp message={{ maxCount: 1, duration: 1.5 }}>
           <GlobalTooltip />
           <GlobalButtonTheme />
           <div className="app-container">

@@ -113,11 +113,11 @@ export const PlayerList: React.FC = () => {
                       animate={{ scale: 1 }}
                       transition={{ type: 'spring', stiffness: 500 }}
                     >
-                      <MicrophoneIcon enabled={true} size={12} />
+                      <MicrophoneIcon enabled={true} size={16} />
                     </motion.span>
                   ) : (
                     <span className="player-status-badge">
-                      <MicrophoneIcon enabled={false} size={12} />
+                      <MicrophoneIcon enabled={false} size={16} />
                       <span>{tl('静音', 'Muted')}</span>
                     </span>
                   )}
@@ -149,14 +149,18 @@ export const PlayerList: React.FC = () => {
                     transition={{ duration: 0.2 }}
                   >
                     <div className="player-volume-slider-wrapper">
-                      <Tooltip title={isMuted ? tl('取消静音', 'Unmute') : tl('静音该玩家', 'Mute this player')}>
+                      <Tooltip
+                        title={
+                          isMuted ? tl('取消静音', 'Unmute') : tl('静音该玩家', 'Mute this player')
+                        }
+                      >
                         <motion.div
                           className="player-volume-icon-inline"
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={() => handleToggleMute(player.id)}
                         >
-                          <VolumeIcon muted={isMuted} size={18} />
+                          <VolumeIcon muted={isMuted} size={24} />
                         </motion.div>
                       </Tooltip>
                       <Slider

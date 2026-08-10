@@ -1,18 +1,18 @@
 .version-update-modal .ant-modal-content {
-  background: rgba(20, 20, 20, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-raised);
+  border: 1px solid var(--mc-border);
   border-radius: 12px;
   backdrop-filter: blur(20px);
 }
 
 .version-update-modal .ant-modal-header {
   background: transparent;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--mc-border);
   padding: 16px 20px;
 }
 
 .version-update-modal .ant-modal-title {
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--mc-text);
 }
 
 .version-update-modal .ant-modal-body {
@@ -22,12 +22,12 @@
 }
 
 .version-update-modal .ant-modal-close {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
 }
 
 .version-update-modal .ant-modal-close:hover {
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--mc-text);
+  background: var(--mc-bg-alpha);
 }
 
 .version-update-modal-title {
@@ -39,13 +39,14 @@
 }
 
 .version-update-modal-title svg {
-  color: #52c41a;
+  color: #07c160;
   animation: bounce-download 2s ease-in-out infinite;
   flex-shrink: 0;
 }
 
 @keyframes bounce-download {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -66,9 +67,9 @@
   justify-content: center;
   gap: 2px;
   padding: 18px 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--mc-bg-alpha);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--mc-border);
 }
 
 .version-info-item {
@@ -80,7 +81,7 @@
 
 .version-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--mc-text-3);
   white-space: nowrap;
 }
 
@@ -94,35 +95,37 @@
 }
 
 .version-number.current {
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--mc-text-2);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border);
 }
 
 .version-number.latest {
-  color: #52c41a;
-  background: rgba(82, 196, 26, 0.1);
-  border: 1px solid rgba(82, 196, 26, 0.3);
+  color: #07c160;
+  background: rgba(7, 193, 96, 0.1);
+  border: 1px solid rgba(7, 193, 96, 0.3);
   animation: pulse-latest 2s ease-in-out infinite;
 }
 
 @keyframes pulse-latest {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.4);
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(7, 193, 96, 0.4);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(82, 196, 26, 0);
+    box-shadow: 0 0 0 8px rgba(7, 193, 96, 0);
   }
 }
 
 .version-arrow {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--mc-text-4);
   animation: slide-arrow 1.5s ease-in-out infinite;
   flex-shrink: 0;
 }
 
 @keyframes slide-arrow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
   50% {
@@ -145,21 +148,21 @@
   gap: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--mc-border);
   flex-shrink: 0;
 }
 
 .update-log-title svg {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
   flex-shrink: 0;
 }
 
 .update-log-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   max-height: 120px;
   overflow-y: auto;
   padding: 4px 0;
@@ -171,17 +174,17 @@
 }
 
 .update-log-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--mc-bg-alpha);
   border-radius: 3px;
 }
 
 .update-log-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--mc-bg-alpha);
   border-radius: 3px;
 }
 
 .update-log-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.22);
 }
 
 .update-log-item {
@@ -194,11 +197,11 @@
 }
 
 .update-log-item:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--mc-bg-alpha);
 }
 
 .update-log-bullet {
-  color: #52c41a;
+  color: #07c160;
   font-size: 14px;
   line-height: 1.5;
   flex-shrink: 0;
@@ -207,7 +210,7 @@
 
 .update-log-text {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--mc-text-2);
   line-height: 1.5;
   word-break: break-word;
 }
@@ -225,7 +228,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   padding: 10px 16px;
   border-radius: 8px;
   border: none;
@@ -241,26 +244,26 @@
 }
 
 .version-update-btn.later {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
+  color: var(--mc-text-2);
+  border: 1px solid var(--mc-border);
 }
 
 .version-update-btn.later:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--mc-bg-alpha);
+  border-color: var(--mc-text-4);
+  color: var(--mc-text);
 }
 
 .version-update-btn.download {
-  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  background: #07c160;
   color: white;
-  box-shadow: 0 4px 12px rgba(82, 196, 26, 0.3);
+  box-shadow: none;
 }
 
 .version-update-btn.download:hover {
-  background: linear-gradient(135deg, #73d13d 0%, #95de64 100%);
-  box-shadow: 0 6px 16px rgba(82, 196, 26, 0.4);
+  background: #06ad56;
+  box-shadow: none;
   transform: translateY(-1px);
 }
 

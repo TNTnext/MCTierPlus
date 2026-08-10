@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button, Space, Typography, Modal } from 'antd';
+import { Modal } from 'antd';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-shell';
 import { useAppStore } from '../../stores';
@@ -13,8 +13,6 @@ import { useEscapeKey } from '../../hooks';
 import { useTranslation } from 'react-i18next';
 import { tl } from '../../i18n';
 import './MainWindow.css';
-
-const { Title, Paragraph } = Typography;
 
 // 软件版本号
 const APP_VERSION = '2.5.0';
@@ -31,7 +29,7 @@ export const MainWindow: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [enableGpuRendering, setEnableGpuRendering] = useState(true);
-  
+
   const versionError = useAppStore((state) => state.versionError);
   const setVersionError = useAppStore((state) => state.setVersionError);
 
@@ -68,100 +66,6 @@ export const MainWindow: React.FC = () => {
     window.addEventListener('mctier-open-join', onDeepLink as EventListener);
     return () => window.removeEventListener('mctier-open-join', onDeepLink as EventListener);
   }, []);
-
-  // ESC键返回 - 在表单或关于页面时返回主界面
-  useEscapeKey(() => {
-    if (showForm) {
-      handleCloseForm();
-    } else if (showAbout) {
-      handleCloseAbout();
-    } else if (showSettings) {
-      handleCloseSettings();
-    }
-  }, showForm || showAbout || showSettings);
-
-  // 组件加载时主动拉取自动大厅配置，仅应用启动后首次触发一次
-  useEffect(() => {
-    // 用全局标志确保整个应用生命周期内只触发一次，避免从大厅返回主界面时重复触发
-    if ((window as any).__autoLobbyTriggered) return;
-    const checkAutoLobby = async () => {
-      try {
-        const settings = await invoke<any>('get_settings');
-        
-        // 加载 GPU 渲染设置
-        const gpuEnabled = settings.enableGpuRendering ?? true;
-        setEnableGpuRendering(gpuEnabled);
-        console.log('GPU 渲染设置:', gpuEnabled);
-        
-        if (settings.autoLobbyEnabled && settings.lobbyName && settings.lobbyPassword && settings.playerName) {
-          console.log('检测到自动大厅配置，自动创建大厅:', settings.lobbyName);
-          (window as any).__autoLobbyTriggered = true;
-          setFormMode('create');
-          (window as any).__autoLobbyConfig = {
-            lobbyName: settings.lobbyName,
-            lobbyPassword: settings.lobbyPassword,
-            playerName: settings.playerName,
-            useDomain: settings.useDomain || false,
-          };
-          setShowForm(true);
-        } else {
-          // 未触发也标记，避免反复查询
-          (window as any).__autoLobbyTriggered = true;
-        }
-      } catch (e) {
-        console.error('检查自动大厅配置失败:', e);
-      }
-    };
-    // 延迟500ms等待窗口完全渲染
-    const timer = setTimeout(checkAutoLobby, 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // 监听版本错误并显示弹窗
-  useEffect(() => {
-    if (versionError) {
-      console.log('MainWindow检测到版本错误，显示弹窗');
-      
-      Modal.warning({
-        title: tl('版本过低', 'Version Too Low'),
-        content: (
-          <div style={{ lineHeight: '1.8' }}>
-            <p style={{ marginBottom: '12px' }}>
-              {tl('您的 MCTier 版本过低，无法连接到大厅。', 'Your MCTier version is too low to connect to the lobby.')}
-            </p>
-            <p style={{ marginBottom: '8px', color: 'rgba(255,255,255,0.8)' }}>
-              {tl('当前版本', 'Current version')}: {versionError.currentVersion}
-            </p>
-            <p style={{ marginBottom: '12px', color: 'rgba(255,255,255,0.8)' }}>
-              {tl('最低要求', 'Minimum required')}: {versionError.minimumVersion}
-            </p>
-            <p style={{ color: 'rgba(255,255,255,0.6)' }}>
-              {tl('请前往官网下载最新版本', 'Please download the latest version from the official website')}
-            </p>
-          </div>
-        ),
-        okText: tl('前往官网', 'Go to Website'),
-        centered: true,
-        onOk: async () => {
-          console.log('用户点击了"前往官网"按钮');
-          try {
-            let url = versionError.downloadUrl;
-            if (!url.startsWith('http://') && !url.startsWith('https://')) {
-              url = `https://${url}`;
-            }
-            await open(url);
-          } catch (error) {
-            console.error('打开官网失败:', error);
-          }
-          setVersionError(null);
-        },
-        onCancel: () => {
-          console.log('用户关闭了版本错误弹窗');
-          setVersionError(null);
-        },
-      });
-    }
-  }, [versionError, setVersionError]);
 
   const handleCreateLobby = () => {
     setFormMode('create');
@@ -202,16 +106,120 @@ export const MainWindow: React.FC = () => {
     }
   };
 
+  // ESC键返回 - 在表单或关于页面时返回主界面
+  useEscapeKey(
+    () => {
+      if (showForm) {
+        handleCloseForm();
+      } else if (showAbout) {
+        handleCloseAbout();
+      } else if (showSettings) {
+        handleCloseSettings();
+      }
+    },
+    showForm || showAbout || showSettings
+  );
+
+  // 组件加载时主动拉取自动大厅配置，仅应用启动后首次触发一次
+  useEffect(() => {
+    // 用全局标志确保整个应用生命周期内只触发一次，避免从大厅返回主界面时重复触发
+    if ((window as any).__autoLobbyTriggered) return;
+    const checkAutoLobby = async () => {
+      try {
+        const settings = await invoke<any>('get_settings');
+
+        // 加载 GPU 渲染设置
+        const gpuEnabled = settings.enableGpuRendering ?? true;
+        setEnableGpuRendering(gpuEnabled);
+        console.log('GPU 渲染设置:', gpuEnabled);
+
+        if (
+          settings.autoLobbyEnabled &&
+          settings.lobbyName &&
+          settings.lobbyPassword &&
+          settings.playerName
+        ) {
+          console.log('检测到自动大厅配置，自动创建大厅:', settings.lobbyName);
+          (window as any).__autoLobbyTriggered = true;
+          setFormMode('create');
+          (window as any).__autoLobbyConfig = {
+            lobbyName: settings.lobbyName,
+            lobbyPassword: settings.lobbyPassword,
+            playerName: settings.playerName,
+            useDomain: settings.useDomain || false,
+          };
+          setShowForm(true);
+        } else {
+          // 未触发也标记，避免反复查询
+          (window as any).__autoLobbyTriggered = true;
+        }
+      } catch (e) {
+        console.error('检查自动大厅配置失败:', e);
+      }
+    };
+    // 延迟500ms等待窗口完全渲染
+    const timer = setTimeout(checkAutoLobby, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 监听版本错误并显示弹窗
+  useEffect(() => {
+    if (versionError) {
+      console.log('MainWindow检测到版本错误，显示弹窗');
+
+      Modal.warning({
+        title: tl('版本过低', 'Version Too Low'),
+        content: (
+          <div style={{ lineHeight: '1.8' }}>
+            <p style={{ marginBottom: '12px' }}>
+              {tl(
+                '您的 MCTier 版本过低，无法连接到大厅。',
+                'Your MCTier version is too low to connect to the lobby.'
+              )}
+            </p>
+            <p style={{ marginBottom: '8px', color: 'var(--mc-text-2)' }}>
+              {tl('当前版本', 'Current version')}: {versionError.currentVersion}
+            </p>
+            <p style={{ marginBottom: '12px', color: 'var(--mc-text-2)' }}>
+              {tl('最低要求', 'Minimum required')}: {versionError.minimumVersion}
+            </p>
+            <p style={{ color: 'var(--mc-text-3)' }}>
+              {tl(
+                '请前往官网下载最新版本',
+                'Please download the latest version from the official website'
+              )}
+            </p>
+          </div>
+        ),
+        okText: tl('前往官网', 'Go to Website'),
+        centered: true,
+        onOk: async () => {
+          console.log('用户点击了"前往官网"按钮');
+          try {
+            let url = versionError.downloadUrl;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+              url = `https://${url}`;
+            }
+            await open(url);
+          } catch (error) {
+            console.error('打开官网失败:', error);
+          }
+          setVersionError(null);
+        },
+        onCancel: () => {
+          console.log('用户关闭了版本错误弹窗');
+          setVersionError(null);
+        },
+      });
+    }
+  }, [versionError, setVersionError]);
+
   if (showAbout) {
-    return (
-      <AboutWindow onClose={handleCloseAbout} />
-    );
+    return <AboutWindow onClose={handleCloseAbout} />;
   }
 
   if (showForm) {
-    return (
-      <LobbyForm mode={formMode} onClose={handleCloseForm} />
-    );
+    return <LobbyForm mode={formMode} onClose={handleCloseForm} />;
   }
 
   return (
@@ -222,136 +230,69 @@ export const MainWindow: React.FC = () => {
         <motion.button
           className="settings-button"
           onClick={handleShowSettings}
-          whileHover={{ scale: 1.1, rotate: 30 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+          whileTap={{ scale: 0.92 }}
           title={t('common.settings')}
         >
-          <SettingsIcon size={20} color="rgba(255, 255, 255, 0.7)" />
+          <SettingsIcon size={24} color="var(--mc-text-2)" />
         </motion.button>
       </div>
-      
+
       <motion.div
         className="main-window-content"
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       >
         <motion.div
-          className="main-window-logo"
-          initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
-          animate={{ scale: 1, opacity: 1, rotate: 0 }}
-          transition={{ delay: 0.1, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-        >
-          <img src="/MCTierIcon.png" alt="MCTier Logo" />
-        </motion.div>
-
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-        >
-          <Title level={1} className="main-window-title">
-            MCTier
-          </Title>
-        </motion.div>
-
-        <motion.div
-          initial={{ y: -15, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-        >
-          <Paragraph className="main-window-subtitle">
-            {tl('虚拟局域网通用联机工具', 'Universal virtual LAN networking tool')}
-          </Paragraph>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          className="main-window-brand"
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.4 }}
-          style={{ marginBottom: '32px' }}
+          transition={{ delay: 0.06, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         >
-          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-            <motion.div
-              whileHover={{ scale: 1.008 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.08, ease: [0.4, 0, 0.2, 1] }}
-            >
-              <Button
-                type="primary"
-                size="large"
-                block
-                onClick={handleCreateLobby}
-                className="main-window-button create-button"
-              >
-                {t('lobby.create')}
-              </Button>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.008 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.08, ease: [0.4, 0, 0.2, 1] }}
-            >
-              <Button
-                size="large"
-                block
-                onClick={handleJoinLobby}
-                className="main-window-button join-button"
-              >
-                {t('lobby.join')}
-              </Button>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.008 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.08, ease: [0.4, 0, 0.2, 1] }}
-            >
-              <Button
-                size="large"
-                block
-                onClick={handleShowAbout}
-                className="main-window-button about-button"
-              >
-                {t('lobby.about')}
-              </Button>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.008 }}
-              whileTap={{ scale: 0.96 }}
-              transition={{ duration: 0.08, ease: [0.4, 0, 0.2, 1] }}
-            >
-              <Button
-                size="large"
-                block
-                onClick={handleCloseApp}
-                className="main-window-button close-app-button"
-              >
-                {t('lobby.exit')}
-              </Button>
-            </motion.div>
-          </Space>
+          <img className="main-window-logo" src="/MCTierIcon.png" alt="MCTier Logo" />
+          <div className="main-window-brand-text">
+            <h1 className="main-window-title">MCTier</h1>
+            <p className="main-window-subtitle">
+              {tl('虚拟局域网通用联机工具', 'Universal virtual LAN networking tool')}
+            </p>
+          </div>
         </motion.div>
 
         <motion.div
-          className="main-window-version"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.4 }}
+          className="main-window-actions"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.14, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         >
-          v{APP_VERSION}
+          <button className="main-window-button create-button" onClick={handleCreateLobby}>
+            {t('lobby.create')}
+          </button>
+
+          <button className="main-window-button join-button" onClick={handleJoinLobby}>
+            {t('lobby.join')}
+          </button>
+
+          <div className="main-window-links">
+            <button className="main-window-link" onClick={handleShowAbout}>
+              {t('lobby.about')}
+            </button>
+            <span className="main-window-link-sep" aria-hidden="true" />
+            <button className="main-window-link main-window-link-danger" onClick={handleCloseApp}>
+              {t('lobby.exit')}
+            </button>
+          </div>
         </motion.div>
 
         <motion.div
-          className="main-window-hint"
+          className="main-window-footer"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.7, duration: 0.4 }}
+          transition={{ delay: 0.28, duration: 0.3 }}
         >
-          {tl('按 ESC 可快速返回上一页', 'Press ESC to go back')}
+          <span className="main-window-version">v{APP_VERSION}</span>
+          <span className="main-window-hint">
+            {tl('按 ESC 可快速返回上一页', 'Press ESC to go back')}
+          </span>
         </motion.div>
       </motion.div>
 

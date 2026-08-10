@@ -1,455 +1,231 @@
+/* 主窗口：微信式浅灰底 + 白卡 + 微信绿主按钮 */
 .main-window {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
   height: 100vh;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 44px 28px 28px;
+  background: var(--mc-bg);
   position: relative;
   overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
 }
 
-/* 顶部拖拽区域 */
 .main-window-drag-area {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 56px;
   z-index: 10;
   -webkit-app-region: drag;
   app-region: drag;
-  pointer-events: auto;
 }
 
-/* 拖拽区域样式 */
-[data-tauri-drag-region] {
-  -webkit-app-region: drag;
-  app-region: drag;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* 确保按钮等交互元素不受拖拽影响 */
-button,
-input,
-select,
-textarea,
-a,
-.ant-select,
-.ant-input,
-.ant-form-item {
-  -webkit-app-region: no-drag;
-  app-region: no-drag;
-}
-
-/* 动态背景效果 - 可通过 .gpu-rendering-disabled 类禁用 */
-.main-window::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image:
-    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
-  animation: particleFloat 30s ease-in-out infinite;
-  will-change: auto;
-}
-
-/* 禁用 GPU 渲染时停止背景动画 */
-.main-window.gpu-rendering-disabled::before {
-  animation: none;
-  opacity: 0.5;
-}
-
-@keyframes particleFloat {
-  0%,
-  100% {
-    transform: translate(0, 0);
-    opacity: 0.4;
-  }
-  50% {
-    transform: translate(15px, 15px);
-    opacity: 0.6;
-  }
-}
-
-.main-window-content {
-  padding: 40px 32px;
-  min-width: 300px;
-  max-width: 320px;
-  width: 100%;
-  text-align: center;
-  position: relative;
-  z-index: 1;
-}
-
-.main-window-logo {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-/* 图标背后的渐变光晕效果 - 可通过 .gpu-rendering-disabled 类禁用 */
-.main-window-logo::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(
-    circle,
-    rgba(106, 164, 56, 0.3) 0%,
-    rgba(139, 111, 71, 0.2) 40%,
-    rgba(90, 148, 40, 0.15) 60%,
-    transparent 80%
-  );
-  filter: blur(20px);
-  opacity: 0.5;
-  animation: glowPulse 6s ease-in-out infinite;
-  z-index: -1;
-  will-change: auto;
-}
-
-/* 禁用 GPU 渲染时停止光晕动画 */
-.main-window.gpu-rendering-disabled .main-window-logo::before {
-  animation: none;
-  opacity: 0.3;
-}
-
-@keyframes glowPulse {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translate(-50%, -50%) scale(1.05);
-  }
-}
-
-.main-window-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  position: relative;
-  z-index: 1;
-  filter: drop-shadow(0 0 8px rgba(106, 164, 56, 0.3));
-}
-
-.main-window-title {
-  margin: 0 0 8px 0 !important;
-  font-size: 36px !important;
-  font-weight: 900 !important;
-  font-style: italic !important;
-  letter-spacing: 3px;
-  position: relative;
-  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-  /* 整体渐变从绿到棕 */
-  background: linear-gradient(135deg, 
-    #7ed321 0%, 
-    #9ee84a 20%, 
-    #b8f569 35%,
-    #d4a574 65%,
-    #c89a5e 80%,
-    #b88a4a 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* 简化阴影效果 */
-  filter: drop-shadow(0 0 12px rgba(126, 211, 33, 0.5))
-          drop-shadow(0 0 20px rgba(212, 165, 116, 0.3))
-          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  animation: titleShine 6s ease-in-out infinite;
-  will-change: auto;
-}
-
-/* 禁用 GPU 渲染时停止标题动画 */
-.main-window.gpu-rendering-disabled .main-window-title {
-  animation: none;
-  filter: drop-shadow(0 0 12px rgba(126, 211, 33, 0.5))
-          drop-shadow(0 0 20px rgba(212, 165, 116, 0.3))
-          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-@keyframes titleShine {
-  0%, 100% {
-    filter: drop-shadow(0 0 12px rgba(126, 211, 33, 0.5))
-            drop-shadow(0 0 20px rgba(212, 165, 116, 0.3))
-            drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  }
-  50% {
-    filter: drop-shadow(0 0 18px rgba(126, 211, 33, 0.7))
-            drop-shadow(0 0 28px rgba(212, 165, 116, 0.5))
-            drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
-  }
-}
-
-/* MC 部分 - 不再需要单独设置，使用整体渐变 */
-.title-mc {
-  /* 保留用于兼容性，但样式由父元素控制 */
-}
-
-/* Tier 部分 - 不再需要单独设置，使用整体渐变 */
-.title-tier {
-  /* 保留用于兼容性，但样式由父元素控制 */
-}
-
-/* 为标题添加像素化边框效果，体现 Minecraft 风格 */
-.main-window-title::before {
-  content: 'MCTier';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(135deg, rgba(106, 164, 56, 0.25) 0%, rgba(139, 111, 71, 0.25) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: blur(6px);
-  z-index: -1;
-  animation: titleGlow 5s ease-in-out infinite;
-  will-change: auto;
-}
-
-/* 禁用 GPU 渲染时停止标题光晕动画 */
-.main-window.gpu-rendering-disabled .main-window-title::before {
-  animation: none;
-  opacity: 0.4;
-  filter: blur(6px);
-}
-
-@keyframes titleGlow {
-  0%,
-  100% {
-    opacity: 0.4;
-    filter: blur(6px);
-  }
-  50% {
-    opacity: 0.7;
-    filter: blur(10px);
-  }
-}
-
-.main-window-subtitle {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 16px !important;
-  font-weight: 500;
-}
-
-.main-window-button {
-  height: 48px !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  border-radius: 12px !important;
-  transition: all 0.08s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  border: none !important;
-  position: relative;
-  overflow: hidden;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.08);
-  will-change: auto;
-}
-
-.main-window-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0);
-  transition: background 0.08s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
-
-.main-window-button:hover {
-  box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.15),
-    0 2px 4px rgba(0, 0, 0, 0.1);
-  filter: brightness(1.05);
-}
-
-.main-window-button:hover::before {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.main-window-button:active {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: all 0.03s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  filter: brightness(0.92);
-}
-
-.main-window-button:active::before {
-  background: rgba(0, 0, 0, 0.08);
-  transition: background 0.03s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.create-button {
-  background: linear-gradient(135deg, #73d13d 0%, #52c41a 100%) !important;
-  color: white !important;
-  box-shadow: 0 2px 10px rgba(82, 196, 26, 0.3);
-}
-
-.create-button:hover {
-  background: linear-gradient(135deg, #85e84a 0%, #5fd424 100%) !important;
-  box-shadow: 0 4px 16px rgba(82, 196, 26, 0.42);
-}
-
-.create-button:active {
-  background: linear-gradient(135deg, #52c41a 0%, #3c9a12 100%) !important;
-  box-shadow: 0 1px 4px rgba(82, 196, 26, 0.25);
-}
-
-.join-button {
-  background: rgba(82, 196, 26, 0.12) !important;
-  color: rgba(150, 220, 100, 0.95) !important;
-  border: 1.5px solid rgba(82, 196, 26, 0.3) !important;
-  backdrop-filter: blur(10px);
-}
-
-.join-button:hover {
-  background: rgba(82, 196, 26, 0.18) !important;
-  border-color: rgba(82, 196, 26, 0.45) !important;
-  color: rgba(170, 230, 120, 1) !important;
-}
-
-.join-button:active {
-  background: rgba(82, 196, 26, 0.24) !important;
-  border-color: rgba(82, 196, 26, 0.55) !important;
-}
-
-.about-button {
-  background: rgba(139, 111, 71, 0.12) !important;
-  color: rgba(200, 170, 130, 0.95) !important;
-  border: 1.5px solid rgba(139, 111, 71, 0.3) !important;
-  height: 40px !important;
-  font-size: 13px !important;
-  backdrop-filter: blur(10px);
-}
-
-.about-button:hover {
-  background: rgba(139, 111, 71, 0.16) !important;
-  border-color: rgba(139, 111, 71, 0.4) !important;
-  color: rgba(220, 190, 150, 1) !important;
-}
-
-.about-button:active {
-  background: rgba(139, 111, 71, 0.22) !important;
-  border-color: rgba(139, 111, 71, 0.5) !important;
-}
-
-.close-app-button {
-  background: linear-gradient(135deg, #d9534f 0%, #b73a36 100%) !important;
-  color: #ffffff !important;
-  border: none !important;
-  height: 40px !important;
-  font-size: 13px !important;
-}
-
-.close-app-button:hover {
-  background: linear-gradient(135deg, #e25c58 0%, #c34440 100%) !important;
-  color: #ffffff !important;
-}
-
-.close-app-button:active {
-  background: linear-gradient(135deg, #b73a36 0%, #9c302c 100%) !important;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .main-window-content {
-    min-width: 280px;
-    padding: 32px 24px;
-  }
-
-  .main-window-title {
-    font-size: 28px !important;
-  }
-
-  .main-window-subtitle {
-    font-size: 12px;
-  }
-
-  .main-window-button {
-    height: 44px !important;
-    font-size: 14px !important;
-  }
-}
-
-.main-window-version {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  user-select: none;
-}
-
-.main-window-hint {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
-  user-select: none;
-}
-
-/* 设置界面遮罩层 - 覆盖在主界面上，避免透明闪烁 */
-.settings-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 100;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-
-/* 设置按钮样式 */
+/* 右上角设置按钮 */
 .settings-button {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  top: 14px;
+  right: 16px;
+  z-index: 20;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--mc-border);
+  border-radius: 50%;
+  background: var(--mc-bg-raised);
+  color: var(--mc-text-2);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 20;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.12s ease;
   -webkit-app-region: no-drag;
-  app-region: no-drag;
 }
 
 .settings-button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--mc-bg-hover);
+  border-color: var(--mc-border-strong);
+  color: var(--mc-text);
 }
 
 .settings-button:active {
-  background: rgba(255, 255, 255, 0.15);
+  transform: scale(0.92);
+}
+
+.main-window-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* 品牌区：微信登录页式居中（图标在上、标题居中） */
+.main-window-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.main-window-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.main-window-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.main-window-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--mc-text);
+  text-align: center;
+}
+
+.main-window-subtitle {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--mc-text-3);
+}
+
+/* 操作区 */
+.main-window-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.main-window-button {
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.12s ease,
+    box-shadow 0.18s ease;
+}
+
+.main-window-button:active {
+  transform: scale(0.98);
+}
+
+.create-button {
+  border: none;
+  color: #ffffff;
+  background: var(--mc-green);
+  box-shadow: none;
+}
+
+.create-button:hover {
+  background: var(--mc-green-bright);
+  box-shadow: none;
+}
+
+.join-button {
+  border: 1px solid var(--mc-border-strong);
+  color: var(--mc-text);
+  background: var(--mc-bg-raised);
+}
+
+.join-button:hover {
+  border-color: rgba(7, 193, 96, 0.5);
+  color: var(--mc-text);
+  background: var(--mc-green-softer);
+}
+
+/* 次级文字链接：关于 / 退出 */
+.main-window-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.main-window-link {
+  border: none;
+  background: transparent;
+  padding: 6px 2px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--mc-text-3);
+  cursor: pointer;
+  transition: color 0.16s ease;
+}
+
+.main-window-link:hover {
+  color: var(--mc-text);
+}
+
+.main-window-link-danger:hover {
+  color: #fa5151;
+}
+
+.main-window-link-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--mc-text-4);
+}
+
+/* 底部信息 */
+.main-window-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+.main-window-version {
+  font-family: var(--mc-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mc-text-4);
+}
+
+.main-window-hint {
+  font-size: 11px;
+  color: var(--mc-text-4);
+}
+
+/* 设置界面遮罩层 */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--mc-bg);
+}
+
+@media (max-width: 768px) {
+  .main-window {
+    padding: 40px 24px 24px;
+  }
 }

@@ -1,4 +1,4 @@
-.status-window {
+﻿.status-window {
   width: 320px;
   backdrop-filter: blur(12px);
   border-radius: 12px;
@@ -24,13 +24,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background: rgba(17, 153, 142, 0.1);
-  border-bottom: 1px solid rgba(17, 153, 142, 0.2);
+  background: rgba(7, 193, 96, 0.1);
+  border-bottom: 1px solid rgba(7, 193, 96, 0.2);
   transition: background 0.2s;
 }
 
 .status-window-header:hover {
-  background: rgba(17, 153, 142, 0.15);
+  background: rgba(7, 193, 96, 0.15);
 }
 
 .status-window-header-left {
@@ -43,9 +43,9 @@
 .status-window-indicator {
   width: 8px;
   height: 8px;
-  background: #52c41a;
+  background: #07c160;
   border-radius: 50%;
-  box-shadow: 0 0 8px #52c41a;
+  box-shadow: 0 0 8px #07c160;
   animation: pulse 2s infinite;
 }
 
@@ -62,7 +62,7 @@
 }
 
 .status-window-title {
-  color: #fff;
+  color: var(--mc-text);
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -78,29 +78,29 @@
 }
 
 .status-window-player-count {
-  color: #11998e;
+  color: #07c160;
   font-size: 13px;
   font-weight: 600;
   padding: 2px 8px;
-  background: rgba(17, 153, 142, 0.2);
+  background: rgba(7, 193, 96, 0.2);
   border-radius: 10px;
 }
 
 .status-window-header-button {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: var(--mc-text-2) !important;
   transition: all 0.2s !important;
   padding: 4px !important;
   height: auto !important;
 }
 
 .status-window-header-button:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--mc-text) !important;
+  background: var(--mc-bg-alpha) !important;
   transform: scale(1.1);
 }
 
 .status-window-header-button.close-button:hover {
-  color: #ff4d4f !important;
+  color: #fa5151 !important;
   background: rgba(255, 77, 79, 0.2) !important;
 }
 
@@ -111,7 +111,7 @@
 
 .status-window-section {
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--mc-border);
 }
 
 .status-window-section:last-child {
@@ -119,7 +119,7 @@
 }
 
 .status-window-section-title {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -137,12 +137,12 @@
 }
 
 .status-window-info-label {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
   font-size: 12px;
 }
 
 .status-window-info-value {
-  color: #11998e;
+  color: #07c160;
   font-size: 12px;
   font-weight: 600;
   font-family: 'Courier New', monospace;

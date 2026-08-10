@@ -1,7 +1,7 @@
 .lobby-advanced-config-modal .ant-modal-content {
-  background: linear-gradient(135deg, rgba(30, 30, 35, 0.98), rgba(25, 25, 30, 0.98));
+  background: var(--mc-bg-raised);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--mc-border);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
@@ -17,13 +17,13 @@
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--mc-text);
 }
 
 .lobby-advanced-config-header p {
   margin: 0;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--mc-text-2);
   line-height: 1.5;
 }
 
@@ -32,8 +32,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border);
   border-radius: 8px;
   margin-bottom: 20px;
 }
@@ -41,7 +41,7 @@
 .use-global-config-switch span {
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
 }
 
 .global-config-hint {
@@ -49,15 +49,15 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: rgba(126, 211, 33, 0.1);
-  border: 1px solid rgba(126, 211, 33, 0.3);
+  background: rgba(7, 193, 96, 0.1);
+  border: 1px solid rgba(7, 193, 96, 0.3);
   border-radius: 8px;
   margin-top: 20px;
 }
 
 .global-config-hint span {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--mc-text-2);
   line-height: 1.5;
 }
 
@@ -69,8 +69,8 @@
 }
 
 .lobby-advanced-collapse .ant-collapse-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border);
   border-radius: 8px;
   margin-bottom: 12px;
   overflow: hidden;
@@ -78,14 +78,14 @@
 
 .lobby-advanced-collapse .ant-collapse-header {
   padding: 12px 16px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--mc-text);
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--mc-bg-alpha);
 }
 
 .lobby-advanced-collapse .ant-collapse-content {
   background: transparent;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--mc-border);
 }
 
 .lobby-advanced-collapse .ant-collapse-content-box {
@@ -97,41 +97,41 @@
 }
 
 .lobby-advanced-collapse .ant-form-item-label > label {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--mc-text-2);
   font-size: 13px;
 }
 
 .lobby-advanced-collapse .ant-input,
 .lobby-advanced-collapse .ant-input-number {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--mc-bg-alpha);
+  border: 1px solid var(--mc-border-strong);
+  color: var(--mc-text);
 }
 
 .lobby-advanced-collapse .ant-input:hover,
 .lobby-advanced-collapse .ant-input-number:hover {
-  border-color: rgba(126, 211, 33, 0.5);
+  border-color: rgba(7, 193, 96, 0.5);
 }
 
 .lobby-advanced-collapse .ant-input:focus,
 .lobby-advanced-collapse .ant-input-number:focus,
 .lobby-advanced-collapse .ant-input-number-focused {
-  border-color: rgba(126, 211, 33, 0.8);
-  box-shadow: 0 0 0 2px rgba(126, 211, 33, 0.1);
+  border-color: rgba(7, 193, 96, 0.8);
+  box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.1);
 }
 
 .lobby-advanced-collapse .ant-switch {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--mc-bg-alpha);
 }
 
 .lobby-advanced-collapse .ant-switch-checked {
-  background: rgba(126, 211, 33, 0.8);
+  background: rgba(7, 193, 96, 0.8);
 }
 
 .lobby-advanced-config-footer {
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--mc-border);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -148,23 +148,23 @@
 }
 
 .lobby-advanced-config-btn-cancel {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--mc-bg-alpha);
+  color: var(--mc-text-2);
 }
 
 .lobby-advanced-config-btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--mc-bg-alpha);
 }
 
 .lobby-advanced-config-btn-save {
-  background: linear-gradient(135deg, rgba(126, 211, 33, 0.9), rgba(106, 191, 13, 0.9));
+  background: #07c160;
   color: white;
 }
 
 .lobby-advanced-config-btn-save:hover {
-  background: linear-gradient(135deg, rgba(126, 211, 33, 1), rgba(106, 191, 13, 1));
+  background: #07c160;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(126, 211, 33, 0.3);
+  box-shadow: none;
 }
 
 .lobby-advanced-config-btn-save:active {
@@ -183,15 +183,15 @@
 }
 
 .lobby-advanced-collapse::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--mc-bg-alpha);
   border-radius: 3px;
 }
 
 .lobby-advanced-collapse::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--mc-bg-alpha);
   border-radius: 3px;
 }
 
 .lobby-advanced-collapse::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.22);
 }
