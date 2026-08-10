@@ -17,7 +17,8 @@ interface VersionInfo {
 }
 
 class VersionCheckService {
-  private readonly RELEASES_API_URL = 'https://api.github.com/repos/TNTnext/MCTier/releases/latest';
+  private readonly RELEASES_API_URL =
+    'https://api.github.com/repos/TNTnext/MCTierPlus/releases/latest';
   private readonly CURRENT_VERSION = '2.5.0';
   private readonly VERSION_CHECK_KEY = 'mctier_version_check_shown';
 

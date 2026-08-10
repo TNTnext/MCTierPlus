@@ -69,7 +69,7 @@ export const VersionUpdateModal: React.FC<VersionUpdateModalProps> = ({
             'No installer found, opening the download page'
           )
         );
-        await open('https://github.com/TNTnext/MCTier/releases');
+        await open('https://github.com/TNTnext/MCTierPlus/releases');
         setUpdating(false);
         onClose();
         return;
@@ -94,7 +94,7 @@ export const VersionUpdateModal: React.FC<VersionUpdateModalProps> = ({
       message.destroy('mctier-update');
       message.error(tl('更新失败，将打开下载页面', 'Update failed, opening the download page'));
       try {
-        await open('https://github.com/TNTnext/MCTier/releases');
+        await open('https://github.com/TNTnext/MCTierPlus/releases');
       } catch (_) {
         // ignore
       }

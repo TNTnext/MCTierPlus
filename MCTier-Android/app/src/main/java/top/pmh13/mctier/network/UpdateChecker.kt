@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * 客户端内更新：从 GitHub Releases 检测最新版本，下载 APK 并调起系统安装器。
- * 与桌面端一致使用 GitHub 仓库 TNTnext/MCTier。
+ * 与桌面端一致使用 GitHub 仓库 TNTnext/MCTierPlus。
  */
 class UpdateChecker(private val context: Context) {
     private val client = OkHttpClient.Builder()
@@ -24,8 +24,8 @@ class UpdateChecker(private val context: Context) {
         .callTimeout(120, TimeUnit.SECONDS)
         .build()
     private val json = Json { ignoreUnknownKeys = true }
-    private val tagsUrl = "https://api.github.com/repos/TNTnext/MCTier/tags"
-    private val latestReleaseUrl = "https://api.github.com/repos/TNTnext/MCTier/releases/latest"
+    private val tagsUrl = "https://api.github.com/repos/TNTnext/MCTierPlus/tags"
+    private val latestReleaseUrl = "https://api.github.com/repos/TNTnext/MCTierPlus/releases/latest"
 
     /** 检测是否有新版本。回调在子线程触发，UI 层需切回主线程。 */
     fun check(onResult: (hasUpdate: Boolean, latest: String) -> Unit) {

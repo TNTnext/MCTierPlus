@@ -13,9 +13,9 @@
   </p>
 
 
-  **Supports Windows 10/11 and Android. Desktop and mobile can join the same lobby to quickly form a cross-network virtual LAN.**
+  **Supports Windows 10/11 and Android. Desktop and mobile can join the same lobby to form a cross-network virtual LAN.**
 
-  [GitHub](https://github.com/TNTnext/MCTier) · [Quick Start](#quick-start) · [Screenshots](#screenshots)
+  [GitHub](https://github.com/TNTnext/MCTierPlus) · [Quick Start](#quick-start) · [Screenshots](#screenshots)
 
   English | [简体中文](./README.md)
 </div>
@@ -24,7 +24,7 @@
 
 ## Overview
 
-MCTier is built on EasyTier and WebRTC to bring devices on different networks into a single virtual LAN. It is not tied to any particular use case: LAN game multiplayer, cross-network access to local services, ad-hoc collaboration, voice, file sharing and screen sharing can all live in one lobby.
+MCTier uses EasyTier and WebRTC to bring devices on different networks into one virtual LAN. LAN game multiplayer, access to local services on another machine, ad-hoc voice chat or file sharing — you can spin up a lobby for all of it.
 
 Typical use cases include:
 
@@ -35,7 +35,7 @@ Typical use cases include:
 
 ## Screenshots
 
-The UI has been rebuilt in a WeChat-inspired style with light, dark and system-following themes.
+The UI follows a WeChat-style design, with light and dark themes that can also follow the system.
 
 ### Windows
 
@@ -103,29 +103,29 @@ The UI has been rebuilt in a WeChat-inspired style with light, dark and system-f
 ### Networking & Connection
 
 - **Virtual LAN networking**: Build a virtual network on EasyTier without a public IP.
-- **Cross-platform lobbies**: Phones and PCs can join the same lobby, with handy QR-code invites.
-- **Public lobby plaza**: Hosts can publish a lobby to the plaza, so strangers can find it and join with one click.
+- **Cross-platform lobbies**: Phones and PCs can join the same lobby; phone users can scan a QR code to get in.
+- **Public lobby plaza**: Hosts can publish a lobby to the plaza, so strangers can find it and join directly.
 - **Custom nodes & virtual domains**: Add your own EasyTier nodes and configure a custom domain for the virtual network.
 - **Connection / network diagnostics**: Aggregate members' direct/relay status, latency and packet loss into a score with tuning tips; network diagnostics can also check the virtual adapter, firewall, UDP ports and security-software blocking, with one-click firewall allow.
-- **Self-hosting**: Run your own signaling server to control the connection entry.
+- **Self-hosting**: Run your own signaling server so you control the connection entry.
 
 ### Communication & Collaboration
 
-- **Real-time voice channels**: Voice by channel within a lobby, ideal for collaboration.
+- **Real-time voice channels**: Voice by channel within a lobby, handy for collaboration.
 - **Voice squads**: Split members into squads so you only hear teammates in your squad — easy grouped voice chat.
 - **Built-in voice changer**: Real-time voice changing with presets like girl and uncle voices; preview before applying.
 - **Lobby chat room**: Supports text, image and emoji messages.
 - **Message danmaku**: Chat messages float across the top of the screen as bullets, so you never miss them while in the background or gaming; adjustable size, speed, opacity, tracks and color (including random rainbow), enabled by default.
 - **Folder sharing**: Share folders with lobby members, with download and transfer lists.
 - **Screen sharing**: View another member's screen via WebRTC.
-- **Remote control**: Remotely view and operate another device in real time via WebRTC, supporting PC↔phone control in both directions; mouse move, left/right click, long-press, drag, wheel, keyboard input, and back/home/recents gestures are all included, with automatic landscape/portrait and best window size based on the remote resolution.
+- **Remote control**: Remotely view and operate another device in real time via WebRTC, supporting PC↔phone control in both directions; mouse move, left/right click, long-press, drag, wheel, keyboard input, and back/home/recents gestures are all there, and the window automatically picks landscape/portrait and size based on the remote resolution.
 - **Room tools**: Built-in dice roller, countdown timer and a shared multi-user to-do list — great for tabletop games, draws and team task planning; the countdown keeps running even when you switch views or run in the background.
 
 ### Lobby Management & Convenience
 
 - **Host management**: Hosts can post a scrolling announcement, set a member cap, kick members, and publish or unpublish to the public plaza.
 - **Lobby QR code**: Join by scanning or copy the invite link.
-- **Favorites & recents**: Save favorite lobbies for one-click fill, keep a history of recently joined lobbies and players you've played with, and favorite frequent teammates.
+- **Favorites & recents**: Save favorite lobbies for one-click fill, keep a history of recently joined lobbies and players you've played with, and save frequent teammates too.
 - **Global hotkeys**: Customizable hotkeys supporting push-to-talk, one-key mute and more.
 - **Mini overlay**: Quickly check member status, control voice and open tools on desktop.
 - **In-game HUD overlay**: A pinned click-through overlay shows each teammate's latency, packet loss and who's talking while gaming, with mute, drag, opacity and scale controls.
@@ -155,7 +155,7 @@ The UI has been rebuilt in a WeChat-inspired style with light, dark and system-f
 
 ### Download & Install
 
-Download the latest build from [GitHub Releases](https://github.com/TNTnext/MCTier/releases).
+Download the latest build from [GitHub Releases](https://github.com/TNTnext/MCTierPlus/releases).
 
 - Windows Installer: download `MCTier_x.x.x_x64-setup.exe` and double-click to install.
 - Windows Portable: download `mctier.exe` and run it directly.
