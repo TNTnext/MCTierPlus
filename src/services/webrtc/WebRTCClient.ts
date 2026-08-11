@@ -88,7 +88,7 @@ export class WebRTCClient {
 
   // ICE 服务器配置
   //
-  // 【稳定性修复】MCTier 的所有成员都处于同一个 EasyTier 虚拟局域网（同一虚拟子网），
+  // 【稳定性修复】MCTierPlus 的所有成员都处于同一个 EasyTier 虚拟局域网（同一虚拟子网），
   // 彼此通过虚拟网卡的内网 IP（如 10.x.x.x）即可直连，本质上不需要公网 STUN 做 NAT 穿透。
   // 旧配置使用 Google 的 STUN（stun.l.google.com），在国内被墙：
   //   - 每次建立 / 重连 ICE 都要等它超时，拖慢连接、加剧断连重连；
@@ -355,7 +355,7 @@ export class WebRTCClient {
                 useDomain: this.useDomain,
                 lobbyName: this.lobbyName,
                 lobbyPassword: this.lobbyPassword,
-                clientVersion: '2.5.0',
+                clientVersion: '2.6.0',
               })
             );
             console.log(

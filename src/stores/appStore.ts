@@ -1,5 +1,5 @@
 /**
- * MCTier 应用程序状态管理 Store
+ * MCTierPlus 应用程序状态管理 Store
  * 使用 Zustand 实现轻量级状态管理
  */
 

@@ -68,7 +68,7 @@ impl AppCore {
     /// # 示例
     /// 
     /// ```no_run
-    /// use mctier::modules::app_core::AppCore;
+    /// use mctierplus::modules::app_core::AppCore;
     /// 
     /// #[tokio::main]
     /// async fn main() {

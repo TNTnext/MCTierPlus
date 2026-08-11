@@ -1,4 +1,4 @@
-// MCTier 后端模块
+// MCTierPlus 后端模块
 pub mod modules;
 
 use log::{error, info};
@@ -12,9 +12,12 @@ use tauri_plugin_global_shortcut::GlobalShortcutExt;
 
 /// 在应用启动时应用 GPU 设置
 fn apply_gpu_settings_on_startup() {
+    // 升级改名后先迁移一次旧配置文件，保证 GPU 设置等仍生效
+    modules::config_manager::ConfigManager::migrate_legacy_config();
+
     // 尝试加载配置文件
     let config_path = if let Some(config_dir) = dirs::config_dir() {
-        config_dir.join("mctier").join("mctier_config.json")
+        config_dir.join("mctierplus").join("mctierplus_config.json")
     } else {
         return;
     };
@@ -489,11 +492,11 @@ pub fn run() {
     
     use std::fs::OpenOptions;
     let log_path = if let Some(data_dir) = dirs::data_local_dir() {
-        let mctier_dir = data_dir.join("MCTier");
-        let _ = std::fs::create_dir_all(&mctier_dir);
-        mctier_dir.join("mctier.log")
+        let mctierplus_dir = data_dir.join("MCTierPlus");
+        let _ = std::fs::create_dir_all(&mctierplus_dir);
+        mctierplus_dir.join("mctierplus.log")
     } else {
-        std::path::PathBuf::from("mctier.log")
+        std::path::PathBuf::from("mctierplus.log")
     };
     let log_file = OpenOptions::new().create(true).append(true).open(&log_path).expect("无法创建日志文件");
     env_logger::Builder::from_default_env()
@@ -501,7 +504,7 @@ pub fn run() {
         .format_timestamp_millis()
         .target(env_logger::Target::Pipe(Box::new(log_file)))
         .init();
-    info!("MCTier 应用程序启动中...");
+    info!("MCTierPlus 应用程序启动中...");
     info!("日志文件位置: {:?}", log_path);
 
     let runtime = tokio::runtime::Runtime::new().expect("无法创建 Tokio 运行时");
@@ -597,15 +600,15 @@ pub fn run() {
             {
                 use tauri::menu::{MenuBuilder, MenuItem};
                 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-                let show_item = MenuItem::with_id(app, "show_main", "显示 MCTier", true, None::<&str>)?;
-                let exit_item = MenuItem::with_id(app, "exit_app", "退出 MCTier", true, None::<&str>)?;
+                let show_item = MenuItem::with_id(app, "show_main", "显示 MCTierPlus", true, None::<&str>)?;
+                let exit_item = MenuItem::with_id(app, "exit_app", "退出 MCTierPlus", true, None::<&str>)?;
                 let tray_menu = MenuBuilder::new(app)
                     .item(&show_item)
                     .separator()
                     .item(&exit_item)
                     .build()?;
                 TrayIconBuilder::with_id("main-tray")
-                    .tooltip("MCTier")
+                    .tooltip("MCTierPlus")
                     .icon(app.default_window_icon().cloned().unwrap())
                     .menu(&tray_menu)
                     .show_menu_on_left_click(false)
@@ -801,5 +804,5 @@ pub fn run() {
         })
         .run(tauri::generate_context!());
     if let Err(e) = result { error!("运行错误: {}", e); panic!("error: {}", e); }
-    info!("MCTier 应用程序已关闭");
+    info!("MCTierPlus 应用程序已关闭");
 }

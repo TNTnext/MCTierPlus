@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="public/MCTierIcon.png" alt="MCTier Logo" width="120" height="120">
+  <img src="public/MCTierIcon.png" alt="MCTierPlus Logo" width="120" height="120">
 
-  # MCTier
+  # MCTierPlus
 
   **A universal virtual-LAN networking tool**
 
   <p>
-    <img src="https://img.shields.io/badge/version-2.5.0-blue?style=flat-square" alt="Version">
+    <img src="https://img.shields.io/badge/version-2.6.0-blue?style=flat-square" alt="Version">
     <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-2ea44f?style=flat-square" alt="Windows 10/11">
     <img src="https://img.shields.io/badge/license-Custom-orange?style=flat-square" alt="License">
   </p>
@@ -23,7 +23,7 @@
 
 ## Overview
 
-MCTier uses EasyTier and WebRTC to bring devices on different networks into one virtual LAN. LAN game multiplayer, access to local services on another machine, ad-hoc voice chat or file sharing — you can spin up a lobby for all of it.
+MCTierPlus uses EasyTier and WebRTC to bring devices on different networks into one virtual LAN. LAN game multiplayer, access to local services on another machine, ad-hoc voice chat or file sharing — you can spin up a lobby for all of it.
 
 Typical use cases include:
 
@@ -151,12 +151,12 @@ The UI follows a WeChat-style design, with light and dark themes that can also f
 
 Download the latest build from [GitHub Releases](https://github.com/TNTnext/MCTierPlus/releases).
 
-- Windows Installer: download `MCTier_x.x.x_x64-setup.exe` and double-click to install.
-- Windows Portable: download `mctier.exe` and run it directly.
+- Windows Installer: download `MCTierPlus_x.x.x_x64-setup.exe` and double-click to install.
+- Windows Portable: download `mctierplus.exe` and run it directly.
 
 ### Create or Join a Lobby
 
-1. The host opens MCTier and chooses "Create Lobby".
+1. The host opens MCTierPlus and chooses "Create Lobby".
 2. Enter a lobby name, password and display name.
 3. After creating, send the lobby QR code or invite link to other members.
 4. Other members enter the lobby info or scan the QR code to join.
@@ -164,7 +164,7 @@ Download the latest build from [GitHub Releases](https://github.com/TNTnext/MCTi
 
 ## Example: Minecraft Multiplayer
 
-MCTier is a universal networking tool; Minecraft is just one typical use case.
+MCTierPlus is a universal networking tool; Minecraft is just one typical use case.
 
 After entering a singleplayer world, the host presses `Esc` and clicks "Open to LAN", then notes the port. Others choose "Direct Connect" and enter the host's virtual IP and port, for example:
 
@@ -176,12 +176,12 @@ If virtual domains are enabled, you can also connect with an address like `membe
 
 ## Self-hosting
 
-If you want to host your own MCTier signaling server, the general flow is:
+If you want to host your own MCTierPlus signaling server, the general flow is:
 
 1. Prepare a Linux server or a host on your LAN.
 2. Install Docker and Docker Compose.
 3. Deploy a WebSocket signaling service (ws or wss, matching your client settings).
-4. Set your private signaling address in the MCTier client settings.
+4. Set your private signaling address in the MCTierPlus client settings.
 
 ## Development & Build
 
@@ -196,7 +196,7 @@ npm run tauri build
 > `sherpa-onnx-v1.13.4-win-x64-shared-MT-Release-lib.tar.bz2` from GitHub Releases; if your network
 > cannot reach it, download the file manually and point the `SHERPA_ONNX_ARCHIVE_DIR` environment
 > variable at its folder. Runtime DLLs (onnxruntime.dll etc.) ship with the installers; for the
-> portable build, keep the DLLs in the same folder as `mctier.exe`.
+> portable build, keep the DLLs in the same folder as `mctierplus.exe`.
 
 ## License
 
@@ -208,7 +208,7 @@ This project uses a custom open-source license:
 
 ## Disclaimer
 
-- MCTier is a **neutral virtual-LAN networking and collaboration tool**, intended only for lawful personal use in compliance with the laws of your jurisdiction (e.g., LAN gaming, collaboration, accessing your own or authorized services).
+- MCTierPlus is a **neutral virtual-LAN networking and collaboration tool**, intended only for lawful personal use in compliance with the laws of your jurisdiction (e.g., LAN gaming, collaboration, accessing your own or authorized services).
 - Communication content (chat, voice, files, screen, remote control, etc.) is transmitted **peer-to-peer directly** between members' devices; the developer does not participate in, control, or audit any user content or specific conduct.
 - **Users are solely responsible for all their use and transmitted content.** Using the project for any unlawful activity is strictly prohibited, including but not limited to: unlicensed commercial/cross-border networking, spreading illegal or infringing content, unauthorized control or monitoring of others' devices, or using voice/voice-changer for fraud or impersonation.
 - Sensitive features such as remote control, screen sharing and the voice changer require the user's **explicit in-app agreement to the corresponding notices and terms** before use, with risk and prohibition disclosures provided.

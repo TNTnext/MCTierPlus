@@ -443,7 +443,7 @@ impl Default for ConfigManager {
     fn default() -> Self {
         // 获取默认配置路径
         let config_path = Self::get_config_path()
-            .unwrap_or_else(|_| PathBuf::from("mctier_config.json"));
+            .unwrap_or_else(|_| PathBuf::from("mctierplus_config.json"));
         
         Self {
             config_path,
@@ -454,7 +454,44 @@ impl Default for ConfigManager {
 
 impl ConfigManager {
     /// 配置文件名
-    const CONFIG_FILE_NAME: &'static str = "mctier_config.json";
+    const CONFIG_FILE_NAME: &'static str = "mctierplus_config.json";
+
+    /// 旧版配置目录名（MCTier 2.5.0 及更早），用于升级时一次性迁移
+    const LEGACY_CONFIG_DIR: &'static str = "mctier";
+    const LEGACY_CONFIG_FILE_NAME: &'static str = "mctier_config.json";
+
+    /// 把旧版（mctier）配置文件迁移到新目录（mctierplus），避免升级后用户设置丢失。
+    /// 仅在新文件不存在且旧文件存在时复制一次，幂等且不覆盖新配置。
+    pub fn migrate_legacy_config() {
+        let Some(config_dir) = dirs::config_dir() else {
+            return;
+        };
+        let new_path = config_dir
+            .join("mctierplus")
+            .join(Self::CONFIG_FILE_NAME);
+        if new_path.exists() {
+            return;
+        }
+        let legacy_path = config_dir
+            .join(Self::LEGACY_CONFIG_DIR)
+            .join(Self::LEGACY_CONFIG_FILE_NAME);
+        if !legacy_path.exists() {
+            return;
+        }
+        if let Some(parent) = new_path.parent() {
+            if std::fs::create_dir_all(parent).is_err() {
+                return;
+            }
+        }
+        match std::fs::copy(&legacy_path, &new_path) {
+            Ok(_) => log::info!(
+                "已迁移旧版配置文件: {} -> {}",
+                legacy_path.display(),
+                new_path.display()
+            ),
+            Err(e) => log::warn!("迁移旧版配置文件失败: {e}"),
+        }
+    }
 
     /// 加载配置管理器（静态方法）
     /// 
@@ -507,7 +544,7 @@ impl ConfigManager {
             .ok_or_else(|| AppError::ConfigError("无法获取配置目录".to_string()))?;
 
         // 创建应用配置目录
-        let app_config_dir = config_dir.join("mctier");
+        let app_config_dir = config_dir.join("mctierplus");
         
         Ok(app_config_dir.join(Self::CONFIG_FILE_NAME))
     }
@@ -845,7 +882,7 @@ impl ConfigManager {
         // 生成备份文件名（带时间戳）
         let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S");
         let backup_path = self.config_path.with_file_name(
-            format!("mctier_config_backup_{}.json", timestamp)
+            format!("mctierplus_config_backup_{}.json", timestamp)
         );
 
         // 复制文件

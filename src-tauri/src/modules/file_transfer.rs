@@ -712,7 +712,7 @@ async fn batch_download(
     
     // 创建临时ZIP文件
     let temp_dir = std::env::temp_dir();
-    let zip_filename = format!("mctier_batch_{}_{}.zip", share_id, SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs());
+    let zip_filename = format!("mctierplus_batch_{}_{}.zip", share_id, SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs());
     let zip_path = temp_dir.join(&zip_filename);
     
     log::info!("📦 创建临时ZIP文件: {:?}", zip_path);

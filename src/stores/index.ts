@@ -1,5 +1,5 @@
 /**
- * MCTier 状态管理模块
+ * MCTierPlus 状态管理模块
  * 使用 Zustand 进行全局状态管理
  */
 

@@ -1,7 +1,7 @@
 [package]
-name = "mctier"
-version = "2.5.0"
-description = "MCTier - Minecraft 虚拟局域网联机工具"
+name = "mctierplus"
+version = "2.6.0"
+description = "MCTierPlus - 虚拟局域网通用联机工具"
 authors = ["Tnt-next"]
 edition = "2021"
 
@@ -11,7 +11,7 @@ edition = "2021"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "mctier_lib"
+name = "mctierplus_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

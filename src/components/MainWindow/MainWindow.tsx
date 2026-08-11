@@ -15,7 +15,7 @@ import { tl } from '../../i18n';
 import './MainWindow.css';
 
 // 软件版本号
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.6.0';
 
 /**
  * 主窗口组件
@@ -173,8 +173,8 @@ export const MainWindow: React.FC = () => {
           <div style={{ lineHeight: '1.8' }}>
             <p style={{ marginBottom: '12px' }}>
               {tl(
-                '您的 MCTier 版本过低，无法连接到大厅。',
-                'Your MCTier version is too low to connect to the lobby.'
+                '您的 MCTierPlus 版本过低，无法连接到大厅。',
+                'Your MCTierPlus version is too low to connect to the lobby.'
               )}
             </p>
             <p style={{ marginBottom: '8px', color: 'var(--mc-text-2)' }}>
@@ -249,9 +249,9 @@ export const MainWindow: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.06, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         >
-          <img className="main-window-logo" src="/MCTierIcon.png" alt="MCTier Logo" />
+          <img className="main-window-logo" src="/MCTierIcon.png" alt="MCTierPlus Logo" />
           <div className="main-window-brand-text">
-            <h1 className="main-window-title">MCTier</h1>
+            <h1 className="main-window-title">MCTierPlus</h1>
             <p className="main-window-subtitle">
               {tl('虚拟局域网通用联机工具', 'Universal virtual LAN networking tool')}
             </p>

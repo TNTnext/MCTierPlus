@@ -31,7 +31,7 @@ import {
 import './App.css';
 
 /**
- * MCTier 统一设计令牌（antd v5 token）
+ * MCTierPlus 统一设计令牌（antd v5 token）
  * 微信式方案：浅色（灰底 + 白卡）与深色（WeUI 深色）共用微信绿，支持明暗切换。
  */
 const buildAntdTheme = (dark: boolean) => ({
@@ -230,8 +230,8 @@ function MainApp() {
     const syncTray = async () => {
       try {
         await invoke('set_tray_menu_texts', {
-          showText: tl('显示 MCTier', 'Show MCTier'),
-          exitText: tl('退出 MCTier', 'Exit MCTier'),
+          showText: tl('显示 MCTierPlus', 'Show MCTierPlus'),
+          exitText: tl('退出 MCTierPlus', 'Exit MCTierPlus'),
         });
       } catch (error) {
         console.error('同步托盘菜单语言失败:', error);

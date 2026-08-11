@@ -135,7 +135,7 @@ export const exportConfigToFile = (): void => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'mctier_config.json';
+    link.download = 'mctierplus_config.json';
     link.click();
     URL.revokeObjectURL(url);
   } catch (error) {

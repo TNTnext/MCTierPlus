@@ -2,5 +2,5 @@
 #![cfg_attr(target_os = "windows", windows_subsystem = "windows")]
 
 fn main() {
-    mctier_lib::run()
+    mctierplus_lib::run()
 }

@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="public/MCTierIcon.png" alt="MCTier Logo" width="120" height="120">
+  <img src="public/MCTierIcon.png" alt="MCTierPlus Logo" width="120" height="120">
 
-  # MCTier
+  # MCTierPlus
 
   **虚拟局域网通用组网工具**
 
   <p>
-    <img src="https://img.shields.io/badge/version-2.5.0-blue?style=flat-square" alt="Version">
+    <img src="https://img.shields.io/badge/version-2.6.0-blue?style=flat-square" alt="Version">
     <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-2ea44f?style=flat-square" alt="Windows 10/11">
     <img src="https://img.shields.io/badge/license-Custom-orange?style=flat-square" alt="License">
   </p>
@@ -22,7 +22,7 @@
 
 ## 项目简介
 
-MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同一个虚拟局域网里。想联机打游戏、访问别人机器上的本地服务、临时开语音聊天或者共享文件，都可以用它搭一个大厅。
+MCTierPlus 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同一个虚拟局域网里。想联机打游戏、访问别人机器上的本地服务、临时开语音聊天或者共享文件，都可以用它搭一个大厅。
 
 典型用途包括：
 
@@ -150,12 +150,12 @@ MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同�
 
 前往 [GitHub Releases](https://github.com/TNTnext/MCTierPlus/releases) 下载最新版。
 
-- Windows 安装包：下载 `MCTier_x.x.x_x64-setup.exe` 后双击安装。
-- Windows 便携版：下载 `mctier.exe` 后直接运行。
+- Windows 安装包：下载 `MCTierPlus_x.x.x_x64-setup.exe` 后双击安装。
+- Windows 便携版：下载 `mctierplus.exe` 后直接运行。
 
 ### 创建或加入大厅
 
-1. 创建方打开 MCTier，选择“创建大厅”。
+1. 创建方打开 MCTierPlus，选择“创建大厅”。
 2. 输入大厅名称、密码和显示名称。
 3. 创建成功后，把大厅二维码或邀请链接发给其他成员。
 4. 其他成员输入大厅信息或扫码加入。
@@ -163,7 +163,7 @@ MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同�
 
 ## 示例：Minecraft 联机
 
-MCTier 是通用组网工具，Minecraft 只是其中一个典型使用场景。
+MCTierPlus 是通用组网工具，Minecraft 只是其中一个典型使用场景。
 
 房主进入单人世界后，按 `Esc` 打开“对局域网开放”，记下端口号。其他人选择“直接连接”，输入房主的虚拟 IP 和端口，例如：
 
@@ -175,12 +175,12 @@ MCTier 是通用组网工具，Minecraft 只是其中一个典型使用场景。
 
 ## 私有化部署
 
-如果你想自建 MCTier 信令服务器，流程大致如下：
+如果你想自建 MCTierPlus 信令服务器，流程大致如下：
 
 1. 准备一台 Linux 服务器或局域网内主机。
 2. 安装 Docker 与 Docker Compose。
 3. 部署一个 WebSocket 信令服务（ws 或 wss 均可，需与客户端设置保持一致）。
-4. 在 MCTier 客户端设置中填入你的私有信令地址。
+4. 在 MCTierPlus 客户端设置中填入你的私有信令地址。
 
 ## 开发与构建
 
@@ -197,7 +197,7 @@ npm run tauri build
 > 实时字幕依赖 sherpa-onnx 官方预编译共享库（Windows x64）。首次构建时构建脚本会自动从
 > GitHub Releases 下载 `sherpa-onnx-v1.13.4-win-x64-shared-MT-Release-lib.tar.bz2`；
 > 网络受限时可手动下载该文件，并设置环境变量 `SHERPA_ONNX_ARCHIVE_DIR` 指向其所在目录。
-> 运行库 DLL（onnxruntime.dll 等）已随安装包分发；便携版需把 DLL 与 `mctier.exe` 放在同一目录。
+> 运行库 DLL（onnxruntime.dll 等）已随安装包分发；便携版需把 DLL 与 `mctierplus.exe` 放在同一目录。
 
 ## 开源协议
 
@@ -209,7 +209,7 @@ npm run tauri build
 
 ## 免责声明
 
-- MCTier 是一款**中立的虚拟局域网组网与协作工具**，仅供在符合所在地法律法规的前提下用于个人合法用途（如局域网游戏联机、协作、访问你本人或已获授权的服务）。
+- MCTierPlus 是一款**中立的虚拟局域网组网与协作工具**，仅供在符合所在地法律法规的前提下用于个人合法用途（如局域网游戏联机、协作、访问你本人或已获授权的服务）。
 - 通信内容（聊天、语音、文件、屏幕、远程控制等）均在成员设备之间**点对点直接传输**，开发者不参与、不控制、也无法审查任何用户内容或其具体使用行为。
 - **使用者须对自己的全部使用行为及传输内容独立承担法律责任。** 严禁利用本项目从事任何违反法律法规的活动，包括但不限于：未经许可的经营性/跨境组网、传播违法违规及侵权信息、未经授权控制或监控他人设备、利用语音/变声进行诈骗或冒充他人等。
 - 远程控制、屏幕共享、变声器等敏感功能在应用内均需用户**明确同意相应提示与协议后方可使用**，并提供风险与禁止性条款告知。

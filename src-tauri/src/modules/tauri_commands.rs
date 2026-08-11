@@ -1228,7 +1228,7 @@ pub async fn download_and_run_installer(
 
     // 目标临时文件
     let mut tmp_path = std::env::temp_dir();
-    tmp_path.push("MCTier_update_setup.exe");
+    tmp_path.push("MCTierPlus_update_setup.exe");
 
     let client = reqwest::Client::builder()
         .danger_accept_invalid_certs(false)
@@ -1356,7 +1356,7 @@ pub async fn check_firewall_rules() -> Result<bool, String> {
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x08000000;
         
-        // 检查 Windows 防火墙是否已存在 MCTier 的放行规则
+        // 检查 Windows 防火墙是否已存在 MCTierPlus 的放行规则
         // 注意：必须与 add_firewall_rules 中添加的规则名保持一致
         let output = Command::new("netsh")
             .args(&["advfirewall", "firewall", "show", "rule", "name=all"])
@@ -1366,9 +1366,9 @@ pub async fn check_firewall_rules() -> Result<bool, String> {
         
         let output_str = String::from_utf8_lossy(&output.stdout);
         
-        // 检查是否存在 MCTier 自身添加的放行规则
-        // add_firewall_rules 添加的规则名为：MCTier-in/-out、MCTier-EasyTier-in/-out
-        let has_rules = output_str.contains("MCTier");
+        // 检查是否存在 MCTierPlus 自身添加的放行规则
+        // add_firewall_rules 添加的规则名为：MCTierPlus-in/-out、MCTierPlus-EasyTier-in/-out
+        let has_rules = output_str.contains("MCTierPlus");
         
         log::info!("防火墙规则检查结果: {}", has_rules);
         Ok(has_rules)
@@ -1413,20 +1413,20 @@ pub async fn is_admin() -> bool {
 
 /// 一键添加防火墙放行规则（按程序放行，覆盖该程序所有端口）
 ///
-/// 为 MCTier 主程序与 easytier-core 添加入站/出站允许规则。需要管理员权限。
+/// 为 MCTierPlus 主程序与 easytier-core 添加入站/出站允许规则。需要管理员权限。
 #[tauri::command]
 pub async fn add_firewall_rules(app_handle: tauri::AppHandle) -> Result<String, String> {
     #[cfg(windows)]
     {
         const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-        // 收集要放行的程序路径：MCTier 主程序 + easytier-core
+        // 收集要放行的程序路径：MCTierPlus 主程序 + easytier-core
         let mut programs: Vec<(String, std::path::PathBuf)> = Vec::new();
         if let Ok(exe) = std::env::current_exe() {
-            programs.push(("MCTier".to_string(), exe));
+            programs.push(("MCTierPlus".to_string(), exe));
         }
         if let Ok(et) = crate::modules::resource_manager::ResourceManager::get_easytier_path(&app_handle) {
-            programs.push(("MCTier-EasyTier".to_string(), et));
+            programs.push(("MCTierPlus-EasyTier".to_string(), et));
         }
 
         if programs.is_empty() {
@@ -1606,7 +1606,7 @@ pub async fn set_auto_start(enable: bool) -> Result<(), String> {
     {
         use std::process::Command;
         use std::os::windows::process::CommandExt;
-        let app_name = "MCTier";
+        let app_name = "MCTierPlus";
         let app_path = std::env::current_exe()
             .map_err(|e| format!("获取程序路径失败: {}", e))?
             .to_string_lossy()
@@ -1688,7 +1688,7 @@ pub async fn check_auto_start() -> Result<bool, String> {
     {
         use std::process::Command;
         use std::os::windows::process::CommandExt;
-        let app_name = "MCTier";
+        let app_name = "MCTierPlus";
         let output = Command::new("reg")
             .args([
                 "query",
@@ -2964,9 +2964,9 @@ pub async fn detect_security_software() -> Vec<String> {
 /// 一键导出日志：将日志目录打包为 zip，返回生成的 zip 路径
 #[tauri::command]
 pub async fn export_logs(_app_handle: tauri::AppHandle) -> Result<String, String> {
-    // 日志目录：%LOCALAPPDATA%/MCTier（与 get_log_file_path 保持一致）
+    // 日志目录：%LOCALAPPDATA%/MCTierPlus（与 get_log_file_path 保持一致）
     let log_dir = dirs::data_local_dir()
-        .map(|d| d.join("MCTier"))
+        .map(|d| d.join("MCTierPlus"))
         .ok_or_else(|| "无法获取日志目录".to_string())?;
 
     if !log_dir.exists() {
@@ -2980,7 +2980,7 @@ pub async fn export_logs(_app_handle: tauri::AppHandle) -> Result<String, String
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let zip_path = out_dir.join(format!("MCTier_logs_{}.zip", ts));
+    let zip_path = out_dir.join(format!("MCTierPlus_logs_{}.zip", ts));
 
     // 在阻塞线程里打包，避免阻塞异步运行时
     let log_dir_clone = log_dir.clone();
@@ -3254,7 +3254,7 @@ pub async fn save_chat_image(image_data: String) -> Result<String, String> {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_millis();
-    let filename = format!("MCTier_聊天图片_{}.png", timestamp);
+    let filename = format!("MCTierPlus_聊天图片_{}.png", timestamp);
     
     // 构建完整路径
     let file_path = download_dir.join(filename);
@@ -3650,7 +3650,7 @@ pub async fn open_danmaku_window(app: tauri::AppHandle) -> Result<(), String> {
         window_label,
         tauri::WebviewUrl::App("index.html?danmaku=true".into()),
     )
-    .title("MCTier Danmaku")
+    .title("MCTierPlus Danmaku")
     .decorations(false)
     .transparent(true)
     .always_on_top(true)
@@ -3712,7 +3712,7 @@ pub async fn open_game_hud_window(app: tauri::AppHandle) -> Result<(), String> {
         return Ok(());
     }
     let mut builder = WebviewWindowBuilder::new(&app, label, tauri::WebviewUrl::App("index.html?gamehud=true".into()))
-        .title("MCTier HUD")
+        .title("MCTierPlus HUD")
         .decorations(false)
         .transparent(true)
         .always_on_top(true)
@@ -3841,7 +3841,7 @@ pub async fn save_danmaku_image(data_url: String) -> Result<String, String> {
         .or_else(dirs::home_dir)
         .ok_or_else(|| "找不到下载目录".to_string())?;
     let ts = chrono::Local::now().format("%Y%m%d_%H%M%S");
-    let filename = format!("MCTier_弹幕图片_{}.{}", ts, ext);
+    let filename = format!("MCTierPlus_弹幕图片_{}.{}", ts, ext);
     let path = dir.join(&filename);
     std::fs::write(&path, &bytes).map_err(|e| format!("保存失败: {}", e))?;
     Ok(path.to_string_lossy().to_string())
@@ -3858,7 +3858,7 @@ pub async fn open_log_folder() -> Result<(), String> {
     
     // 获取日志文件路径
     let log_path = if let Some(data_dir) = dirs::data_local_dir() {
-        data_dir.join("MCTier")
+        data_dir.join("MCTierPlus")
     } else {
         std::env::current_dir()
             .map_err(|e| format!("获取当前目录失败: {}", e))?
@@ -3907,9 +3907,9 @@ pub async fn open_log_file() -> Result<(), String> {
     
     // 获取日志文件路径
     let log_path = if let Some(data_dir) = dirs::data_local_dir() {
-        data_dir.join("MCTier").join("mctier.log")
+        data_dir.join("MCTierPlus").join("mctierplus.log")
     } else {
-        std::path::PathBuf::from("mctier.log")
+        std::path::PathBuf::from("mctierplus.log")
     };
     
     log::info!("日志文件路径: {:?}", log_path);
@@ -3953,9 +3953,9 @@ pub async fn open_log_file() -> Result<(), String> {
 #[tauri::command]
 pub async fn get_log_file_path() -> Result<String, String> {
     let log_path = if let Some(data_dir) = dirs::data_local_dir() {
-        data_dir.join("MCTier").join("mctier.log")
+        data_dir.join("MCTierPlus").join("mctierplus.log")
     } else {
-        std::path::PathBuf::from("mctier.log")
+        std::path::PathBuf::from("mctierplus.log")
     };
     
     Ok(log_path.to_string_lossy().to_string())
@@ -4244,7 +4244,7 @@ pub async fn get_settings(state: State<'_, AppState>) -> Result<serde_json::Valu
                 Duration::from_secs(2), // 2秒超时
                 tokio::task::spawn_blocking(|| {
                     std::process::Command::new("reg")
-                        .args(["query", "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "/v", "MCTier"])
+                        .args(["query", "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", "/v", "MCTierPlus"])
                         .creation_flags(0x08000000)
                         .output()
                         .map(|o| o.status.success())

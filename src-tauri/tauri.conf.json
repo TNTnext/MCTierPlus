@@ -1,8 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "MCTier",
-  "version": "2.5.0",
+  "productName": "MCTierPlus",
+  "version": "2.6.0",
   "identifier": "com.mctier.app",
+  "mainBinaryName": "mctierplus",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +13,7 @@
   "app": {
     "windows": [
       {
-        "title": "MCTier - 虚拟局域网通用联机工具",
+        "title": "MCTierPlus - 虚拟局域网通用联机工具",
         "width": 320,
         "height": 520,
         "minWidth": 320,
@@ -74,6 +75,6 @@
     "copyright": "Copyright © 2026 Tnt-next",
     "category": "Game",
     "shortDescription": "虚拟局域网通用联机工具",
-    "longDescription": "MCTier 是一款桌面应用程序，允许玩家通过虚拟局域网（VLAN）技术实现跨物理网络的联机游戏。该应用集成了虚拟网络组建、实时语音通信和玩家状态管理功能，为玩家提供流畅的联机体验。"
+    "longDescription": "MCTierPlus 是一款桌面应用程序，允许玩家通过虚拟局域网（VLAN）技术实现跨物理网络的联机游戏。该应用集成了虚拟网络组建、实时语音通信和玩家状态管理功能，为玩家提供流畅的联机体验。"
   }
 }

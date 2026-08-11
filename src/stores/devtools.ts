@@ -10,7 +10,7 @@ import { useAppStore } from './appStore';
  */
 export const printStoreState = (): void => {
   const state = useAppStore.getState();
-  console.group('📊 MCTier Store 状态');
+  console.group('📊 MCTierPlus Store 状态');
   console.log('应用状态:', state.appState);
   console.log('错误信息:', state.errorMessage);
   console.log('大厅信息:', state.lobby);
@@ -166,7 +166,7 @@ export const mountDevtools = (): void => {
       store: useAppStore,
     };
     console.log(
-      '🛠️ MCTier 开发工具已挂载到 window.MCTierDevtools'
+      '🛠️ MCTierPlus 开发工具已挂载到 window.MCTierDevtools'
     );
   }
 };

@@ -297,7 +297,7 @@ pub async fn download_model_impl(
     let mut done: u64 = 0;
     let client = reqwest::Client::builder()
         .connect_timeout(std::time::Duration::from_secs(30))
-        .user_agent("MCTier/2.5.0")
+        .user_agent("MCTierPlus/2.6.0")
         .build()
         .map_err(|e| format!("初始化下载客户端失败: {e}"))?;
 
