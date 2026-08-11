@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Form, Input, Switch, message, Tooltip, App, Slider, Button, Segmented } from 'antd';
+import {
+  Form,
+  Input,
+  Switch,
+  message,
+  Tooltip,
+  App,
+  Slider,
+  Button,
+  Segmented,
+  Progress,
+} from 'antd';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { useEscapeKey } from '../../hooks';
 import { getThemeMode, setThemeMode, type ThemeMode } from '../../theme/theme';
 import { RestartConfirmModal } from '../RestartConfirmModal/RestartConfirmModal';
@@ -14,6 +26,8 @@ import { DanmakuSettings } from '../Danmaku/DanmakuSettings';
 import { GameHudSettings } from '../GameHud/GameHudSettings';
 import { VoiceChangerPicker } from '../VoiceChanger/VoiceChangerPicker';
 import { HotkeyInput } from '../HotkeyInput/HotkeyInput';
+import { voiceFeatures, type SttLanguage } from '../../services/voice/voiceFeatures';
+import { webrtcClient } from '../../services';
 import './SettingsWindow.css';
 
 /** 可自定义的全局快捷键项 */
@@ -77,6 +91,13 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
   const [closeToTray, setCloseToTray] = useState(false);
   const [startMinimized, setStartMinimized] = useState(false);
   const [enableGpuRendering, setEnableGpuRendering] = useState(true);
+  // AI 语音增强（AI 降噪 / 实时字幕）
+  const [noiseSuppressionEnabled, setNoiseSuppressionEnabled] = useState(false);
+  const [subtitlesEnabled, setSubtitlesEnabled] = useState(false);
+  const [sttLanguage, setSttLanguage] = useState<SttLanguage>('zh');
+  const [sttDownloading, setSttDownloading] = useState(false);
+  const [sttProgress, setSttProgress] = useState(0);
+  const [sttStatusText, setSttStatusText] = useState('');
   // 全局快捷键：用户可自定义，改完立即重新注册生效
   const [hotkeys, setHotkeys] = useState<Record<HotkeyKey, string>>({ ...DEFAULT_HOTKEYS });
   const [showRestartModal, setShowRestartModal] = useState(false);
@@ -124,6 +145,20 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       setCloseToTray(ctt);
       setStartMinimized(sm);
       setEnableGpuRendering(egr);
+      const ns = settings.noiseSuppressionEnabled ?? false;
+      const st = settings.subtitlesEnabled ?? false;
+      const lang: SttLanguage =
+        settings.sttLanguage === 'en' || settings.sttLanguage === 'auto'
+          ? settings.sttLanguage
+          : 'zh';
+      setNoiseSuppressionEnabled(ns);
+      setSubtitlesEnabled(st);
+      setSttLanguage(lang);
+      voiceFeatures.applyConfig({
+        noiseSuppressionEnabled: ns,
+        subtitlesEnabled: st,
+        sttLanguage: lang,
+      });
       // 读取自定义快捷键（后端缺省会回落到默认键位）
       const hk: Record<HotkeyKey, string> = {
         micHotkey: settings.micHotkey ?? DEFAULT_HOTKEYS.micHotkey,
@@ -156,6 +191,9 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
         proxyCidrs: settings.proxyCidrs || '',
         exitNodes: settings.exitNodes || '',
         subnetProxyCidrs: settings.subnetProxyCidrs || '',
+        noiseSuppressionEnabled: ns,
+        subtitlesEnabled: st,
+        sttLanguage: lang,
       };
       form.setFieldsValue(settingsRef.current);
     } catch (e) {
@@ -188,6 +226,9 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
         proxyCidrs: '',
         exitNodes: '',
         subnetProxyCidrs: '',
+        noiseSuppressionEnabled: false,
+        subtitlesEnabled: false,
+        sttLanguage: 'zh',
       };
 
       setAutoStartup(false);
@@ -199,6 +240,14 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       setCloseToTray(false);
       setStartMinimized(false);
       setEnableGpuRendering(true);
+      setNoiseSuppressionEnabled(false);
+      setSubtitlesEnabled(false);
+      setSttLanguage('zh');
+      voiceFeatures.applyConfig({
+        noiseSuppressionEnabled: false,
+        subtitlesEnabled: false,
+        sttLanguage: 'zh',
+      });
       setHotkeys({ ...DEFAULT_HOTKEYS });
       settingsRef.current = defaultSettings;
       form.setFieldsValue(defaultSettings);
@@ -270,6 +319,14 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
           proxyCidrs: merged.proxyCidrs?.trim() || null,
           exitNodes: merged.exitNodes?.trim() || null,
           subnetProxyCidrs: merged.subnetProxyCidrs?.trim() || null,
+          // AI 语音增强
+          noiseSuppressionEnabled:
+            merged.noiseSuppressionEnabled !== undefined ? merged.noiseSuppressionEnabled : null,
+          subtitlesEnabled: merged.subtitlesEnabled !== undefined ? merged.subtitlesEnabled : null,
+          sttLanguage:
+            merged.sttLanguage === 'en' || merged.sttLanguage === 'auto'
+              ? merged.sttLanguage
+              : 'zh',
         });
         console.log('设置已保存:', merged);
         message.success(tl('已保存', 'Saved'), 1);
@@ -351,6 +408,128 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
     form.setFieldValue('autoLobbyEnabled', v);
     // 只更新enabled状态，保留ref里的lobbyName/lobbyPassword/playerName
     await saveAll({ autoLobbyEnabled: v });
+  };
+
+  /**
+   * 确保指定语言的识别模型已下载；未下载则下载并实时显示进度。
+   * @returns 是否可用
+   */
+  const ensureSttModel = useCallback(async (lang: SttLanguage): Promise<boolean> => {
+    try {
+      const status = await invoke<any>('stt_status', { language: lang });
+      if (status.downloaded) return true;
+    } catch (e) {
+      console.warn('查询字幕模型状态失败，将尝试下载:', e);
+    }
+
+    setSttDownloading(true);
+    setSttProgress(0);
+    setSttStatusText(
+      tl(
+        '首次使用需下载语音识别模型（约 200MB，仅下载一次）…',
+        'First use requires downloading the speech model (~200MB, once)...'
+      )
+    );
+    const unlisten = await listen<any>('stt-download-progress', (event) => {
+      const p = event.payload || {};
+      if (typeof p.percent === 'number') {
+        setSttProgress(Math.round(p.percent));
+        setSttStatusText(
+          tl(
+            `正在下载语音识别模型 ${Math.round(p.percent)}%…`,
+            `Downloading speech model ${Math.round(p.percent)}%...`
+          )
+        );
+      }
+    });
+    try {
+      await invoke('stt_download_model', { language: lang });
+      setSttStatusText(tl('模型下载完成', 'Model downloaded'));
+      return true;
+    } catch (e) {
+      console.error('下载字幕模型失败:', e);
+      setSttStatusText(
+        tl('模型下载失败，请检查网络后重试', 'Model download failed. Check your network and retry.')
+      );
+      return false;
+    } finally {
+      unlisten();
+      setSttDownloading(false);
+    }
+  }, []);
+
+  /** AI 降噪开关：立即保存并（若正在开麦）重建音频链路 */
+  const handleNoiseSuppressionChange = async (v: boolean) => {
+    setNoiseSuppressionEnabled(v);
+    voiceFeatures.setNoiseSuppression(v);
+    form.setFieldValue('noiseSuppressionEnabled', v);
+    await saveAll({ noiseSuppressionEnabled: v });
+    try {
+      await webrtcClient.refreshMicChain();
+    } catch (e) {
+      console.warn('重建音频链路失败（下次开麦生效）:', e);
+    }
+  };
+
+  /** 实时字幕开关：开启时先确保模型就绪并启动识别 */
+  const handleSubtitlesChange = async (v: boolean) => {
+    if (v) {
+      const ok = await ensureSttModel(sttLanguage);
+      if (!ok) return;
+      try {
+        await invoke('stt_start', { language: sttLanguage });
+        setSttStatusText(tl('实时字幕已就绪', 'Live subtitles ready'));
+      } catch (e) {
+        console.error('启动实时字幕失败:', e);
+        setSttStatusText(
+          tl('实时字幕启动失败，请稍后重试', 'Failed to start live subtitles, please retry later')
+        );
+        return;
+      }
+      voiceFeatures.setSubtitles(true);
+      setSubtitlesEnabled(true);
+      form.setFieldValue('subtitlesEnabled', true);
+      await saveAll({ subtitlesEnabled: true });
+    } else {
+      setSubtitlesEnabled(false);
+      voiceFeatures.setSubtitles(false);
+      form.setFieldValue('subtitlesEnabled', false);
+      try {
+        await invoke('stt_stop');
+      } catch (e) {
+        console.warn('停止实时字幕失败:', e);
+      }
+      await saveAll({ subtitlesEnabled: false });
+    }
+    try {
+      await webrtcClient.refreshMicChain();
+    } catch (e) {
+      console.warn('重建音频链路失败（下次开麦生效）:', e);
+    }
+  };
+
+  /** 识别语言切换：保存后若字幕已开启则按新语言重新加载模型 */
+  const handleSttLanguageChange = async (lang: SttLanguage) => {
+    setSttLanguage(lang);
+    voiceFeatures.setSttLanguage(lang);
+    form.setFieldValue('sttLanguage', lang);
+    await saveAll({ sttLanguage: lang });
+    if (subtitlesEnabled) {
+      const ok = await ensureSttModel(lang);
+      if (!ok) return;
+      try {
+        await invoke('stt_start', { language: lang });
+        setSttStatusText(tl('实时字幕已就绪', 'Live subtitles ready'));
+      } catch (e) {
+        console.error('切换识别语言失败:', e);
+        setSttStatusText(tl('切换识别语言失败', 'Failed to switch recognition language'));
+      }
+      try {
+        await webrtcClient.refreshMicChain();
+      } catch (e) {
+        console.warn('重建音频链路失败:', e);
+      }
+    }
   };
 
   const handleFieldBlur = async () => {
@@ -1136,6 +1315,104 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
                 )}
               </div>
               <VoiceChangerPicker />
+            </motion.div>
+
+            <motion.div className="settings-card" variants={itemVariants}>
+              <div className="settings-card-header">
+                <div className="settings-card-icon settings-card-icon-green">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 10v4a1 1 0 0 0 1 1h3l4 4V5L7 9H4a1 1 0 0 0-1 1zm13.5 2a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z" />
+                  </svg>
+                </div>
+                <span className="settings-card-title">{tl('AI 语音增强', 'AI Voice')}</span>
+              </div>
+              <div className="settings-card-desc">
+                {tl(
+                  'AI 降噪压制麦克风背景噪声；实时字幕把你说的话转成文字显示在大厅底部。均默认关闭，只在本地处理，不上传任何音频。',
+                  'AI noise suppression removes background noise; live subtitles show what you say at the bottom of the lobby. Both are off by default, processed locally, nothing is uploaded.'
+                )}
+              </div>
+
+              <div className="settings-toggle-row">
+                <div className="settings-toggle-info">
+                  <span className="settings-toggle-label">
+                    {tl('AI 降噪', 'AI Noise Suppression')}
+                  </span>
+                  <span className="settings-toggle-desc">
+                    {tl('内置模型无需下载，开麦即生效', 'Built-in model, no download needed')}
+                  </span>
+                </div>
+                <Switch
+                  checked={noiseSuppressionEnabled}
+                  onChange={(v) => {
+                    void handleNoiseSuppressionChange(v);
+                  }}
+                />
+              </div>
+
+              <div className="settings-toggle-row">
+                <div className="settings-toggle-info">
+                  <span className="settings-toggle-label">{tl('实时字幕', 'Live Subtitles')}</span>
+                  <span className="settings-toggle-desc">
+                    {tl(
+                      '首次开启需下载识别模型（约 200MB，仅一次）',
+                      'First enable downloads the speech model (~200MB, once)'
+                    )}
+                  </span>
+                </div>
+                <Switch
+                  checked={subtitlesEnabled}
+                  disabled={sttDownloading}
+                  onChange={(v) => {
+                    void handleSubtitlesChange(v);
+                  }}
+                />
+              </div>
+
+              {subtitlesEnabled && (
+                <div
+                  className="settings-toggle-row settings-toggle-row-sub"
+                  style={{ flexDirection: 'column', alignItems: 'stretch' }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span className="settings-toggle-label">
+                      {tl('识别语言', 'Recognition Language')}
+                    </span>
+                    <Segmented
+                      size="small"
+                      value={sttLanguage}
+                      onChange={(v) => {
+                        void handleSttLanguageChange(v as SttLanguage);
+                      }}
+                      options={[
+                        { value: 'zh', label: tl('中文', 'Chinese') },
+                        { value: 'en', label: 'English' },
+                        { value: 'auto', label: tl('自动', 'Auto') },
+                      ]}
+                    />
+                  </div>
+                  {sttDownloading ? (
+                    <div style={{ marginTop: 10 }}>
+                      <Progress percent={sttProgress} size="small" status="active" />
+                      <div style={{ fontSize: 12, color: 'var(--mc-text-2)', marginTop: 4 }}>
+                        {sttStatusText}
+                      </div>
+                    </div>
+                  ) : (
+                    sttStatusText && (
+                      <div style={{ marginTop: 6, fontSize: 12, color: 'var(--mc-text-2)' }}>
+                        {sttStatusText}
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
             </motion.div>
 
             <motion.div className="settings-card" variants={itemVariants}>

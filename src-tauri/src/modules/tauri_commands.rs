@@ -4011,6 +4011,9 @@ pub async fn save_settings(
     proxy_cidrs: Option<String>,
     exit_nodes: Option<String>,
     subnet_proxy_cidrs: Option<String>,
+    noise_suppression_enabled: Option<bool>,
+    subtitles_enabled: Option<bool>,
+    stt_language: Option<String>,
     app_handle: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
@@ -4173,6 +4176,21 @@ pub async fn save_settings(
                         .collect();
                 }
             }
+            // 保存 AI 降噪 / 实时字幕设置
+            if let Some(v) = noise_suppression_enabled {
+                config.noise_suppression_enabled = Some(v);
+            }
+            if let Some(v) = subtitles_enabled {
+                config.subtitles_enabled = Some(v);
+            }
+            if let Some(lang) = stt_language {
+                let lang = if lang == "en" || lang == "auto" {
+                    lang
+                } else {
+                    "zh".to_string()
+                };
+                config.stt_language = Some(lang);
+            }
         }).await.map_err(|e| format!("保存配置失败: {}", e))?;
     }
 
@@ -4287,6 +4305,9 @@ pub async fn get_settings(state: State<'_, AppState>) -> Result<serde_json::Valu
         "proxyCidrs": exit_node_config.proxy_cidrs.join("\n"),
         "exitNodes": exit_node_config.exit_nodes.join("\n"),
         "subnetProxyCidrs": exit_node_config.subnet_proxy_cidrs.join("\n"),
+        "noiseSuppressionEnabled": config.noise_suppression_enabled.unwrap_or(false),
+        "subtitlesEnabled": config.subtitles_enabled.unwrap_or(false),
+        "sttLanguage": config.stt_language.clone().unwrap_or_else(|| "zh".to_string()),
     }))
 }
 
@@ -4312,6 +4333,81 @@ pub async fn save_voice_volume(volume: f64, state: State<'_, AppState>) -> Resul
     
     log::info!("语音音量保存成功");
     Ok(())
+}
+
+// ==================== 实时字幕命令 ====================
+
+/// 下载字幕识别模型（带进度事件 `stt-download-progress`）
+#[tauri::command]
+pub async fn stt_download_model(
+    language: String,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    crate::modules::stt_service::download_model(app, language).await
+}
+
+/// 查询指定语言模型是否已下载、识别服务是否在运行
+#[tauri::command]
+pub async fn stt_status(
+    language: String,
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<serde_json::Value, String> {
+    let dir = crate::modules::stt_service::model_dir(&app, &language)?;
+    let downloaded = ["encoder.onnx", "decoder.onnx", "joiner.onnx", "tokens.txt"]
+        .iter()
+        .all(|f| dir.join(f).exists());
+    let running = state
+        .core
+        .lock()
+        .await
+        .get_stt_service()
+        .lock()
+        .await
+        .is_running();
+    Ok(serde_json::json!({ "downloaded": downloaded, "running": running }))
+}
+
+/// 启动实时字幕识别（加载指定语言模型）
+#[tauri::command]
+pub async fn stt_start(
+    language: String,
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let svc = state.core.lock().await.get_stt_service();
+    let guard = svc.lock().await;
+    guard.start(app, language).await
+}
+
+/// 停止实时字幕识别
+#[tauri::command]
+pub async fn stt_stop(state: State<'_, AppState>) -> Result<(), String> {
+    let svc = state.core.lock().await.get_stt_service();
+    let guard = svc.lock().await;
+    guard.stop().await;
+    Ok(())
+}
+
+/// 清空当前识别状态
+#[tauri::command]
+pub async fn stt_reset(state: State<'_, AppState>) -> Result<(), String> {
+    let svc = state.core.lock().await.get_stt_service();
+    let guard = svc.lock().await;
+    guard.reset().await;
+    Ok(())
+}
+
+/// 推送一段 PCM 音频帧（float32 单声道）
+#[tauri::command]
+pub async fn stt_push_audio(
+    samples: Vec<f32>,
+    sample_rate: i32,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    let svc = state.core.lock().await.get_stt_service();
+    let guard = svc.lock().await;
+    guard.push_audio(samples, sample_rate).await
 }
 
 // ==================== 配置重置命令 ====================

@@ -129,7 +129,18 @@ export interface UserConfig {
   autoLobby?: AutoLobbyConfig;
   /** 出口节点配置 */
   exitNodeConfig?: ExitNodeConfig;
+  /** 是否启用 AI 降噪（默认关闭） */
+  noiseSuppressionEnabled?: boolean;
+  /** 是否启用实时字幕（默认关闭） */
+  subtitlesEnabled?: boolean;
+  /** 字幕识别语言：zh | en | auto（默认 zh） */
+  sttLanguage?: SttLanguage;
 }
+
+/**
+ * 实时字幕识别语言
+ */
+export type SttLanguage = 'zh' | 'en' | 'auto';
 
 /**
  * 音频设备信息

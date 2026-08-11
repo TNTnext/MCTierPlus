@@ -8,11 +8,10 @@
   <p>
     <img src="https://img.shields.io/badge/version-2.5.0-blue?style=flat-square" alt="Version">
     <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-2ea44f?style=flat-square" alt="Windows 10/11">
-    <img src="https://img.shields.io/badge/Android-supported-3ddc84?style=flat-square" alt="Android">
     <img src="https://img.shields.io/badge/license-Custom-orange?style=flat-square" alt="License">
   </p>
 
-  **支持 Windows 10/11 与 Android。电脑端和手机端能进同一个大厅，跨网络组成虚拟局域网。**
+  **支持 Windows 10/11。电脑端跨网络组成虚拟局域网，进入同一个大厅。**
 
   [GitHub](https://github.com/TNTnext/MCTierPlus) · [快速开始](#快速开始) · [运行预览](#运行预览)
 
@@ -30,7 +29,7 @@ MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同�
 - 局域网游戏联机，例如 Minecraft、泰拉瑞亚、饥荒等。
 - 跨网络访问本地服务，例如开发调试页面、局域网后台、临时 HTTP 服务。
 - 小团队临时协作，例如语音频道、聊天室、文件夹共享、屏幕共享。
-- 手机与电脑互联，例如手机扫码加入大厅、复制邀请链接加入组网。
+- 扫码加入大厅或复制邀请链接加入组网，方便快速拉人。
 
 ## 运行预览
 
@@ -89,12 +88,6 @@ MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同�
       <b>高级网络配置（深色）</b>
     </td>
   </tr>
-  <tr>
-    <td align="center" colspan="2">
-      <img src="public/预览-关于-浅色.png" alt="关于（浅色）" width="260"><br>
-      <b>关于（浅色）</b>
-    </td>
-  </tr>
 </table>
 
 ## 核心功能
@@ -102,7 +95,7 @@ MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同�
 ### 组网与连接
 
 - **虚拟局域网组网**：基于 EasyTier 建立虚拟网络，无需公网 IP。
-- **跨端加入大厅**：手机和电脑进同一个大厅，手机扫二维码就能加入。
+- **扫码加入大厅**：扫二维码或复制邀请链接即可加入大厅。
 - **公开大厅广场**：房主可以把大厅挂到广场上，别人在广场看到就能直接加入。
 - **自定义节点与虚拟域名**：支持添加自定义 EasyTier 节点，并为虚拟网络配置自定义域名。
 - **连接 / 网络诊断**：汇总各成员的直连/中继状态、延迟和丢包，给出整体评分和优化建议；网络诊断还能查虚拟网卡、防火墙、UDP 端口和杀毒软件拦截，支持一键放行防火墙。
@@ -113,11 +106,13 @@ MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同�
 - **实时语音频道**：大厅里按频道开语音，方便协作。
 - **语音小队**：把成员分到不同小队，只听同队语音，方便分组开黑。
 - **内置变声器**：实时语音变声，内置少女音、大叔音等多种音色，支持先试听再应用。
+- **AI 语音降噪**：默认关闭，设置中开启后即可压制麦克风背景噪声（风扇、键盘、空调等）。模型内置，无需下载，本地处理、不上传任何音频。
+- **实时字幕**：默认关闭，开启后自动下载识别模型（仅一次），把你开麦说的话实时转成文字，显示在大厅底部字幕条（中文 / 英文 / 自动）。
 - **大厅聊天室**：支持文字、图片与 Emoji 表情消息。
 - **消息弹幕**：聊天消息以弹幕形式从屏幕顶部飘过，挂后台或玩游戏时也不错过消息；可调字号、速度、透明度、轨道数与颜色（含彩色随机），默认开启。
 - **文件夹共享**：可向同大厅成员共享文件夹，支持下载与传输列表。
 - **屏幕共享**：使用 WebRTC 查看对方屏幕画面。
-- **远程控制**：基于 WebRTC 远程查看并实时操作对方设备，支持电脑↔手机互控；鼠标移动、左键/右键、长按、拖拽、滚轮、键盘输入、返回/主页/最近等手势都有，还会根据对方分辨率自动选横竖屏和窗口尺寸。
+- **远程控制**：基于 WebRTC 远程查看并实时操作对方设备，支持电脑间互控；鼠标移动、左键/右键、长按、拖拽、滚轮、键盘输入、返回/主页/最近等手势都有，还会根据对方分辨率自动选横竖屏和窗口尺寸。
 - **房间工具**：内置掷骰子、倒计时与多人协同待办清单，方便跑团、抽签与团队任务安排，倒计时切界面或挂后台也不中断。
 
 ### 大厅管理与便捷
@@ -149,7 +144,6 @@ MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同�
 | 平台 | 要求 |
 | --- | --- |
 | Windows | Windows 10/11 64 位，建议 2GB 以上内存 |
-| Android | Android 手机或平板，建议 Android 8.0+ |
 | 网络 | 能访问所配置的 EasyTier 节点与 WebRTC 信令服务 |
 
 ### 下载与安装
@@ -158,7 +152,6 @@ MCTier 基于 EasyTier 和 WebRTC，把不同网络环境下的设备组到同�
 
 - Windows 安装包：下载 `MCTier_x.x.x_x64-setup.exe` 后双击安装。
 - Windows 便携版：下载 `mctier.exe` 后直接运行。
-- Android：下载 `MCTier-Android.apk` 后在手机上安装。
 
 ### 创建或加入大厅
 
@@ -199,19 +192,6 @@ MCTier 是通用组网工具，Minecraft 只是其中一个典型使用场景。
 npm install
 npm run tauri dev
 npm run tauri build
-```
-
-Android 端源码位于：
-
-```text
-MCTier-Android/
-```
-
-调试或打包 Android：
-
-```bash
-cd MCTier-Android
-gradlew.bat assembleDebug
 ```
 
 ## 开源协议

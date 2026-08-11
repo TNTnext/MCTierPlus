@@ -65,7 +65,12 @@
       "wix": null
     },
     "externalBin": [],
-    "resources": [],
+    "resources": {
+      "resources/sherpa-onnx/onnxruntime.dll": "onnxruntime.dll",
+      "resources/sherpa-onnx/onnxruntime_providers_shared.dll": "onnxruntime_providers_shared.dll",
+      "resources/sherpa-onnx/sherpa-onnx-c-api.dll": "sherpa-onnx-c-api.dll",
+      "resources/sherpa-onnx/sherpa-onnx-cxx-api.dll": "sherpa-onnx-cxx-api.dll"
+    },
     "copyright": "Copyright © 2026 Tnt-next",
     "category": "Game",
     "shortDescription": "虚拟局域网通用联机工具",

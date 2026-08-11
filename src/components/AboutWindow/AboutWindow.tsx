@@ -66,8 +66,8 @@ export const AboutWindow: React.FC<AboutWindowProps> = ({ onClose }) => {
             </Title>
             <Paragraph className="section-text">
               {tl(
-                'MCTier 是一个把不同网络环境下的设备组到同一个虚拟局域网里的工具，支持各类可以局域网联机的游戏。它基于 EasyTier 和 WebRTC 实现，电脑和手机都能加入同一个大厅。除了联机游戏，还可以访问对方机器上本地开的网页服务；语音、聊天、文件共享和屏幕共享都是自带的，不用自己搭服务器。',
-                "MCTier groups devices from different networks into one virtual LAN, and works with any game that supports LAN multiplayer. Built on EasyTier and WebRTC, both PC and mobile can join the same lobby. Besides gaming, you can also reach services running on someone else's machine. Voice, chat, file sharing and screen sharing are all built in — no server setup required."
+                'MCTier 是一个把不同网络环境下的设备组到同一个虚拟局域网里的工具，支持各类可以局域网联机的游戏。它基于 EasyTier 和 WebRTC 实现，电脑和已安装 MCTier 的设备都能加入同一个大厅。除了联机游戏，还可以访问对方机器上本地开的网页服务；语音、聊天、文件共享和屏幕共享都是自带的，不用自己搭服务器。',
+                "MCTier groups devices from different networks into one virtual LAN, and works with any game that supports LAN multiplayer. Built on EasyTier and WebRTC, PCs and devices running MCTier can join the same lobby. Besides gaming, you can also reach services running on someone else's machine. Voice, chat, file sharing and screen sharing are all built in — no server setup required."
               )}
             </Paragraph>
             <div className="game-scope-tip">

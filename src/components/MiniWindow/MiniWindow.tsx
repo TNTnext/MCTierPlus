@@ -153,7 +153,7 @@ async function buildInvitePoster(name: string, pwd: string): Promise<HTMLCanvasE
   ctx.fillStyle = 'rgba(255,255,255,0.75)';
   ctx.font = '17px "Microsoft YaHei", sans-serif';
   ctx.fillText(
-    tl('用手机 MCTier 扫一扫，立即加入大厅', 'Scan with MCTier on your phone to join the lobby'),
+    tl('用 MCTier 扫一扫，立即加入大厅', 'Scan with MCTier to join the lobby'),
     W / 2,
     210
   );
@@ -229,6 +229,9 @@ export const MiniWindow: React.FC = () => {
     announcement,
     myVoiceGroup,
     playerVoiceGroups,
+    subtitlePartial,
+    subtitleFinal,
+    subtitlesVisible,
   } = useAppStore();
 
   const isHost = !!currentPlayerId && hostId === currentPlayerId;
@@ -440,7 +443,7 @@ export const MiniWindow: React.FC = () => {
     };
   }, []);
   const [showRoomTools, setShowRoomTools] = useState(false); // 房间小工具弹窗
-  const [showQrModal, setShowQrModal] = useState(false); // 大厅二维码弹窗(供手机扫码加入)
+  const [showQrModal, setShowQrModal] = useState(false); // 大厅二维码弹窗(供扫码加入)
   const [showHostPanel, setShowHostPanel] = useState(false); // 房主管理面板
   const [peerLatencies, setPeerLatencies] = useState<
     Record<string, { latencyMs: number | null; lossRate: number }>
@@ -2010,7 +2013,7 @@ Password: ${lobby.password || ''}
                             className="copy-lobby-btn"
                             onClick={() => setShowQrModal(true)}
                             title={tl(
-                              '大厅二维码（手机 MCTier 扫码加入）',
+                              '大厅二维码（MCTier 扫码加入）',
                               'Lobby QR (scan with MCTier)'
                             )}
                             whileHover={{ scale: 1.1 }}
@@ -2639,6 +2642,17 @@ Password: ${lobby.password || ''}
                     )}
                   </motion.div>
 
+                  {/* 实时字幕条（默认关闭，设置中开启） */}
+                  {subtitlesVisible && (subtitlePartial || subtitleFinal) && (
+                    <div className="mini-subtitle-bar">
+                      <span className="mini-subtitle-label">{tl('字幕', 'Subtitle')}</span>
+                      <span className="mini-subtitle-text">
+                        {subtitlePartial || subtitleFinal}
+                        {subtitlePartial && <span className="mini-subtitle-cursor" />}
+                      </span>
+                    </div>
+                  )}
+
                   {/* 底部控制按钮 - 只有5个按钮 */}
                   <motion.div
                     className="mini-voice-controls"
@@ -2778,7 +2792,7 @@ Password: ${lobby.password || ''}
       {/* 远程控制（全局：授权弹窗 / 被控横幅 / 控制端窗口） */}
       <RemoteControl />
 
-      {/* 大厅二维码弹窗：手机端 MCTier 扫码即可加入 */}
+      {/* 大厅二维码弹窗：MCTier 扫码即可加入 */}
       <Modal
         open={showQrModal}
         onCancel={() => setShowQrModal(false)}
@@ -2797,7 +2811,7 @@ Password: ${lobby.password || ''}
           }}
         >
           <div style={{ color: 'var(--mc-text-2)', fontSize: 12 }}>
-            {tl('手机用 MCTier 扫码即可加入本大厅', 'Scan with MCTier on your phone to join')}
+            {tl('用 MCTier 扫码即可加入本大厅', 'Scan with MCTier to join this lobby')}
           </div>
           <div className="mini-qr-card">
             <canvas

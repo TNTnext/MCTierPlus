@@ -601,6 +601,54 @@
 }
 
 /* ---- 底部语音/功能 Dock ---- */
+.mini-subtitle-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 12px 0;
+  padding: 8px 10px;
+  border-radius: var(--mc-radius-md);
+  background: var(--mc-bg-raised);
+  border: 1px solid var(--mc-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+  min-height: 34px;
+}
+
+.mini-subtitle-label {
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 1;
+  padding: 3px 6px;
+  border-radius: 999px;
+  background: rgba(7, 193, 96, 0.12);
+  color: var(--mc-green-bright);
+}
+
+.mini-subtitle-text {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--mc-text);
+  word-break: break-all;
+  flex: 1;
+}
+
+.mini-subtitle-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 13px;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: var(--mc-green-bright);
+  animation: mini-subtitle-blink 1s step-start infinite;
+}
+
+@keyframes mini-subtitle-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .mini-voice-controls {
   display: grid;
   grid-template-columns: repeat(5, 1fr);

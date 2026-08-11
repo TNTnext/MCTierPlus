@@ -10,6 +10,9 @@ import { fileTransferService } from '../fileShare/FileTransferService';
 import { audioDevices } from '../voice/audioDevices';
 import { tl } from '../../i18n';
 import { voiceChangerService } from '../voice/voiceChangerService';
+import { noiseSuppressor } from '../voice/NoiseSuppressor';
+import { subtitleService } from '../voice/SubtitleService';
+import { voiceFeatures } from '../voice/voiceFeatures';
 
 export interface SignalingMessage {
   type:
@@ -224,6 +227,23 @@ export class WebRTCClient {
       // 不再在初始化时获取麦克风，只有在用户开启麦克风时才获取
       console.log('⏭️ 跳过麦克风初始化，等待用户手动开启');
       this.localStream = null;
+
+      // 同步 AI 语音功能开关（AI 降噪 / 实时字幕）到运行时
+      try {
+        const settings = await invoke<any>('get_settings');
+        voiceFeatures.applyConfig({
+          noiseSuppressionEnabled: settings.noiseSuppressionEnabled,
+          subtitlesEnabled: settings.subtitlesEnabled,
+          sttLanguage: settings.sttLanguage,
+        });
+        console.log('✅ AI 语音功能开关已同步:', {
+          noiseSuppression: voiceFeatures.isNoiseSuppressionEnabled(),
+          subtitles: voiceFeatures.isSubtitlesEnabled(),
+          sttLanguage: voiceFeatures.getSttLanguage(),
+        });
+      } catch (e) {
+        console.warn('⚠️ 同步 AI 语音功能开关失败（使用默认关闭）:', e);
+      }
 
       // 连接到WebSocket信令服务器（带重试，缓解二次加入时的瞬时 DNS 解析失败）
       console.log('正在连接到WebSocket信令服务器...');
@@ -2497,6 +2517,16 @@ export class WebRTCClient {
     return run;
   }
 
+  /**
+   * 重建麦克风处理链（在设置中切换 AI 降噪 / 实时字幕后调用）
+   * 仅在麦克风当前开启时生效；关闭时无需处理，下次开麦会按最新配置构建。
+   */
+  async refreshMicChain(): Promise<void> {
+    if (!this.micActuallyEnabled) return;
+    this.micActuallyEnabled = false;
+    await this.convergeMicState();
+  }
+
   /** 反复应用麦克风状态，直到实际状态与最新期望一致 */
   private async convergeMicState(): Promise<void> {
     // 最多收敛若干轮，避免极端情况下的无限循环
@@ -2528,12 +2558,22 @@ export class WebRTCClient {
         const rawStream = await this.requestMicrophonePermission();
 
         console.log('✅ 麦克风权限已获取');
-        // 应用变声器：对原始麦克风做实时变声，输出处理后的流用于发送
         if (this.rawMicStream) {
           this.rawMicStream.getTracks().forEach((t) => t.stop());
         }
         this.rawMicStream = rawStream;
-        const newStream = voiceChangerService.process(rawStream);
+
+        // 音频链路：原始麦克风 → [AI 降噪] → [实时字幕取帧] → 变声器 → WebRTC 发送
+        let chainStream: MediaStream = rawStream;
+        if (voiceFeatures.isNoiseSuppressionEnabled()) {
+          chainStream = await noiseSuppressor.attach(rawStream);
+        }
+        if (voiceFeatures.isSubtitlesEnabled()) {
+          await subtitleService.start(chainStream).catch((e) => {
+            console.warn('⚠️ 实时字幕启动失败，忽略:', e);
+          });
+        }
+        const newStream = voiceChangerService.process(chainStream);
         const newAudioTrack = newStream.getAudioTracks()[0];
 
         for (const [peerId, pc] of this.peerConnections) {
@@ -2612,6 +2652,8 @@ export class WebRTCClient {
           this.rawMicStream = null;
         }
         voiceChangerService.dispose();
+        noiseSuppressor.dispose();
+        subtitleService.stop();
         try {
           this.onLocalStreamCallback?.(null);
         } catch {
@@ -3185,6 +3227,16 @@ export class WebRTCClient {
       }
       try {
         voiceChangerService.dispose();
+      } catch {
+        /* ignore */
+      }
+      try {
+        noiseSuppressor.dispose();
+      } catch {
+        /* ignore */
+      }
+      try {
+        subtitleService.stop();
       } catch {
         /* ignore */
       }

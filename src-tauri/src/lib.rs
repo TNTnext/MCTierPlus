@@ -88,6 +88,7 @@ use modules::tauri_commands::{
     export_config, import_config,
     restart_app_with_gpu_settings,
     save_exit_node_advanced_config, get_exit_node_advanced_config,
+    stt_download_model, stt_status, stt_start, stt_stop, stt_reset, stt_push_audio,
 };
 
 use modules::easytier_advanced_commands::{
@@ -570,6 +571,7 @@ pub fn run() {
             export_config, import_config,
             restart_app_with_gpu_settings,
             save_exit_node_advanced_config, get_exit_node_advanced_config,
+            stt_download_model, stt_status, stt_start, stt_stop, stt_reset, stt_push_audio,
             save_global_easytier_advanced_config, get_global_easytier_advanced_config,
             save_lobby_easytier_advanced_config, get_lobby_easytier_advanced_config,
             clear_lobby_easytier_advanced_config,

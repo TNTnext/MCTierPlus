@@ -54,3 +54,6 @@ pub mod mc_lan_bridge;
 
 // 远程控制（输入注入）模块
 pub mod remote_control;
+
+// 实时字幕（流式语音识别）模块
+pub mod stt_service;

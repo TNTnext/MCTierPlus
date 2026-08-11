@@ -389,6 +389,12 @@ pub struct UserConfig {
     pub global_easytier_advanced_config: Option<EasyTierAdvancedConfig>,
     /// 大厅 EasyTier 高级配置（覆盖全局配置）
     pub lobby_easytier_advanced_config: Option<EasyTierAdvancedConfig>,
+    /// 是否启用 AI 降噪（默认关闭）
+    pub noise_suppression_enabled: Option<bool>,
+    /// 是否启用实时字幕（默认关闭）
+    pub subtitles_enabled: Option<bool>,
+    /// 字幕识别语言：zh | en | auto（默认 zh）
+    pub stt_language: Option<String>,
 }
 
 impl Default for UserConfig {
@@ -418,6 +424,9 @@ impl Default for UserConfig {
             exit_node_config: Some(ExitNodeConfig::default()),
             global_easytier_advanced_config: None,
             lobby_easytier_advanced_config: None,
+            noise_suppression_enabled: Some(false),
+            subtitles_enabled: Some(false),
+            stt_language: Some("zh".to_string()),
         }
     }
 }
