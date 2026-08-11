@@ -194,6 +194,11 @@ npm run tauri dev
 npm run tauri build
 ```
 
+> 实时字幕依赖 sherpa-onnx 官方预编译共享库（Windows x64）。首次构建时构建脚本会自动从
+> GitHub Releases 下载 `sherpa-onnx-v1.13.4-win-x64-shared-MT-Release-lib.tar.bz2`；
+> 网络受限时可手动下载该文件，并设置环境变量 `SHERPA_ONNX_ARCHIVE_DIR` 指向其所在目录。
+> 运行库 DLL（onnxruntime.dll 等）已随安装包分发；便携版需把 DLL 与 `mctier.exe` 放在同一目录。
+
 ## 开源协议
 
 本项目使用自定义开源协议：

@@ -191,6 +191,13 @@ npm run tauri dev
 npm run tauri build
 ```
 
+> Live subtitles depend on the official sherpa-onnx prebuilt shared libraries (Windows x64).
+> On the first build, the build script automatically downloads
+> `sherpa-onnx-v1.13.4-win-x64-shared-MT-Release-lib.tar.bz2` from GitHub Releases; if your network
+> cannot reach it, download the file manually and point the `SHERPA_ONNX_ARCHIVE_DIR` environment
+> variable at its folder. Runtime DLLs (onnxruntime.dll etc.) ship with the installers; for the
+> portable build, keep the DLLs in the same folder as `mctier.exe`.
+
 ## License
 
 This project uses a custom open-source license:
