@@ -4348,7 +4348,7 @@ pub async fn stt_download_model(
     // 先取消可能残留的旧下载标记，再尝试开始本次下载
     let begin = {
         let guard = svc.lock().await;
-        guard.cancel_download();
+        guard.reset_cancel();
         guard.try_begin_download()
     };
     if !begin {
@@ -4376,10 +4376,8 @@ pub async fn stt_status(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<serde_json::Value, String> {
-    let dir = crate::modules::stt_service::model_dir(&app, &language)?;
-    let downloaded = ["encoder.onnx", "decoder.onnx", "joiner.onnx", "tokens.txt"]
-        .iter()
-        .all(|f| dir.join(f).exists());
+    // 必须“齐全且完整”（文件存在且大小匹配），半截/损坏文件视为未下载，重新下载
+    let downloaded = crate::modules::stt_service::model_complete(&app, &language);
     let running = state
         .core
         .lock()

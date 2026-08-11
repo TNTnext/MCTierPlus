@@ -456,9 +456,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       return true;
     } catch (e) {
       console.error('下载字幕模型失败:', e);
-      setSttStatusText(
-        tl('模型下载失败，请检查网络后重试', 'Model download failed. Check your network and retry.')
-      );
+      const detail = typeof e === 'string' ? e : e instanceof Error ? e.message : String(e);
+      setSttStatusText(tl(`模型下载失败：${detail}`, `Model download failed: ${detail}`));
       return false;
     } finally {
       if (unlisten) {
@@ -471,6 +470,62 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       setSttDownloading(false);
     }
   }, []);
+
+  /**
+   * 启动实时字幕识别并等待识别器加载结果（stt-status ready/error）。
+   * 识别线程在后台加载模型；先等结果再打开开关，避免“看似开启、实际失败/崩溃”。
+   */
+  const startStt = useCallback(
+    async (lang: SttLanguage): Promise<boolean> => {
+      try {
+        await invoke('stt_start', { language: lang });
+      } catch (e) {
+        console.error('启动实时字幕失败:', e);
+        setSttStatusText(
+          tl('实时字幕启动失败，请稍后重试', 'Failed to start live subtitles, please retry later')
+        );
+        return false;
+      }
+      const loaded = await new Promise<'ready' | 'error' | 'timeout'>((resolve) => {
+        let settled = false;
+        let unlisten: (() => void) | null = null;
+        const finish = (status: 'ready' | 'error' | 'timeout') => {
+          if (settled) return;
+          settled = true;
+          unlisten?.();
+          resolve(status);
+        };
+        // 模型加载通常 <1s；超时兜底避免按钮卡住
+        const timer = window.setTimeout(() => finish('timeout'), 10000);
+        void listen<any>('stt-status', (event) => {
+          const status = event.payload?.status;
+          if (status === 'ready' || status === 'error') {
+            window.clearTimeout(timer);
+            finish(status);
+          }
+        }).then((u) => {
+          if (settled) {
+            u();
+          } else {
+            unlisten = u;
+          }
+        });
+      });
+      if (loaded === 'error') {
+        console.error('实时字幕识别器加载失败');
+        setSttStatusText(
+          tl(
+            '实时字幕启动失败，请检查模型文件后重试',
+            'Failed to start live subtitles. Check the model files and retry.'
+          )
+        );
+        return false;
+      }
+      setSttStatusText(tl('实时字幕已就绪', 'Live subtitles ready'));
+      return true;
+    },
+    []
+  );
 
   /** AI 降噪开关：立即保存并（若正在开麦）重建音频链路 */
   const handleNoiseSuppressionChange = async (v: boolean) => {
@@ -491,16 +546,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       if (sttDownloading) return; // 下载中，忽略重复开启
       const ok = await ensureSttModel(sttLanguage);
       if (!ok) return;
-      try {
-        await invoke('stt_start', { language: sttLanguage });
-        setSttStatusText(tl('实时字幕已就绪', 'Live subtitles ready'));
-      } catch (e) {
-        console.error('启动实时字幕失败:', e);
-        setSttStatusText(
-          tl('实时字幕启动失败，请稍后重试', 'Failed to start live subtitles, please retry later')
-        );
-        return;
-      }
+      const started = await startStt(sttLanguage);
+      if (!started) return;
       voiceFeatures.setSubtitles(true);
       setSubtitlesEnabled(true);
       form.setFieldValue('subtitlesEnabled', true);
@@ -543,13 +590,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
     if (subtitlesEnabled) {
       const ok = await ensureSttModel(lang);
       if (!ok) return;
-      try {
-        await invoke('stt_start', { language: lang });
-        setSttStatusText(tl('实时字幕已就绪', 'Live subtitles ready'));
-      } catch (e) {
-        console.error('切换识别语言失败:', e);
-        setSttStatusText(tl('切换识别语言失败', 'Failed to switch recognition language'));
-      }
+      const started = await startStt(lang);
+      if (!started) return;
       try {
         await webrtcClient.refreshMicChain();
       } catch (e) {
@@ -1381,8 +1423,8 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
                   <span className="settings-toggle-label">{tl('实时字幕', 'Live Subtitles')}</span>
                   <span className="settings-toggle-desc">
                     {tl(
-                      '首次开启需下载识别模型（约 200MB，仅一次）',
-                      'First enable downloads the speech model (~200MB, once)'
+                      '首次开启需下载识别模型（中文约 25MB / 英文约 44MB，仅一次）',
+                      'First enable downloads the speech model (Chinese ~25MB / English ~44MB, once)'
                     )}
                   </span>
                 </div>
