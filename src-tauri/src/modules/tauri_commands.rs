@@ -4337,13 +4337,36 @@ pub async fn save_voice_volume(volume: f64, state: State<'_, AppState>) -> Resul
 
 // ==================== 实时字幕命令 ====================
 
-/// 下载字幕识别模型（带进度事件 `stt-download-progress`）
+/// 下载字幕识别模型（带进度事件 `stt-download-progress`，支持取消）
 #[tauri::command]
 pub async fn stt_download_model(
     language: String,
     app: tauri::AppHandle,
-) -> Result<(), String> {
-    crate::modules::stt_service::download_model(app, language).await
+    state: State<'_, AppState>,
+) -> Result<serde_json::Value, String> {
+    let svc = state.core.lock().await.get_stt_service();
+    // 先取消可能残留的旧下载标记，再尝试开始本次下载
+    let begin = {
+        let guard = svc.lock().await;
+        guard.cancel_download();
+        guard.try_begin_download()
+    };
+    if !begin {
+        return Err("已有模型下载任务在进行中".to_string());
+    }
+    let cancel = svc.lock().await.cancel_handle();
+    let result =
+        crate::modules::stt_service::download_model_impl(&app, &language, cancel).await;
+    svc.lock().await.end_download();
+    result
+}
+
+/// 取消正在进行的模型下载
+#[tauri::command]
+pub async fn stt_cancel_download(state: State<'_, AppState>) -> Result<(), String> {
+    let svc = state.core.lock().await.get_stt_service();
+    svc.lock().await.cancel_download();
+    Ok(())
 }
 
 /// 查询指定语言模型是否已下载、识别服务是否在运行

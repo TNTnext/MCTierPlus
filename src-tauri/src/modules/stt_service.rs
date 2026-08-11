@@ -8,6 +8,8 @@
 use futures_util::StreamExt;
 use sherpa_onnx::{OnlineRecognizer, OnlineRecognizerConfig, OnlineStream};
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::sync::mpsc;
 use tauri::{AppHandle, Emitter, Manager};
 use tokio::io::AsyncWriteExt;
@@ -26,6 +28,10 @@ enum SttCommand {
 /// 实时字幕服务（前端通过 Tauri command 调用）
 pub struct SttService {
     tx: Mutex<Option<mpsc::SyncSender<SttCommand>>>,
+    /// 模型下载取消标记
+    cancel_download: Arc<AtomicBool>,
+    /// 是否正在下载模型（防止并发下载）
+    downloading: Arc<AtomicBool>,
 }
 
 impl Default for SttService {
@@ -36,7 +42,11 @@ impl Default for SttService {
 
 impl SttService {
     pub fn new() -> Self {
-        Self { tx: Mutex::new(None) }
+        Self {
+            tx: Mutex::new(None),
+            cancel_download: Arc::new(AtomicBool::new(false)),
+            downloading: Arc::new(AtomicBool::new(false)),
+        }
     }
 
     pub fn is_running(&self) -> bool {
@@ -78,6 +88,26 @@ impl SttService {
         if let Some(tx) = guard.as_ref() {
             let _ = tx.send(SttCommand::Reset);
         }
+    }
+
+    /// 请求取消当前模型下载
+    pub fn cancel_download(&self) {
+        self.cancel_download.store(true, Ordering::SeqCst);
+    }
+
+    /// 尝试开始一次下载（返回 false 表示已有下载在进行）
+    pub fn try_begin_download(&self) -> bool {
+        !self.downloading.swap(true, Ordering::SeqCst)
+    }
+
+    /// 下载结束（成功/失败/取消均需调用）
+    pub fn end_download(&self) {
+        self.downloading.store(false, Ordering::SeqCst);
+    }
+
+    /// 获取取消标记（供下载任务在循环中检查）
+    pub fn cancel_handle(&self) -> Arc<AtomicBool> {
+        Arc::clone(&self.cancel_download)
     }
 }
 
@@ -129,19 +159,29 @@ pub fn model_dir(app: &AppHandle, language: &str) -> Result<PathBuf, String> {
     Ok(data_dir.join("models").join("stt").join(dir_key))
 }
 
-/// 下载指定语言的模型（带进度事件 `stt-download-progress`）
-pub async fn download_model(app: AppHandle, language: String) -> Result<(), String> {
-    let (repo, files) = model_spec(&language);
-    let dir = model_dir(&app, &language)?;
+/// 下载指定语言的模型（带进度事件 `stt-download-progress` 与取消支持）
+pub async fn download_model_impl(
+    app: &AppHandle,
+    language: &str,
+    cancel: Arc<AtomicBool>,
+) -> Result<serde_json::Value, String> {
+    let (repo, files) = model_spec(language);
+    let dir = model_dir(app, language)?;
     tokio::fs::create_dir_all(&dir)
         .await
         .map_err(|e| format!("创建模型目录失败: {e}"))?;
 
     let total: u64 = files.iter().map(|f| f.size).sum();
     let mut done: u64 = 0;
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(20))
+        .build()
+        .map_err(|e| format!("初始化下载客户端失败: {e}"))?;
 
     for file in &files {
+        if cancel.load(Ordering::SeqCst) {
+            return Ok(serde_json::json!({ "cancelled": true }));
+        }
         let dest = dir.join(file.local);
         // 已下载且大小一致则跳过
         if let Ok(meta) = tokio::fs::metadata(&dest).await {
@@ -168,8 +208,24 @@ pub async fn download_model(app: AppHandle, language: String) -> Result<(), Stri
             .map_err(|e| format!("创建模型文件失败: {e}"))?;
         let mut received: u64 = 0;
 
-        while let Some(chunk) = stream.next().await {
-            let chunk = chunk.map_err(|e| format!("下载模型中断（{}）: {e}", file.remote))?;
+        loop {
+            // 每块 120 秒无数据视为超时，避免网络卡死时界面永远转圈
+            let chunk = tokio::time::timeout(
+                std::time::Duration::from_secs(120),
+                stream.next(),
+            )
+            .await
+            .map_err(|_| format!("下载模型超时（{}），请检查网络后重试", file.remote))?
+            .transpose()
+            .map_err(|e| format!("下载模型中断（{}）: {e}", file.remote))?;
+            let Some(chunk) = chunk else { break };
+
+            if cancel.load(Ordering::SeqCst) {
+                drop(out);
+                let _ = tokio::fs::remove_file(&dest).await;
+                return Ok(serde_json::json!({ "cancelled": true }));
+            }
+
             out.write_all(&chunk)
                 .await
                 .map_err(|e| format!("写入模型文件失败: {e}"))?;
@@ -204,7 +260,7 @@ pub async fn download_model(app: AppHandle, language: String) -> Result<(), Stri
             "percent": 100,
         }),
     );
-    Ok(())
+    Ok(serde_json::json!({ "cancelled": false }))
 }
 
 // ==================== 识别线程 ====================

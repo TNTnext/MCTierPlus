@@ -415,8 +415,12 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
    * @returns 是否可用
    */
   const ensureSttModel = useCallback(async (lang: SttLanguage): Promise<boolean> => {
+    // 查询状态加超时保护：后端无响应时不能让按钮“点了没反应”
     try {
-      const status = await invoke<any>('stt_status', { language: lang });
+      const status = await Promise.race([
+        invoke<any>('stt_status', { language: lang }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
+      ]);
       if (status.downloaded) return true;
     } catch (e) {
       console.warn('查询字幕模型状态失败，将尝试下载:', e);
@@ -424,26 +428,30 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
     setSttDownloading(true);
     setSttProgress(0);
-    setSttStatusText(
-      tl(
-        '首次使用需下载语音识别模型（约 200MB，仅下载一次）…',
-        'First use requires downloading the speech model (~200MB, once)...'
-      )
-    );
-    const unlisten = await listen<any>('stt-download-progress', (event) => {
-      const p = event.payload || {};
-      if (typeof p.percent === 'number') {
-        setSttProgress(Math.round(p.percent));
-        setSttStatusText(
-          tl(
-            `正在下载语音识别模型 ${Math.round(p.percent)}%…`,
-            `Downloading speech model ${Math.round(p.percent)}%...`
-          )
-        );
-      }
-    });
+    setSttStatusText(tl('正在下载语音识别模型…', 'Downloading speech model...'));
+    let unlisten: (() => void) | null = null;
     try {
-      await invoke('stt_download_model', { language: lang });
+      try {
+        unlisten = await listen<any>('stt-download-progress', (event) => {
+          const p = event.payload || {};
+          if (typeof p.percent === 'number') {
+            setSttProgress(Math.round(p.percent));
+            setSttStatusText(
+              tl(
+                `正在下载语音识别模型 ${Math.round(p.percent)}%…`,
+                `Downloading speech model ${Math.round(p.percent)}%...`
+              )
+            );
+          }
+        });
+      } catch (e) {
+        console.warn('监听下载进度失败（仍将继续下载）:', e);
+      }
+      const res = await invoke<any>('stt_download_model', { language: lang });
+      if (res && res.cancelled) {
+        setSttStatusText(tl('下载已取消', 'Download cancelled'));
+        return false;
+      }
       setSttStatusText(tl('模型下载完成', 'Model downloaded'));
       return true;
     } catch (e) {
@@ -453,7 +461,13 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       );
       return false;
     } finally {
-      unlisten();
+      if (unlisten) {
+        try {
+          unlisten();
+        } catch {
+          /* ignore */
+        }
+      }
       setSttDownloading(false);
     }
   }, []);
@@ -474,6 +488,7 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
   /** 实时字幕开关：开启时先确保模型就绪并启动识别 */
   const handleSubtitlesChange = async (v: boolean) => {
     if (v) {
+      if (sttDownloading) return; // 下载中，忽略重复开启
       const ok = await ensureSttModel(sttLanguage);
       if (!ok) return;
       try {
@@ -491,6 +506,16 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
       form.setFieldValue('subtitlesEnabled', true);
       await saveAll({ subtitlesEnabled: true });
     } else {
+      // 下载中关闭 = 取消下载，避免开关被锁死
+      if (sttDownloading) {
+        try {
+          await invoke('stt_cancel_download');
+        } catch (e) {
+          console.warn('取消模型下载失败:', e);
+        }
+        setSttProgress(0);
+        setSttStatusText(tl('已取消下载', 'Download cancelled'));
+      }
       setSubtitlesEnabled(false);
       voiceFeatures.setSubtitles(false);
       form.setFieldValue('subtitlesEnabled', false);
@@ -510,6 +535,7 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
 
   /** 识别语言切换：保存后若字幕已开启则按新语言重新加载模型 */
   const handleSttLanguageChange = async (lang: SttLanguage) => {
+    if (sttDownloading) return; // 下载中不允许切换，避免状态错乱
     setSttLanguage(lang);
     voiceFeatures.setSttLanguage(lang);
     form.setFieldValue('sttLanguage', lang);
@@ -1362,12 +1388,30 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
                 </div>
                 <Switch
                   checked={subtitlesEnabled}
-                  disabled={sttDownloading}
                   onChange={(v) => {
                     void handleSubtitlesChange(v);
                   }}
                 />
               </div>
+
+              {/* 下载进度 / 状态提示：开关点下后立即可见，不依赖开关状态 */}
+              {(sttDownloading || sttStatusText) && (
+                <div
+                  className="settings-toggle-row settings-toggle-row-sub"
+                  style={{ flexDirection: 'column', alignItems: 'stretch' }}
+                >
+                  {sttDownloading ? (
+                    <div style={{ marginTop: 4 }}>
+                      <Progress percent={sttProgress} size="small" status="active" />
+                      <div style={{ fontSize: 12, color: 'var(--mc-text-2)', marginTop: 4 }}>
+                        {sttStatusText}
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 12, color: 'var(--mc-text-2)' }}>{sttStatusText}</div>
+                  )}
+                </div>
+              )}
 
               {subtitlesEnabled && (
                 <div
@@ -1397,20 +1441,6 @@ export const SettingsWindow: React.FC<{ onClose: () => void }> = ({ onClose }) =
                       ]}
                     />
                   </div>
-                  {sttDownloading ? (
-                    <div style={{ marginTop: 10 }}>
-                      <Progress percent={sttProgress} size="small" status="active" />
-                      <div style={{ fontSize: 12, color: 'var(--mc-text-2)', marginTop: 4 }}>
-                        {sttStatusText}
-                      </div>
-                    </div>
-                  ) : (
-                    sttStatusText && (
-                      <div style={{ marginTop: 6, fontSize: 12, color: 'var(--mc-text-2)' }}>
-                        {sttStatusText}
-                      </div>
-                    )
-                  )}
                 </div>
               )}
             </motion.div>
