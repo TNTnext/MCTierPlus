@@ -91,7 +91,7 @@ export const PublicPlaza: React.FC<PublicPlazaProps> = ({
               <div
                 key={`${l.lobbyName}-${i}`}
                 style={{
-                  border: '1px solid rgba(0,0,0,0.08)',
+                  border: '1px solid var(--mc-border)',
                   borderRadius: 8,
                   padding: '10px 12px',
                   display: 'flex',
@@ -127,7 +127,7 @@ export const PublicPlaza: React.FC<PublicPlazaProps> = ({
               </div>
             );
           })}
-          <Text type="secondary" style={{ fontSize: 12 }}>
+          <Text style={{ fontSize: 12, color: 'var(--mc-text-2)' }}>
             {tl(
               '提示：公开大厅由房主主动公开，加入即进入对应虚拟局域网。',
               'Tip: public lobbies are opened by hosts; joining enters their virtual LAN.'
